@@ -1,6 +1,5 @@
 package com.textvision.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,7 +9,6 @@ import lombok.Getter;
  * @since 1.0.0
  */
 @Getter
-@AllArgsConstructor
 public enum ResultCode {
 
     // 通用状态码
@@ -78,4 +76,33 @@ public enum ResultCode {
      * 状态消息
      */
     private final String message;
+
+    /**
+     * 构造器
+     * 
+     * @param code 状态码
+     * @param message 状态消息
+     */
+    ResultCode(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    /**
+     * 获取状态码
+     * 
+     * @return 状态码
+     */
+    public Integer getCode() {
+        return code;
+    }
+
+    /**
+     * 获取状态消息
+     * 
+     * @return 状态消息
+     */
+    public String getMessage() {
+        return message;
+    }
 }

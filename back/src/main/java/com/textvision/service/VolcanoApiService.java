@@ -38,6 +38,9 @@ public class VolcanoApiService {
     @Value("${volcano.video-generation.model}")
     private String videoModel;
 
+    @Value("${volcano.video-generation.query-endpoint:/api/v3/contents/generations/tasks}")
+    private String videoQueryEndpoint;
+
     /**
      * 生成图片
      * 
@@ -152,6 +155,71 @@ public class VolcanoApiService {
         }
     }
 
+    /**
+     * 查询视频生成任务状态
+     * 
+     * @param taskId 任务ID
+     * @return 查询结果
+     */
+    public VideoGenerationResult queryVideoTask(String taskId) {
+        try {
+            String url = baseUrl + videoQueryEndpoint + "/" + taskId;
+            Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
+            
+            log.debug("查询视频生成任务状态: taskId={}, url={}", taskId, url);
+            
+            String responseJson = HttpUtil.doGet(url, headers);
+            log.debug("火山引擎视频任务查询API响应: {}", responseJson);
+            
+            VideoTaskQueryResponse response = JSON.parseObject(responseJson, VideoTaskQueryResponse.class);
+            
+            VideoGenerationResult result = new VideoGenerationResult();
+            result.setTaskId(taskId);
+            
+            if (response != null) {
+                if ("succeeded".equals(response.getStatus())) {
+                    // 任务完成，提取视频URL
+                    if (response.getContent() != null && response.getContent().getVideo_url() != null) {
+                        String videoUrl = response.getContent().getVideo_url().trim();
+                        // 移除可能存在的反引号
+                        if (videoUrl.startsWith("`") && videoUrl.endsWith("`")) {
+                            videoUrl = videoUrl.substring(1, videoUrl.length() - 1).trim();
+                        }
+                        result.setSuccess(true);
+                        result.setUrl(videoUrl);
+                        result.setDuration(response.getDuration());
+                        log.info("视频生成任务完成: taskId={}, url={}", taskId, videoUrl);
+                    } else {
+                        result.setSuccess(false);
+                        result.setErrorMessage("任务完成但无视频数据");
+                    }
+                } else if ("failed".equals(response.getStatus())) {
+                    // 任务失败
+                    result.setSuccess(false);
+                    result.setErrorMessage(response.getError() != null ? response.getError() : "视频生成失败");
+                    log.error("视频生成任务失败: taskId={}, error={}", taskId, response.getError());
+                } else {
+                    // 任务进行中
+                    result.setSuccess(false);
+                    result.setErrorMessage("PROCESSING"); // 特殊标记表示任务进行中
+                    log.debug("视频生成任务进行中: taskId={}, status={}", taskId, response.getStatus());
+                }
+            } else {
+                result.setSuccess(false);
+                result.setErrorMessage("查询响应为空");
+            }
+            
+            return result;
+        } catch (Exception e) {
+            log.error("查询视频生成任务异常: taskId={}", taskId, e);
+            VideoGenerationResult result = new VideoGenerationResult();
+            result.setSuccess(false);
+            result.setTaskId(taskId);
+            result.setErrorMessage("查询任务异常: " + e.getMessage());
+            return result;
+        }
+    }
+
     private ImageGenerationResult createErrorResult(String errorMessage) {
         ImageGenerationResult result = new ImageGenerationResult();
         result.setSuccess(false);
@@ -244,12 +312,6 @@ public class VolcanoApiService {
     }
 
     @Data
-    public static class VideoContent {
-        private String type;
-        private String text;
-    }
-
-    @Data
     public static class VideoGenerationTaskResponse {
         private String id;
     }
@@ -264,6 +326,36 @@ public class VolcanoApiService {
         private String url;
         private String thumbnail;
         private Integer duration;
+    }
+
+    @Data
+    public static class VideoTaskQueryResponse {
+        private String id;
+        private String model;
+        private String status;
+        private String error;
+        private VideoContent content;
+        private VideoUsage usage;
+        private Long created_at;
+        private Long updated_at;
+        private Integer seed;
+        private String resolution;
+        private Integer duration;
+        private String ratio;
+        private Integer framespersecond;
+    }
+
+    @Data
+    public static class VideoContent {
+        private String type;
+        private String text;
+        private String video_url;
+    }
+
+    @Data
+    public static class VideoUsage {
+        private Integer completion_tokens;
+        private Integer total_tokens;
     }
 
     @Data

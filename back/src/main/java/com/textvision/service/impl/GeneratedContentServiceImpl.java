@@ -197,7 +197,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         try {
             log.info("开始异步生成内容: contentId={}, type={}", contentId, request.getType());
             
-            String resultUrl;
+            String resultUrl = null;
             String thumbnail = null;
             
             if ("image".equals(request.getType())) {
@@ -218,8 +218,47 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getFps(),
                         request.getHd()
                 );
-                resultUrl = result.getUrl();
-                thumbnail = result.getThumbnail();
+                
+                if (result.isSuccess() && result.getTaskId() != null) {
+                    // 视频生成任务创建成功，开始轮询查询任务状态
+                    log.info("视频生成任务创建成功，开始轮询查询状态: contentId={}, taskId={}", contentId, result.getTaskId());
+                    
+                    String taskId = result.getTaskId();
+                    int maxRetries = 60; // 最多查询60次，每次间隔10秒，总共10分钟
+                    int retryCount = 0;
+                    
+                    while (retryCount < maxRetries) {
+                        try {
+                            Thread.sleep(10000); // 等待10秒
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new RuntimeException("任务被中断", e);
+                        }
+                        
+                        VolcanoApiService.VideoGenerationResult queryResult = volcanoApiService.queryVideoTask(taskId);
+                        
+                        if (queryResult.isSuccess()) {
+                            // 任务完成
+                            resultUrl = queryResult.getUrl();
+                            thumbnail = queryResult.getThumbnail();
+                            log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
+                            break;
+                        } else if ("PROCESSING".equals(queryResult.getErrorMessage())) {
+                            // 任务进行中，继续等待
+                            retryCount++;
+                            log.debug("视频生成任务进行中: contentId={}, taskId={}, retry={}/{}", contentId, taskId, retryCount, maxRetries);
+                        } else {
+                            // 任务失败
+                            throw new RuntimeException("视频生成任务失败: " + queryResult.getErrorMessage());
+                        }
+                    }
+                    
+                    if (retryCount >= maxRetries) {
+                        throw new RuntimeException("视频生成任务超时，请稍后重试");
+                    }
+                } else {
+                    throw new RuntimeException("视频生成任务创建失败: " + result.getErrorMessage());
+                }
             }
             
             // 更新为成功状态
