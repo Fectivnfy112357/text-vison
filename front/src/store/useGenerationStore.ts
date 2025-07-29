@@ -19,8 +19,10 @@ interface GenerationState {
   isGenerating: boolean;
   currentGeneration: GeneratedContent | null;
   pollingInterval: NodeJS.Timeout | null;
+  isLoadingHistory: boolean;
   generateContent: (prompt: string, type: 'image' | 'video', options?: any) => Promise<void>;
-  addToHistory: (content: GeneratedContent) => void;
+  loadHistory: (page?: number, size?: number, type?: string) => Promise<void>;
+  refreshHistory: () => Promise<void>;
   removeFromHistory: (id: string) => void;
   clearHistory: () => void;
   startPolling: (contentId: string) => void;
@@ -33,6 +35,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
   isGenerating: false,
   currentGeneration: null,
   pollingInterval: null,
+  isLoadingHistory: false,
 
   generateContent: async (prompt: string, type: 'image' | 'video', options = {}) => {
     set({ isGenerating: true });
@@ -72,8 +75,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       
       set({ 
         currentGeneration: newContent,
-        isGenerating: false,
-        history: [newContent, ...get().history]
+        isGenerating: false
       });
       
       // 如果状态是processing，启动轮询检查状态
@@ -86,10 +88,38 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
     }
   },
 
-  addToHistory: (content: GeneratedContent) => {
-    set(state => ({
-      history: [content, ...state.history]
-    }));
+  loadHistory: async (page = 1, size = 20, type?: string) => {
+    set({ isLoadingHistory: true });
+    try {
+      const result = await contentAPI.getUserContents(page, size, type);
+      const contents = result.records || result.list || result;
+      
+      const formattedHistory: GeneratedContent[] = contents.map((item: any) => ({
+        id: item.id.toString(),
+        type: item.type,
+        prompt: item.prompt,
+        url: item.url || '',
+        thumbnail: item.thumbnail || undefined,
+        createdAt: new Date(item.createdAt || item.createTime),
+        size: item.size,
+        style: item.style,
+        referenceImage: item.referenceImage,
+        status: item.status
+      }));
+      
+      set({ 
+        history: page === 1 ? formattedHistory : [...get().history, ...formattedHistory],
+        isLoadingHistory: false 
+      });
+    } catch (error) {
+      console.error('加载历史记录失败:', error);
+      set({ isLoadingHistory: false });
+      throw error;
+    }
+  },
+
+  refreshHistory: async () => {
+    await get().loadHistory(1, 20);
   },
 
   removeFromHistory: (id: string) => {
@@ -146,21 +176,17 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         
         set({ currentGeneration: updatedContent });
         
-        // 如果生成完成或失败，停止轮询
+        // 如果生成完成或失败，停止轮询并刷新历史记录
         if (result.status === 'completed' || result.status === 'failed') {
           get().stopPolling();
           
-          // 更新历史记录中的对应项
-          const { history } = get();
-          const updatedHistory = history.map(item => 
-            item.id === contentId ? updatedContent : item
-          );
-          set({ history: updatedHistory });
+          // 刷新历史记录以获取最新数据
+          await get().refreshHistory();
         }
       }
     } catch (error) {
       console.error('检查生成状态失败:', error);
-      // 如果检查失败多次，可以考虑停止轮询
+      get().stopPolling();
     }
   }
 }));

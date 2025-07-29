@@ -212,6 +212,14 @@ export const contentAPI = {
       method: 'DELETE',
     });
   },
+
+  // 批量删除生成内容
+  batchDeleteContents: async (ids: string[]) => {
+    return await request('/contents/batch', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    });
+  },
 };
 
 // 导出工具函数

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock } from 'lucide-react';
+import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock, Loader2 } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { contentAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
@@ -12,8 +13,23 @@ export default function History() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   
-  const { history, removeFromHistory, clearHistory } = useGenerationStore();
+  const { history, loadHistory, refreshHistory, removeFromHistory, clearHistory, isLoadingHistory } = useGenerationStore();
   const { isAuthenticated } = useAuthStore();
+
+  // 组件挂载时加载历史记录
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadHistory();
+    }
+  }, [isAuthenticated, loadHistory]);
+
+  // 当过滤类型改变时重新加载
+  useEffect(() => {
+    if (isAuthenticated) {
+      const type = filterType === 'all' ? undefined : filterType;
+      loadHistory(1, 20, type);
+    }
+  }, [filterType, isAuthenticated, loadHistory]);
 
   // 过滤和排序历史记录
   const filteredHistory = history
@@ -54,12 +70,26 @@ export default function History() {
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selectedItems.length === 0) return;
     
-    selectedItems.forEach(id => removeFromHistory(id));
-    setSelectedItems([]);
-    toast.success(`已删除 ${selectedItems.length} 个项目`);
+    if (!window.confirm(`确定要删除选中的 ${selectedItems.length} 个项目吗？此操作不可恢复。`)) {
+      return;
+    }
+    
+    try {
+      // 使用API批量删除
+      await contentAPI.batchDeleteContents(selectedItems);
+      
+      // 刷新历史记录
+      await refreshHistory();
+      
+      setSelectedItems([]);
+      toast.success(`已删除 ${selectedItems.length} 个项目`);
+    } catch (error) {
+      console.error('删除失败:', error);
+      toast.error('删除失败，请稍后重试');
+    }
   };
 
   const handleDownload = (item: GeneratedContent) => {
@@ -233,7 +263,23 @@ export default function History() {
         </motion.div>
 
         {/* 历史记录网格 */}
-        {filteredHistory.length === 0 ? (
+        {isLoadingHistory ? (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              正在加载历史记录...
+            </h3>
+            <p className="text-gray-600">
+              请稍候，正在获取您的创作历史
+            </p>
+          </motion.div>
+        ) : filteredHistory.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -275,15 +321,28 @@ export default function History() {
                 >
                   {/* 图片/视频预览 */}
                   <div className="relative aspect-video">
-                    <img
-                    src={item.url || '/placeholder-image.png'}
-                    alt={item.prompt || '生成内容'}
-                    className="w-full h-48 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder-image.png';
-                    }}
-                  />
+                    {item.type === 'video' ? (
+                      <video
+                        src={item.url || '/placeholder-video.mp4'}
+                        className="w-full h-48 object-cover"
+                        controls
+                        preload="metadata"
+                        onError={(e) => {
+                          const target = e.target as HTMLVideoElement;
+                          target.poster = '/placeholder-video.jpg';
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={item.url || '/placeholder-image.png'}
+                        alt={item.prompt || '生成内容'}
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-image.png';
+                        }}
+                      />
+                    )}
                     
                     {/* 类型标识 */}
                     <div className="absolute top-2 left-2">
@@ -365,11 +424,21 @@ export default function History() {
             className="text-center mt-12"
           >
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
-                  clearHistory();
-                  setSelectedItems([]);
-                  toast.success('历史记录已清空');
+                  try {
+                    // 获取所有历史记录的ID
+                    const allIds = history.map(item => item.id);
+                    if (allIds.length > 0) {
+                      await contentAPI.batchDeleteContents(allIds);
+                      await refreshHistory();
+                    }
+                    setSelectedItems([]);
+                    toast.success('历史记录已清空');
+                  } catch (error) {
+                    console.error('清空历史记录失败:', error);
+                    toast.error('清空失败，请稍后重试');
+                  }
                 }
               }}
               className="text-red-600 hover:text-red-700 text-sm font-medium"
