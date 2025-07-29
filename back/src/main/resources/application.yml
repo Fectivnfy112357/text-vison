@@ -97,7 +97,7 @@ volcano:
     endpoint: /api/v3/images/generations
     model: doubao-seedream-3-0-t2i-250415
   video-generation:
-    endpoint: /api/v3/video/generation
+    endpoint: /api/v3/contents/generations/tasks
     model: doubao-video
 
 # 应用自定义配置

@@ -100,25 +100,47 @@ public class VolcanoApiService {
             String url = baseUrl + videoEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
             
+            // 构建符合火山引擎API规范的请求格式
             VideoGenerationRequest request = new VideoGenerationRequest();
             request.setModel(videoModel);
-            request.setPrompt(prompt);
-            request.setDuration(duration != null ? duration : 5);
-            request.setFps(fps != null ? fps : 24);
-            request.setQuality(hd != null && hd ? "hd" : "standard");
+            
+            // 构建content数组
+            VideoContent content = new VideoContent();
+            content.setType("text");
+            
+            // 构建包含参数的文本
+            StringBuilder textBuilder = new StringBuilder(prompt);
+            if (duration != null) {
+                textBuilder.append(" --dur ").append(duration);
+            } else {
+                textBuilder.append(" --dur 5");
+            }
+            if (fps != null) {
+                textBuilder.append(" --fps ").append(fps);
+            } else {
+                textBuilder.append(" --fps 24");
+            }
+            String quality = (hd != null && hd) ? "hd" : "standard";
+            textBuilder.append(" --quality ").append(quality);
+            
+            content.setText(textBuilder.toString());
+            request.setContent(java.util.Arrays.asList(content));
             
             log.info("调用火山引擎视频生成API: {}", JSON.toJSONString(request));
             
             String responseJson = HttpUtil.doPostJson(url, headers, request);
-            VideoGenerationResponse response = JSON.parseObject(responseJson, VideoGenerationResponse.class);
+            log.debug("火山引擎视频生成API响应: {}", responseJson);
             
-            if (response != null && response.getData() != null && !response.getData().isEmpty()) {
-                VideoData videoData = response.getData().get(0);
+            // 火山引擎视频生成API返回任务ID，需要后续查询任务状态
+            VideoGenerationTaskResponse response = JSON.parseObject(responseJson, VideoGenerationTaskResponse.class);
+            
+            if (response != null && response.getId() != null) {
+                // 返回任务创建成功的结果，URL暂时为空
                 VideoGenerationResult result = new VideoGenerationResult();
                 result.setSuccess(true);
-                result.setUrl(videoData.getUrl());
-                result.setThumbnail(videoData.getThumbnail());
-                result.setDuration(videoData.getDuration());
+                result.setTaskId(response.getId());
+                result.setUrl(""); // 任务创建成功，但视频还未生成完成
+                log.info("视频生成任务创建成功，任务ID: {}", response.getId());
                 return result;
             } else {
                 log.error("火山引擎视频生成失败: 响应数据为空");
@@ -218,10 +240,18 @@ public class VolcanoApiService {
     @Data
     public static class VideoGenerationRequest {
         private String model;
-        private String prompt;
-        private Integer duration;
-        private Integer fps;
-        private String quality;
+        private List<VideoContent> content;
+    }
+
+    @Data
+    public static class VideoContent {
+        private String type;
+        private String text;
+    }
+
+    @Data
+    public static class VideoGenerationTaskResponse {
+        private String id;
     }
 
     @Data
@@ -239,6 +269,7 @@ public class VolcanoApiService {
     @Data
     public static class VideoGenerationResult {
         private boolean success;
+        private String taskId;
         private String url;
         private String thumbnail;
         private Integer duration;

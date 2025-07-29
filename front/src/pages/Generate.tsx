@@ -19,8 +19,15 @@ export default function Generate() {
   const { templates } = useTemplateStore();
   const templateAppliedRef = useRef(false);
   
-  const { generateContent, isGenerating, currentGeneration } = useGenerationStore();
+  const { generateContent, isGenerating, currentGeneration, stopPolling } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
+
+  // 组件卸载时清理轮询
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
 
   const sizeOptions = [
     { value: 'square', label: '正方形 (1:1)' },
@@ -374,15 +381,25 @@ export default function Generate() {
                     className="space-y-4"
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden">
-                      <img
-                        src={currentGeneration.url || '/placeholder-generation.png'}
-                        alt={currentGeneration.prompt || '生成结果'}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-generation.png';
-                        }}
-                      />
+                      {currentGeneration.status === 'completed' && currentGeneration.url ? (
+                        <img
+                          src={currentGeneration.url}
+                          alt={currentGeneration.prompt || '生成结果'}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-3"></div>
+                            <p className="text-purple-600 font-medium">生成中...</p>
+                            <p className="text-sm text-gray-500 mt-1">请稍候</p>
+                          </div>
+                        </div>
+                      )}
                       {currentGeneration.type === 'video' && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="bg-black/50 rounded-full p-3">
