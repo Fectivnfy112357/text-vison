@@ -174,16 +174,23 @@ export const templateAPI = {
 // 内容生成相关 API
 export const contentAPI = {
   // 生成内容
-  generateContent: async (prompt: string, type: 'image' | 'video', templateId?: number, size?: string, style?: string) => {
+  generateContent: async (prompt: string, type: 'image' | 'video', templateId?: number, size?: string, style?: string, options?: any) => {
+    const requestBody: any = {
+      prompt,
+      type,
+      templateId,
+      size,
+      style,
+    };
+    
+    // 如果有额外选项，合并到请求体中
+    if (options) {
+      Object.assign(requestBody, options);
+    }
+    
     return await request('/contents/generate', {
       method: 'POST',
-      body: JSON.stringify({
-        prompt,
-        type,
-        templateId,
-        size,
-        style,
-      }),
+      body: JSON.stringify(requestBody),
     });
   },
 

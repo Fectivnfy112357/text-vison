@@ -48,7 +48,8 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         type,
         undefined, // templateId
         options.size || 'landscape_16_9',
-        options.style || '默认风格'
+        options.style || '默认风格',
+        options // 传递所有选项参数，包括视频参数
       );
       
       console.log('Generation API response:', result);
@@ -85,6 +86,11 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       // 如果状态是processing，启动轮询检查状态
       if (newContent.status === 'processing') {
         get().startPolling(newContent.id);
+      } else if (newContent.status === 'completed') {
+        // 如果生成完成，将新内容添加到历史记录前面，并限制最多4个
+        const currentHistory = get().history;
+        const updatedHistory = [newContent, ...currentHistory.filter(item => item.id !== newContent.id)].slice(0, 4);
+        set({ history: updatedHistory });
       }
     } catch (error) {
       set({ isGenerating: false });
@@ -184,12 +190,16 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         
         set({ currentGeneration: updatedContent });
         
-        // 如果生成完成或失败，停止轮询并刷新历史记录
+        // 如果生成完成或失败，停止轮询并更新历史记录
         if (result.status === 'completed' || result.status === 'failed') {
           get().stopPolling();
           
-          // 刷新历史记录以获取最新数据
-          await get().refreshHistory();
+          // 如果生成完成，将内容添加到历史记录前面
+          if (result.status === 'completed') {
+            const currentHistory = get().history;
+            const updatedHistory = [updatedContent, ...currentHistory.filter(item => item.id !== updatedContent.id)].slice(0, 4);
+            set({ history: updatedHistory });
+          }
         }
       }
     } catch (error) {

@@ -31,7 +31,7 @@ export default function Generate() {
   const { templates } = useTemplateStore();
   const templateAppliedRef = useRef(false);
   
-  const { generateContent, isGenerating, currentGeneration, stopPolling } = useGenerationStore();
+  const { generateContent, isGenerating, currentGeneration, stopPolling, history, loadHistory } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
 
   // 组件卸载时清理轮询
@@ -41,10 +41,14 @@ export default function Generate() {
     };
   }, [stopPolling]);
 
-
+  // 页面加载时获取历史记录
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadHistory();
+    }
+  }, [isAuthenticated, loadHistory]);
 
   // 视频参数选项
-
   const resolutionOptions = [
     { value: '480p', label: '480p (标清)' },
     { value: '720p', label: '720p (高清)' },
@@ -81,12 +85,11 @@ export default function Generate() {
           if (!templateAppliedRef.current || templateAppliedRef.current !== currentTemplateKey) {
             setPrompt(template.prompt || '');
             setType(template.type || 'image');
-            templateAppliedRef.current = currentTemplateKey; // 记录具体的模板标识
+            templateAppliedRef.current = currentTemplateKey;
             toast.success(`已应用模板：${templateTitle}`);
           }
         }
     } else if (!searchParams.get('template')) {
-      // 如果没有模板参数，清除标识
       templateAppliedRef.current = null;
     }
   }, [searchParams, templates]);
@@ -143,10 +146,6 @@ export default function Generate() {
   };
 
   const handleGenerate = async () => {
-    // 添加调试信息
-    console.log('认证状态:', { isAuthenticated, user });
-    console.log('Token:', localStorage.getItem('auth_token'));
-    
     if (!prompt.trim()) {
       toast.error('请输入描述文本');
       return;
@@ -163,7 +162,6 @@ export default function Generate() {
         referenceImage
       };
       
-      // 如果是视频类型，添加视频专用参数
       if (type === 'video') {
         params.resolution = resolution;
         params.duration = duration;
@@ -179,7 +177,6 @@ export default function Generate() {
       await generateContent(prompt, type, params);
       toast.success('生成成功！');
     } catch (error) {
-      // 显示具体的错误信息
       const errorMessage = error instanceof Error ? error.message : '生成失败，请重试';
       toast.error(errorMessage);
     }
@@ -194,7 +191,6 @@ export default function Generate() {
     const fileType = currentGeneration.type === 'video' ? 'mp4' : 'jpg';
     const fileId = currentGeneration.id || 'unknown';
 
-    // 如果指定了特定URL，下载单个文件
     if (specificUrl && index !== undefined) {
       const link = document.createElement('a');
       link.href = specificUrl;
@@ -206,7 +202,6 @@ export default function Generate() {
       return;
     }
 
-    // 批量下载或单个文件下载
     const urls = currentGeneration.urls || (currentGeneration.url ? [currentGeneration.url] : []);
     
     if (urls.length === 0) {
@@ -215,7 +210,6 @@ export default function Generate() {
     }
 
     if (urls.length === 1) {
-      // 单个文件下载
       const link = document.createElement('a');
       link.href = urls[0];
       link.download = `textvision-${fileId}.${fileType}`;
@@ -224,7 +218,6 @@ export default function Generate() {
       document.body.removeChild(link);
       toast.success('下载开始');
     } else {
-      // 批量下载
       urls.forEach((url, index) => {
         setTimeout(() => {
           const link = document.createElement('a');
@@ -233,14 +226,15 @@ export default function Generate() {
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-        }, index * 500); // 每个文件间隔500ms下载，避免浏览器阻止
+        }, index * 500);
       });
       toast.success(`开始下载${urls.length}个文件`);
     }
   };
 
-  const handleShare = async () => {
-    if (!currentGeneration || !currentGeneration.url) {
+  const handleShare = async (specificUrl?: string) => {
+    const shareUrl = specificUrl || currentGeneration?.url;
+    if (!shareUrl) {
       toast.error('分享失败：无效的内容链接');
       return;
     }
@@ -249,16 +243,16 @@ export default function Generate() {
       if (navigator.share) {
         await navigator.share({
           title: '文生视界 - 我的创作',
-          text: currentGeneration.prompt || '精彩创作内容',
-          url: currentGeneration.url
+          text: currentGeneration?.prompt || '精彩创作内容',
+          url: shareUrl
         });
       } else {
-        await navigator.clipboard.writeText(currentGeneration.url);
+        await navigator.clipboard.writeText(shareUrl);
         toast.success('链接已复制到剪贴板');
       }
     } catch (error) {
       try {
-        await navigator.clipboard.writeText(currentGeneration.url);
+        await navigator.clipboard.writeText(shareUrl);
         toast.success('链接已复制到剪贴板');
       } catch (clipboardError) {
         toast.error('分享失败：无法访问剪贴板');
@@ -278,9 +272,9 @@ export default function Generate() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* 输入区域 */}
-          <div className="space-y-6">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* 左侧输入区域 - 占据2列 */}
+          <div className="lg:col-span-2 space-y-6">
             {/* 文本输入 */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -320,7 +314,7 @@ export default function Generate() {
             >
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                 <Upload className="w-5 h-5 mr-2 text-purple-600" />
-                参考图片 (可选)
+                参考图片
               </h2>
               
               {referenceImage ? (
@@ -328,11 +322,11 @@ export default function Generate() {
                   <img
                     src={referenceImage}
                     alt="参考图片"
-                    className="w-full h-48 object-cover rounded-xl"
+                    className="w-full h-32 object-cover rounded-xl"
                   />
                   <button
                     onClick={() => setReferenceImage(null)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
                   >
                     ×
                   </button>
@@ -340,11 +334,11 @@ export default function Generate() {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-purple-300 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
+                  className="border-2 border-dashed border-purple-300 rounded-xl p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
                 >
-                  <Upload className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">点击上传参考图片</p>
-                  <p className="text-sm text-gray-500">支持 JPG、PNG 格式，最大 10MB</p>
+                  <Upload className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                  <p className="text-gray-600 text-sm mb-1">点击上传参考图片</p>
+                  <p className="text-xs text-gray-500">JPG、PNG，最大10MB</p>
                 </div>
               )}
               
@@ -357,52 +351,287 @@ export default function Generate() {
               />
             </motion.div>
 
-            {/* 生成设置 */}
-            <motion.div 
+            {/* 视频专用参数 */}
+            {type === 'video' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="bg-white rounded-2xl shadow-lg p-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                  <Video className="w-5 h-5 mr-2 text-purple-600" />
+                  视频生成参数
+                </h2>
+                  
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {/* 分辨率选择 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      分辨率
+                    </label>
+                    <select
+                      value={resolution}
+                      onChange={(e) => setResolution(e.target.value)}
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      {resolutionOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 时长选择 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      视频时长
+                    </label>
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(Number(e.target.value))}
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      {durationOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 比例选择 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      画面比例
+                    </label>
+                    <select
+                      value={ratio}
+                      onChange={(e) => setRatio(e.target.value)}
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      {ratioOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 帧率 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      帧率 (FPS)
+                    </label>
+                    <input
+                      type="number"
+                      value={fps}
+                      onChange={(e) => setFps(Number(e.target.value))}
+                      min="12"
+                      max="60"
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+
+                  {/* CFG Scale */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      CFG Scale (7)
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      value={cfgScale}
+                      onChange={(e) => setCfgScale(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* 生成数量 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      生成数量
+                    </label>
+                    <select
+                      value={count}
+                      onChange={(e) => setCount(Number(e.target.value))}
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      <option value={1}>1个</option>
+                      <option value={2}>2个</option>
+                      <option value={3}>3个</option>
+                      <option value={4}>4个</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 固定摄像头选项 */}
+                <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label htmlFor="cameraFixed" className="text-sm font-medium text-gray-700">
+                        固定摄像头 (减少镜头运动)
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        启用后视频画面更稳定，适合静态场景
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="cameraFixed"
+                        checked={cameraFixed}
+                        onChange={(e) => setCameraFixed(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* 首帧和尾帧图片 */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* 首帧图片 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      首帧图片
+                    </label>
+                    {firstFrameImage ? (
+                      <div className="relative">
+                        <img
+                          src={firstFrameImage}
+                          alt="首帧图片"
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => setFirstFrameImage(null)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => firstFrameInputRef.current?.click()}
+                        className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-24 flex flex-col justify-center"
+                      >
+                        <Upload className="w-6 h-6 text-purple-400 mx-auto mb-1" />
+                        <p className="text-gray-600 text-xs">上传首帧图片</p>
+                      </div>
+                    )}
+                    <input
+                      ref={firstFrameInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFirstFrameUpload}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* 尾帧图片 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      尾帧图片
+                    </label>
+                    {lastFrameImage ? (
+                      <div className="relative">
+                        <img
+                          src={lastFrameImage}
+                          alt="尾帧图片"
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => setLastFrameImage(null)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => lastFrameInputRef.current?.click()}
+                        className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-24 flex flex-col justify-center"
+                      >
+                        <Upload className="w-6 h-6 text-purple-400 mx-auto mb-1" />
+                        <p className="text-gray-600 text-xs">上传尾帧图片</p>
+                      </div>
+                    )}
+                    <input
+                      ref={lastFrameInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLastFrameUpload}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 生成按钮 */}
+            <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt.trim()}
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-4 rounded-2xl font-semibold text-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>{isGenerating ? '生成中...' : '开始生成'}</span>
+            </motion.button>
+          </div>
+
+          {/* 右侧参数设置和结果展示 */}
+          <div className="space-y-6">
+            {/* 生成设置 */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
               className="bg-white rounded-2xl shadow-lg p-6"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                 <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
                 生成设置
               </h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* 类型选择 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     生成类型
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setType('image')}
-                      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all ${
+                      className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg transition-all text-sm ${
                         type === 'image'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
                           : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                       }`}
                     >
-                      <ImageIcon className="w-5 h-5" />
+                      <ImageIcon className="w-4 h-4" />
                       <span className="font-medium">图片</span>
                     </button>
                     <button
                       onClick={() => setType('video')}
-                      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all ${
+                      className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg transition-all text-sm ${
                         type === 'video'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
                           : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                       }`}
                     >
-                      <Video className="w-5 h-5" />
+                      <Video className="w-4 h-4" />
                       <span className="font-medium">视频</span>
                     </button>
                   </div>
                 </div>
 
                 {/* 水印选项 */}
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-lg p-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <label htmlFor="watermark" className="text-sm font-medium text-gray-700">
@@ -427,442 +656,108 @@ export default function Generate() {
               </div>
             </motion.div>
 
-            {/* 视频专用参数 */}
-            {type === 'video' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
-              >
-                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                  <Video className="w-5 h-5 mr-2 text-purple-600" />
-                  视频生成参数
-                </h2>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* 分辨率选择 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        分辨率
-                      </label>
-                      <select
-                        value={resolution}
-                        onChange={(e) => setResolution(e.target.value)}
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        {resolutionOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* 时长选择 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        视频时长
-                      </label>
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        {durationOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* 比例选择 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        视频比例
-                      </label>
-                      <select
-                        value={ratio}
-                        onChange={(e) => setRatio(e.target.value)}
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        {ratioOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* 帧率设置 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        帧率 (FPS)
-                      </label>
-                      <input
-                        type="number"
-                        value={fps}
-                        onChange={(e) => setFps(Number(e.target.value))}
-                        min="12"
-                        max="60"
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* CFG Scale */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        CFG Scale ({cfgScale})
-                      </label>
-                      <input
-                        type="range"
-                        value={cfgScale}
-                        onChange={(e) => setCfgScale(Number(e.target.value))}
-                        min="1"
-                        max="20"
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>1</span>
-                        <span>20</span>
-                      </div>
-                    </div>
-
-                    {/* 生成数量 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        生成数量
-                      </label>
-                      <select
-                        value={count}
-                        onChange={(e) => setCount(Number(e.target.value))}
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        <option value={1}>1个</option>
-                        <option value={2}>2个</option>
-                        <option value={3}>3个</option>
-                        <option value={4}>4个</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* 固定摄像头选项 */}
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="cameraFixed"
-                      checked={cameraFixed}
-                      onChange={(e) => setCameraFixed(e.target.checked)}
-                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
-                    />
-                    <label htmlFor="cameraFixed" className="text-sm font-medium text-gray-700">
-                      固定摄像头 (减少镜头运动)
-                    </label>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* 首帧和尾帧图片上传 */}
-            {type === 'video' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
-              >
-                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                  <ImageIcon className="w-5 h-5 mr-2 text-purple-600" />
-                  图生视频
-                </h2>
-                
-                <div className="space-y-4">
-                  {/* 首帧图片 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      首帧图片 (可选)
-                    </label>
-                    {firstFrameImage ? (
-                      <div className="relative">
-                        <img
-                          src={firstFrameImage}
-                          alt="首帧图片"
-                          className="w-full h-32 object-cover rounded-xl"
-                        />
-                        <button
-                          onClick={() => setFirstFrameImage(null)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => firstFrameInputRef.current?.click()}
-                        className="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
-                      >
-                        <Upload className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                        <p className="text-gray-600 text-sm">点击上传首帧图片</p>
-                        <p className="text-xs text-gray-500 mt-1">支持 JPG、PNG 等格式，最大 30MB</p>
-                      </div>
-                    )}
-                    <input
-                      ref={firstFrameInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFirstFrameUpload}
-                      className="hidden"
-                    />
-                  </div>
-
-                  {/* 尾帧图片 */}
-                  <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        尾帧图片 (可选)
-                      </label>
-                      {lastFrameImage ? (
-                        <div className="relative">
-                          <img
-                            src={lastFrameImage}
-                            alt="尾帧图片"
-                            className="w-full h-32 object-cover rounded-xl"
-                          />
-                          <button
-                            onClick={() => setLastFrameImage(null)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => lastFrameInputRef.current?.click()}
-                          className="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
-                        >
-                          <Upload className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                          <p className="text-gray-600 text-sm">点击上传尾帧图片</p>
-                          <p className="text-xs text-gray-500 mt-1">支持 JPG、PNG 等格式，最大 30MB</p>
-                        </div>
-                      )}
-                      <input
-                        ref={lastFrameInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLastFrameUpload}
-                        className="hidden"
-                      />
-                    </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* 生成按钮 */}
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-4 rounded-2xl font-semibold text-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>{isGenerating ? '生成中...' : '开始生成'}</span>
-            </motion.button>
-          </div>
-
-          {/* 结果展示区域 */}
-          <div className="lg:sticky lg:top-8">
+            {/* 结果展示区域 */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6 h-fit"
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-2xl shadow-lg p-6 sticky top-8"
             >
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 生成结果
               </h2>
               
-              <AnimatePresence mode="wait">
-                {isGenerating ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="aspect-video bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center"
-                  >
-                    <div className="text-center">
-                      <div className="w-16 h-16 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-                      <p className="text-purple-600 font-medium">AI正在为您创作...</p>
-                      <p className="text-sm text-gray-500 mt-2">预计需要 30-60 秒</p>
-                    </div>
-                  </motion.div>
-                ) : currentGeneration ? (
-                  <motion.div
-                    key="result"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="space-y-4"
-                  >
-                    {/* 多个结果的网格布局 */}
-                    {currentGeneration.urls && currentGeneration.urls.length > 1 ? (
-                      <div className={`grid gap-3 ${
-                        currentGeneration.urls.length === 2 ? 'grid-cols-1' : 
-                        currentGeneration.urls.length === 3 ? 'grid-cols-1' : 
-                        'grid-cols-2'
-                      }`}>
-                        {currentGeneration.urls.map((url, index) => (
-                          <div key={index} className="relative aspect-video rounded-xl overflow-hidden group">
-                            {currentGeneration.status === 'completed' && url ? (
-                              currentGeneration.type === 'video' ? (
+              {isGenerating ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+                  <p className="text-gray-600">正在生成中，请稍候...</p>
+                </div>
+              ) : history && history.length > 0 ? (
+                <div className="space-y-6">
+                  {/* 显示最多4个历史结果，最新的在前面 */}
+                  {history.slice(0, 4).map((generation, genIndex) => (
+                    <div key={generation.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                      {/* 生成信息头部 */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            genIndex === 0 ? 'bg-green-500' : 'bg-gray-400'
+                          }`}></div>
+                          <span className="text-sm font-medium text-gray-700">
+                            {genIndex === 0 ? '最新生成' : `历史生成 ${genIndex + 1}`}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {generation.type === 'image' ? '图片' : '视频'} · {generation.urls?.length || 0} 个
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {new Date(generation.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* 提示词 */}
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 line-clamp-2">{generation.prompt}</p>
+                      </div>
+
+                      {/* 结果网格 */}
+                      {generation.urls && generation.urls.length > 0 && (
+                        <div className={`grid gap-3 ${
+                          generation.urls.length === 1 ? 'grid-cols-1' :
+                          generation.urls.length === 2 ? 'grid-cols-2' :
+                          generation.urls.length === 3 ? 'grid-cols-3' :
+                          'grid-cols-2'
+                        }`}>
+                          {generation.urls.map((url, index) => (
+                            <div key={index} className="relative group">
+                              {generation.type === 'video' ? (
                                 <video
                                   src={url}
-                                  className="w-full h-full object-cover"
                                   controls
-                                  poster={currentGeneration.thumbnails?.[index]}
-                                  onError={(e) => {
-                                    const target = e.target as HTMLVideoElement;
-                                    target.style.display = 'none';
-                                  }}
+                                  className="w-full h-32 object-cover rounded-lg shadow-sm"
+                                  poster={generation.thumbnails?.[index]}
                                 />
                               ) : (
                                 <img
                                   src={url}
-                                  alt={`${currentGeneration.prompt || '生成结果'} ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                  }}
+                                  alt={`生成结果 ${index + 1}`}
+                                  className="w-full h-32 object-cover rounded-lg shadow-sm"
                                 />
-                              )
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                                <div className="text-center">
-                                  <div className="w-8 h-8 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-2"></div>
-                                  <p className="text-purple-600 text-sm font-medium">生成中...</p>
-                                </div>
+                              )}
+                              
+                              {/* 操作按钮 */}
+                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                                <button
+                                  onClick={() => handleDownload(url, index)}
+                                  className="bg-black bg-opacity-60 text-white p-1.5 rounded-md hover:bg-opacity-80 transition-all"
+                                  title="下载"
+                                >
+                                  <Download className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => handleShare(url)}
+                                  className="bg-black bg-opacity-60 text-white p-1.5 rounded-md hover:bg-opacity-80 transition-all"
+                                  title="分享"
+                                >
+                                  <Share2 className="w-3 h-3" />
+                                </button>
                               </div>
-                            )}
-                            {currentGeneration.type === 'video' && currentGeneration.status !== 'completed' && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-black/50 rounded-full p-2">
-                                  <Video className="w-6 h-6 text-white" />
-                                </div>
-                              </div>
-                            )}
-                            {/* 序号标识 */}
-                            <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                              {index + 1}
                             </div>
-                            {/* 下载按钮 */}
-                            {currentGeneration.status === 'completed' && url && (
-                              <button
-                                onClick={() => handleDownload(url, index)}
-                                className="absolute top-2 right-2 bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/90"
-                                title="下载"
-                              >
-                                <Download className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      /* 单个结果的显示 */
-                      <div className="relative aspect-video rounded-xl overflow-hidden">
-                        {currentGeneration.status === 'completed' && (currentGeneration.url || (currentGeneration.urls && currentGeneration.urls[0])) ? (
-                          currentGeneration.type === 'video' ? (
-                            <video
-                              src={currentGeneration.url || currentGeneration.urls?.[0]}
-                              className="w-full h-full object-cover"
-                              controls
-                              poster={currentGeneration.thumbnail || currentGeneration.thumbnails?.[0]}
-                              onError={(e) => {
-                                const target = e.target as HTMLVideoElement;
-                                target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <img
-                              src={currentGeneration.url || currentGeneration.urls?.[0]}
-                              alt={currentGeneration.prompt || '生成结果'}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                              }}
-                            />
-                          )
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="w-12 h-12 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-3"></div>
-                              <p className="text-purple-600 font-medium">生成中...</p>
-                              <p className="text-sm text-gray-500 mt-1">请稍候</p>
-                            </div>
-                          </div>
-                        )}
-                        {currentGeneration.type === 'video' && currentGeneration.status !== 'completed' && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-black/50 rounded-full p-3">
-                              <Video className="w-8 h-8 text-white" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <p className="text-gray-700 mb-4">
-                        <strong>提示词：</strong>{currentGeneration.prompt || '无描述'}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {currentGeneration.type === 'video' ? '视频' : '图片'}
-                        {currentGeneration.urls && currentGeneration.urls.length > 1 && (
-                          <span> • 共{currentGeneration.urls.length}个</span>
-                        )}
-                      </p>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => handleDownload()}
-                        className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>{currentGeneration.urls && currentGeneration.urls.length > 1 ? '下载全部' : '下载'}</span>
-                      </button>
-                      <button
-                        onClick={handleShare}
-                        className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        <span>分享</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="placeholder"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center"
-                  >
-                    <div className="text-center text-gray-500">
-                      <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p>您的创作将在这里显示</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500">暂无生成结果</p>
+                  <p className="text-sm text-gray-400 mt-1">输入提示词并点击生成按钮开始创作</p>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
