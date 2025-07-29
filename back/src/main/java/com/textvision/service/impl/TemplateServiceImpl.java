@@ -1,0 +1,122 @@
+package com.textvision.service.impl;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.textvision.common.PageRequest;
+import com.textvision.common.PageResult;
+import com.textvision.common.ResultCode;
+import com.textvision.dto.TemplateResponse;
+import com.textvision.entity.Template;
+import com.textvision.exception.BusinessException;
+import com.textvision.mapper.TemplateMapper;
+import com.textvision.service.TemplateService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 模板服务实现类
+ * 
+ * @author TextVision Team
+ * @since 1.0.0
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> implements TemplateService {
+
+    private final TemplateMapper templateMapper;
+
+    @Override
+    public PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String category, String type) {
+        Page<Template> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
+        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, category, type, pageRequest.getKeyword());
+        
+        List<TemplateResponse> responses = templatePage.getRecords().stream()
+                .map(this::convertToTemplateResponse)
+                .collect(Collectors.toList());
+        
+        return PageResult.of(responses, templatePage.getTotal(), templatePage.getCurrent(), templatePage.getSize());
+    }
+
+    @Override
+    public TemplateResponse getTemplateById(Long id) {
+        Template template = getById(id);
+        if (template == null) {
+            throw new BusinessException(ResultCode.TEMPLATE_NOT_FOUND);
+        }
+        if (template.getStatus() == 0) {
+            throw new BusinessException(ResultCode.TEMPLATE_DISABLED);
+        }
+        return convertToTemplateResponse(template);
+    }
+
+    @Override
+    public List<String> getAllCategories() {
+        return templateMapper.selectAllCategories();
+    }
+
+    @Override
+    public List<TemplateResponse> getPopularTemplates(int limit) {
+        List<Template> templates = templateMapper.selectPopularTemplates(limit);
+        return templates.stream()
+                .map(this::convertToTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TemplateResponse> getTemplatesByTag(String tag) {
+        List<Template> templates = templateMapper.selectByTag(tag);
+        return templates.stream()
+                .map(this::convertToTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void incrementUsageCount(Long id) {
+        Template template = getById(id);
+        if (template == null) {
+            throw new BusinessException(ResultCode.TEMPLATE_NOT_FOUND);
+        }
+        if (template.getStatus() == 0) {
+            throw new BusinessException(ResultCode.TEMPLATE_DISABLED);
+        }
+        
+        templateMapper.incrementUsageCount(id);
+        log.debug("模板使用次数增加: templateId={}", id);
+    }
+
+    @Override
+    public PageResult<TemplateResponse> searchTemplates(String keyword, String category, String type, PageRequest pageRequest) {
+        Page<Template> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
+        
+        // 设置搜索关键词
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            pageRequest.setKeyword(keyword.trim());
+        }
+        
+        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, category, type, pageRequest.getKeyword());
+        
+        List<TemplateResponse> responses = templatePage.getRecords().stream()
+                .map(this::convertToTemplateResponse)
+                .collect(Collectors.toList());
+        
+        return PageResult.of(responses, templatePage.getTotal(), templatePage.getCurrent(), templatePage.getSize());
+    }
+
+    /**
+     * 转换为模板响应DTO
+     */
+    private TemplateResponse convertToTemplateResponse(Template template) {
+        TemplateResponse response = new TemplateResponse();
+        BeanUtils.copyProperties(template, response);
+        return response;
+    }
+}

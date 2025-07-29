@@ -1,0 +1,165 @@
+# TextVision 应用配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: text-vision
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/text_vision?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: TextVisionHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  
+  # SQL初始化配置
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:init/init.sql
+      continue-on-error: true
+      encoding: UTF-8
+  
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+      enabled: true
+  
+  # 缓存配置
+  cache:
+    type: simple
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      update-strategy: not_null
+      insert-strategy: not_null
+      select-strategy: not_empty
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.textvision.entity
+
+# 日志配置
+logging:
+  level:
+    com.textvision: DEBUG
+    com.textvision.mapper: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/text-vision.log
+    max-size: 100MB
+    max-history: 30
+
+# 火山引擎API配置（匹配Java代码中的@Value注解）
+volcano:
+  api-key: 88f3e072-cf11-49ba-b421-8400829c999b
+  base-url: https://ark.cn-beijing.volces.com
+  image-generation:
+    endpoint: /api/v3/image/generation
+    model: doubao-xl
+  video-generation:
+    endpoint: /api/v3/video/generation
+    model: doubao-video
+
+# 应用自定义配置
+app:
+  # JWT配置
+  jwt:
+    secret: textVisionSecretKey2024ForJwtTokenGeneration
+    expiration: 86400000  # 24小时（毫秒）
+  
+  # 火山引擎API配置
+  volcano:
+    api:
+      base-url: https://ark.cn-beijing.volces.com
+      access-key: 88f3e072-cf11-49ba-b421-8400829c999b
+      secret-key: 88f3e072-cf11-49ba-b421-8400829c999b
+      timeout: 30000
+      # 图片生成配置
+      image:
+        endpoint: /api/v3/image/generation
+        model: doubao-xl
+      # 视频生成配置
+      video:
+        endpoint: /api/v3/video/generation
+        model: doubao-video
+  
+  # 文件存储配置
+  file:
+    upload-path: /uploads
+    max-size: 10485760  # 10MB
+    allowed-types: jpg,jpeg,png,gif,mp4,avi,mov
+  
+  # 业务限制配置
+  limits:
+    daily-generation: 100  # 每日生成限制
+    max-prompt-length: 1000  # 提示词最大长度
+    max-file-size: 10485760  # 文件最大大小
+
+# Swagger配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  show-actuator: false
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
