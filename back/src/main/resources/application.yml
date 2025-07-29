@@ -89,7 +89,7 @@ logging:
     max-size: 100MB
     max-history: 30
 
-# 火山引擎API配置（匹配Java代码中的@Value注解）
+# 火山引擎API配置
 volcano:
   api-key: 88f3e072-cf11-49ba-b421-8400829c999b
   base-url: https://ark.cn-beijing.volces.com
@@ -106,22 +106,6 @@ app:
   jwt:
     secret: textVisionSecretKey2024ForJwtTokenGeneration
     expiration: 86400000  # 24小时（毫秒）
-  
-  # 火山引擎API配置
-  volcano:
-    api:
-      base-url: https://ark.cn-beijing.volces.com
-      access-key: 88f3e072-cf11-49ba-b421-8400829c999b
-      secret-key: 88f3e072-cf11-49ba-b421-8400829c999b
-      timeout: 30000
-      # 图片生成配置
-      image:
-        endpoint: /api/v3/image/generation
-        model: doubao-xl
-      # 视频生成配置
-      video:
-        endpoint: /api/v3/video/generation
-        model: doubao-video
   
   # 文件存储配置
   file:
