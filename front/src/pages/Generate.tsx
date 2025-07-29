@@ -20,7 +20,7 @@ export default function Generate() {
   const templateAppliedRef = useRef(false);
   
   const { generateContent, isGenerating, currentGeneration } = useGenerationStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const sizeOptions = [
     { value: 'square', label: '正方形 (1:1)' },
@@ -81,6 +81,10 @@ export default function Generate() {
   };
 
   const handleGenerate = async () => {
+    // 添加调试信息
+    console.log('认证状态:', { isAuthenticated, user });
+    console.log('Token:', localStorage.getItem('token'));
+    
     if (!prompt.trim()) {
       toast.error('请输入描述文本');
       return;

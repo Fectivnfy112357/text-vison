@@ -32,13 +32,13 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
     set({ isGenerating: true });
     
     try {
-      const result = await contentAPI.generateContent({
+      const result = await contentAPI.generateContent(
         prompt,
         type,
-        style: options.style || '默认风格',
-        size: options.size || 'landscape_16_9',
-        referenceImage: options.referenceImage
-      });
+        undefined, // templateId
+        options.size || 'landscape_16_9',
+        options.style || '默认风格'
+      );
       
       console.log('Generation API response:', result);
       

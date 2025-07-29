@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
 import Home from "@/pages/Home";
 import Generate from "@/pages/Generate";
 import History from "@/pages/History";
@@ -8,6 +10,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function App() {
+  const { checkAuth } = useAuthStore();
+
+  // 应用启动时检查认证状态
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">

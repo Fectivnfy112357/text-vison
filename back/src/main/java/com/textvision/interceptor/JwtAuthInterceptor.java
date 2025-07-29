@@ -28,6 +28,12 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 跳过OPTIONS预检请求
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            log.debug("跳过OPTIONS预检请求: {}", request.getRequestURI());
+            return true;
+        }
+        
         // 获取Authorization头
         String authHeader = request.getHeader("Authorization");
         
