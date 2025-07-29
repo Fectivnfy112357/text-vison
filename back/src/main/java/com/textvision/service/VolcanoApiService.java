@@ -55,7 +55,7 @@ public class VolcanoApiService {
             ImageGenerationRequest request = new ImageGenerationRequest();
             request.setModel(imageModel);
             request.setPrompt(prompt);
-            request.setSize(size != null ? size : "1024x1024");
+            request.setSize(convertSizeFormat(size));
             request.setQuality(quality != null ? quality : "standard");
             request.setN(1);
             
@@ -142,6 +142,48 @@ public class VolcanoApiService {
         result.setSuccess(false);
         result.setErrorMessage(errorMessage);
         return result;
+    }
+
+    /**
+     * 转换尺寸格式
+     * 将前端传来的格式（如landscape_16_9）转换为火山引擎API要求的格式（如1280x720）
+     * 
+     * @param size 前端传来的尺寸格式
+     * @return 火山引擎API要求的尺寸格式
+     */
+    private String convertSizeFormat(String size) {
+        if (size == null || size.trim().isEmpty()) {
+            return "1024x1024";
+        }
+        
+        // 如果已经是WIDTHxHEIGHT格式，直接返回
+        if (size.matches("\\d+x\\d+")) {
+            return size;
+        }
+        
+        // 转换预定义的尺寸格式
+        switch (size.toLowerCase()) {
+            case "square":
+            case "square_hd":
+                return "1024x1024";
+            case "portrait_4_3":
+                return "864x1152";
+            case "landscape_4_3":
+                return "1152x864";
+            case "portrait_16_9":
+                return "720x1280";
+            case "landscape_16_9":
+                return "1280x720";
+            case "portrait_2_3":
+                return "832x1248";
+            case "landscape_3_2":
+                return "1248x832";
+            case "landscape_21_9":
+                return "1512x648";
+            default:
+                log.warn("未知的尺寸格式: {}, 使用默认尺寸 1024x1024", size);
+                return "1024x1024";
+        }
     }
 
     // 请求和响应数据类

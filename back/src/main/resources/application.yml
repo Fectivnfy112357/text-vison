@@ -94,8 +94,8 @@ volcano:
   api-key: 88f3e072-cf11-49ba-b421-8400829c999b
   base-url: https://ark.cn-beijing.volces.com
   image-generation:
-    endpoint: /api/v3/image/generation
-    model: doubao-xl
+    endpoint: /api/v3/images/generations
+    model: doubao-seedream-3-0-t2i-250415
   video-generation:
     endpoint: /api/v3/video/generation
     model: doubao-video

@@ -83,7 +83,7 @@ export default function Generate() {
   const handleGenerate = async () => {
     // 添加调试信息
     console.log('认证状态:', { isAuthenticated, user });
-    console.log('Token:', localStorage.getItem('token'));
+    console.log('Token:', localStorage.getItem('auth_token'));
     
     if (!prompt.trim()) {
       toast.error('请输入描述文本');

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { User, LogIn, Sparkles, History, Image, Home } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AuthModal from './AuthModal';
 
 export default function Navbar() {
@@ -9,6 +9,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const avatarErrorRef = useRef(false);
 
   const navItems = [
     { path: '/', label: '首页', icon: Home },
@@ -64,15 +65,20 @@ export default function Navbar() {
               {isAuthenticated && user ? (
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">
-                    <img
-                      src={user.avatar || '/default-avatar.png'}
-                      alt={user.name || '用户'}
-                      className="w-8 h-8 rounded-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/default-avatar.png';
-                      }}
-                    />
+                    {user.avatar && !avatarErrorRef.current ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name || '用户'}
+                        className="w-8 h-8 rounded-full object-cover"
+                        onError={() => {
+                          avatarErrorRef.current = true;
+                        }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
                     <span className="text-sm font-medium text-gray-700">{user.name || '用户'}</span>
                   </div>
                   <button
