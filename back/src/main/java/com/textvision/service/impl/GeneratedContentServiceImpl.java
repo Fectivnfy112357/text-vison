@@ -152,7 +152,16 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
 
     @Override
     public long countUserContents(Long userId, String type, String status) {
-        return generatedContentMapper.countUserContents(userId, type, status);
+        LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GeneratedContent::getUserId, userId)
+               .eq(GeneratedContent::getDeleted, 0);
+        if (type != null && !type.isEmpty()) {
+            wrapper.eq(GeneratedContent::getType, type);
+        }
+        if (status != null && !status.isEmpty()) {
+            wrapper.eq(GeneratedContent::getStatus, status);
+        }
+        return count(wrapper);
     }
 
     @Override

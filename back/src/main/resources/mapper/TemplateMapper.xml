@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.textvision.mapper.TemplateMapper">
+
+    <!-- 分页查询模板（带条件） -->
+    <select id="selectPageWithConditions" resultType="com.textvision.entity.Template">
+        SELECT * FROM templates WHERE status = 1 AND deleted = 0
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                 OR description LIKE CONCAT('%', #{keyword}, '%') 
+                 OR tags LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY sort_order ASC, usage_count DESC, created_at DESC
+    </select>
+
+    <!-- 获取所有分类 -->
+    <select id="selectAllCategories" resultType="string">
+        SELECT DISTINCT category 
+        FROM templates 
+        WHERE status = 1 AND deleted = 0 AND category IS NOT NULL 
+        ORDER BY category
+    </select>
+
+    <!-- 获取热门模板 -->
+    <select id="selectPopularTemplates" resultType="com.textvision.entity.Template">
+        SELECT * FROM templates 
+        WHERE status = 1 AND deleted = 0 
+        ORDER BY usage_count DESC, created_at DESC 
+        LIMIT #{limit}
+    </select>
+
+    <!-- 增加使用次数 -->
+    <update id="incrementUsageCount">
+        UPDATE templates 
+        SET usage_count = usage_count + 1, updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据标签查询模板 -->
+    <select id="selectByTag" resultType="com.textvision.entity.Template">
+        SELECT * FROM templates 
+        WHERE status = 1 AND deleted = 0 
+              AND tags LIKE CONCAT('%', #{tag}, '%') 
+        ORDER BY usage_count DESC, created_at DESC
+    </select>
+
+</mapper>

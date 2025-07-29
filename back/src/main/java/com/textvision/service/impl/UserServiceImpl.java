@@ -1,5 +1,6 @@
 package com.textvision.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.textvision.common.ResultCode;
 import com.textvision.dto.*;
@@ -45,12 +46,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 检查邮箱是否已存在
-        if (userMapper.existsByEmail(request.getEmail())) {
+        if (existsByEmail(request.getEmail())) {
             throw new BusinessException(ResultCode.EMAIL_ALREADY_EXISTS);
         }
 
         // 检查用户名是否已存在
-        if (userMapper.existsByName(request.getName())) {
+        if (existsByName(request.getName())) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS, "用户名已存在");
         }
 
@@ -126,7 +127,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 检查用户名是否已被其他用户使用
-        if (name != null && !name.equals(user.getName()) && userMapper.existsByName(name)) {
+        if (name != null && !name.equals(user.getName()) && existsByName(name)) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS, "用户名已存在");
         }
 
@@ -183,12 +184,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean existsByEmail(String email) {
-        return userMapper.existsByEmail(email);
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getEmail, email)
+               .eq(User::getDeleted, 0);
+        return count(wrapper) > 0;
     }
 
     @Override
     public boolean existsByName(String name) {
-        return userMapper.existsByName(name);
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getName, name)
+               .eq(User::getDeleted, 0);
+        return count(wrapper) > 0;
     }
 
     /**
