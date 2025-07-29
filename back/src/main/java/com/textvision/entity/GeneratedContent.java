@@ -58,6 +58,18 @@ public class GeneratedContent {
     private String thumbnail;
 
     /**
+     * 多个生成内容URL（用于多视频生成）
+     */
+    @TableField(value = "urls", typeHandler = JacksonTypeHandler.class)
+    private java.util.List<String> urls;
+
+    /**
+     * 多个缩略图URL
+     */
+    @TableField(value = "thumbnails", typeHandler = JacksonTypeHandler.class)
+    private java.util.List<String> thumbnails;
+
+    /**
      * 尺寸比例
      */
     @TableField("size")

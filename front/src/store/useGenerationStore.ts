@@ -7,6 +7,8 @@ export interface GeneratedContent {
   prompt: string;
   url: string;
   thumbnail?: string;
+  urls?: string[]; // 支持多个URL（用于多视频生成）
+  thumbnails?: string[]; // 支持多个缩略图
   createdAt: Date;
   size: string;
   style?: string;
@@ -66,6 +68,8 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         prompt: result.prompt || prompt,
         url: result.url || '',
         thumbnail: result.thumbnail || undefined,
+        urls: result.urls || (result.url ? [result.url] : []),
+        thumbnails: result.thumbnails || (result.thumbnail ? [result.thumbnail] : []),
         createdAt: new Date(result.createdAt || Date.now()),
         size: result.size || options.size || 'landscape_16_9',
         style: result.style || options.style || '默认风格',
@@ -100,6 +104,8 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         prompt: item.prompt,
         url: item.url || '',
         thumbnail: item.thumbnail || undefined,
+        urls: item.urls || (item.url ? [item.url] : []),
+        thumbnails: item.thumbnails || (item.thumbnail ? [item.thumbnail] : []),
         createdAt: new Date(item.createdAt || item.createTime),
         size: item.size,
         style: item.style,
@@ -167,6 +173,8 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
           prompt: result.prompt,
           url: result.url || '',
           thumbnail: result.thumbnail || undefined,
+          urls: result.urls || (result.url ? [result.url] : []),
+          thumbnails: result.thumbnails || (result.thumbnail ? [result.thumbnail] : []),
           createdAt: new Date(result.createdAt || Date.now()),
           size: result.size,
           style: result.style,

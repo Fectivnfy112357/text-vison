@@ -40,6 +40,16 @@ public class GeneratedContentResponse {
     private String thumbnail;
 
     /**
+     * 多个生成内容URL（用于多视频生成）
+     */
+    private java.util.List<String> urls;
+
+    /**
+     * 多个缩略图URL
+     */
+    private java.util.List<String> thumbnails;
+
+    /**
      * 尺寸比例
      */
     private String size;

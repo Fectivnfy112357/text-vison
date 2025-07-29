@@ -104,4 +104,15 @@ public interface GeneratedContentService extends IService<GeneratedContent> {
      * @param errorMessage 错误信息
      */
     void updateGenerationStatus(Long contentId, String status, String url, String thumbnail, String errorMessage);
+
+    /**
+     * 更新生成状态（支持多个URL）
+     * 
+     * @param contentId 内容ID
+     * @param status 状态
+     * @param urls 生成结果URL列表
+     * @param thumbnails 缩略图URL列表
+     * @param errorMessage 错误信息
+     */
+    void updateGenerationStatus(Long contentId, String status, java.util.List<String> urls, java.util.List<String> thumbnails, String errorMessage);
 }

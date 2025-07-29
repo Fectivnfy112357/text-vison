@@ -82,8 +82,16 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         if ("image".equals(request.getType())) {
             params.put("quality", request.getQuality());
         } else if ("video".equals(request.getType())) {
+            params.put("model", request.getModel());
+            params.put("resolution", request.getResolution());
             params.put("duration", request.getDuration());
+            params.put("ratio", request.getRatio());
             params.put("fps", request.getFps());
+            params.put("cameraFixed", request.getCameraFixed());
+            params.put("cfgScale", request.getCfgScale());
+            params.put("count", request.getCount());
+            params.put("firstFrameImage", request.getFirstFrameImage());
+            params.put("lastFrameImage", request.getLastFrameImage());
             params.put("hd", request.getHd());
         }
         content.setGenerationParams(params);
@@ -189,6 +197,33 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         log.info("更新生成状态成功: contentId={}, status={}", contentId, status);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateGenerationStatus(Long contentId, String status, java.util.List<String> urls, java.util.List<String> thumbnails, String errorMessage) {
+        GeneratedContent content = getById(contentId);
+        if (content == null) {
+            log.warn("更新生成状态失败，内容不存在: contentId={}", contentId);
+            return;
+        }
+        
+        content.setStatus(status);
+        content.setUrls(urls);
+        content.setThumbnails(thumbnails);
+        content.setErrorMessage(errorMessage);
+        content.setUpdatedAt(LocalDateTime.now());
+        
+        // 为了兼容性，如果有URL列表，也设置第一个URL到原字段
+        if (urls != null && !urls.isEmpty()) {
+            content.setUrl(urls.get(0));
+        }
+        if (thumbnails != null && !thumbnails.isEmpty()) {
+            content.setThumbnail(thumbnails.get(0));
+        }
+        
+        updateById(content);
+        log.info("更新生成状态成功: contentId={}, status={}, urlCount={}", contentId, status, urls != null ? urls.size() : 0);
+    }
+
     /**
      * 异步生成内容
      */
@@ -214,8 +249,16 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                 // 调用视频生成API
                 VolcanoApiService.VideoGenerationResult result = volcanoApiService.generateVideo(
                         request.getPrompt(),
+                        request.getModel(),
+                        request.getResolution(),
                         request.getDuration(),
+                        request.getRatio(),
                         request.getFps(),
+                        request.getCameraFixed(),
+                        request.getCfgScale(),
+                        request.getCount(),
+                        request.getFirstFrameImage(),
+                        request.getLastFrameImage(),
                         request.getHd()
                 );
                 
@@ -238,11 +281,19 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         VolcanoApiService.VideoGenerationResult queryResult = volcanoApiService.queryVideoTask(taskId);
                         
                         if (queryResult.isSuccess()) {
-                            // 任务完成
-                            resultUrl = queryResult.getUrl();
-                            thumbnail = queryResult.getThumbnail();
-                            log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
-                            break;
+                            // 任务完成，检查是否有多个URL
+                            if (queryResult.getUrls() != null && !queryResult.getUrls().isEmpty()) {
+                                // 多个视频URL
+                                log.info("视频生成任务完成: contentId={}, taskId={}, urlCount={}", contentId, taskId, queryResult.getUrls().size());
+                                updateGenerationStatus(contentId, "completed", queryResult.getUrls(), queryResult.getThumbnails(), null);
+                                return;
+                            } else {
+                                // 单个视频URL
+                                resultUrl = queryResult.getUrl();
+                                thumbnail = queryResult.getThumbnail();
+                                log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
+                                break;
+                            }
                         } else if ("PROCESSING".equals(queryResult.getErrorMessage())) {
                             // 任务进行中，继续等待
                             retryCount++;
@@ -261,13 +312,13 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                 }
             }
             
-            // 更新为成功状态
+            // 更新为成功状态（单个URL的情况）
             updateGenerationStatus(contentId, "completed", resultUrl, thumbnail, null);
             
         } catch (Exception e) {
             log.error("生成内容失败: contentId={}", contentId, e);
             // 更新为失败状态
-            updateGenerationStatus(contentId, "failed", null, null, e.getMessage());
+            updateGenerationStatus(contentId, "failed", (String) null, null, e.getMessage());
         }
     }
 

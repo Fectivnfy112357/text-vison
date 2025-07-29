@@ -93,41 +93,105 @@ public class VolcanoApiService {
      * 生成视频
      * 
      * @param prompt 提示词
+     * @param model 模型名称
+     * @param resolution 分辨率
      * @param duration 时长（秒）
+     * @param ratio 视频比例
      * @param fps 帧率
+     * @param cameraFixed 是否固定摄像头
+     * @param cfgScale CFG Scale参数
+     * @param count 生成数量
+     * @param firstFrameImage 首帧图片
+     * @param lastFrameImage 尾帧图片
      * @param hd 是否高清
      * @return 生成结果
      */
-    public VideoGenerationResult generateVideo(String prompt, Integer duration, Integer fps, Boolean hd) {
+    public VideoGenerationResult generateVideo(String prompt, String model, String resolution, 
+                                             Integer duration, String ratio, Integer fps, 
+                                             Boolean cameraFixed, Double cfgScale, Integer count,
+                                             String firstFrameImage, String lastFrameImage, Boolean hd) {
         try {
             String url = baseUrl + videoEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
             
             // 构建符合火山引擎API规范的请求格式
             VideoGenerationRequest request = new VideoGenerationRequest();
-            request.setModel(videoModel);
+            // 使用传入的模型，如果为空则使用默认模型
+            request.setModel(model != null ? model : videoModel);
             
             // 构建content数组
-            VideoContent content = new VideoContent();
-            content.setType("text");
+            java.util.List<VideoContent> contentList = new java.util.ArrayList<>();
+            
+            // 添加文本内容
+            VideoContent textContent = new VideoContent();
+            textContent.setType("text");
             
             // 构建包含参数的文本
             StringBuilder textBuilder = new StringBuilder(prompt);
+            
+            // 添加分辨率参数
+            if (resolution != null) {
+                textBuilder.append(" --rs ").append(resolution);
+            }
+            
+            // 添加时长参数
             if (duration != null) {
                 textBuilder.append(" --dur ").append(duration);
             } else {
                 textBuilder.append(" --dur 5");
             }
+            
+            // 添加比例参数
+            if (ratio != null) {
+                textBuilder.append(" --ratio ").append(ratio);
+            }
+            
+            // 添加帧率参数
             if (fps != null) {
                 textBuilder.append(" --fps ").append(fps);
-            } else {
-                textBuilder.append(" --fps 24");
             }
-            String quality = (hd != null && hd) ? "hd" : "standard";
-            textBuilder.append(" --quality ").append(quality);
             
-            content.setText(textBuilder.toString());
-            request.setContent(java.util.Arrays.asList(content));
+            // 添加固定摄像头参数
+            if (cameraFixed != null) {
+                textBuilder.append(" --cf ").append(cameraFixed ? "true" : "false");
+            }
+            
+            // 添加CFG Scale参数
+            if (cfgScale != null) {
+                textBuilder.append(" --cfg ").append(cfgScale);
+            }
+            
+            // 添加生成数量参数
+            if (count != null && count > 1) {
+                textBuilder.append(" --n ").append(count);
+            }
+            
+            textContent.setText(textBuilder.toString());
+            contentList.add(textContent);
+            
+            // 添加首帧图片
+            if (firstFrameImage != null && !firstFrameImage.trim().isEmpty()) {
+                VideoContent firstFrameContent = new VideoContent();
+                firstFrameContent.setType("image_url");
+                VideoImageUrl firstImageUrl = new VideoImageUrl();
+                firstImageUrl.setUrl(firstFrameImage);
+                firstFrameContent.setImage_url(firstImageUrl);
+                firstFrameContent.setRole("first_frame");
+                contentList.add(firstFrameContent);
+            }
+            
+            // 添加尾帧图片
+            if (lastFrameImage != null && !lastFrameImage.trim().isEmpty()) {
+                VideoContent lastFrameContent = new VideoContent();
+                lastFrameContent.setType("image_url");
+                VideoImageUrl lastImageUrl = new VideoImageUrl();
+                lastImageUrl.setUrl(lastFrameImage);
+                lastFrameContent.setImage_url(lastImageUrl);
+                lastFrameContent.setRole("last_frame");
+                contentList.add(lastFrameContent);
+            }
+            
+            request.setContent(contentList);
             
             log.info("调用火山引擎视频生成API: {}", JSON.toJSONString(request));
             
@@ -143,7 +207,8 @@ public class VolcanoApiService {
                 result.setSuccess(true);
                 result.setTaskId(response.getId());
                 result.setUrl(""); // 任务创建成功，但视频还未生成完成
-                log.info("视频生成任务创建成功，任务ID: {}", response.getId());
+                result.setCount(count != null ? count : 1); // 记录生成数量
+                log.info("视频生成任务创建成功，任务ID: {}, 生成数量: {}", response.getId(), count);
                 return result;
             } else {
                 log.error("火山引擎视频生成失败: 响应数据为空");
@@ -185,10 +250,36 @@ public class VolcanoApiService {
                         if (videoUrl.startsWith("`") && videoUrl.endsWith("`")) {
                             videoUrl = videoUrl.substring(1, videoUrl.length() - 1).trim();
                         }
-                        result.setSuccess(true);
-                        result.setUrl(videoUrl);
-                        result.setDuration(response.getDuration());
-                        log.info("视频生成任务完成: taskId={}, url={}", taskId, videoUrl);
+                        
+                        // 检查是否包含多个视频URL（以逗号或分号分隔）
+                        if (videoUrl.contains(",") || videoUrl.contains(";")) {
+                            // 多个视频URL
+                            String[] urlArray = videoUrl.split("[,;]");
+                            java.util.List<String> urls = new java.util.ArrayList<>();
+                            java.util.List<String> thumbnails = new java.util.ArrayList<>();
+                            
+                            for (String u : urlArray) {
+                                String cleanUrl = u.trim();
+                                if (!cleanUrl.isEmpty()) {
+                                    urls.add(cleanUrl);
+                                    // 为每个视频生成缩略图URL（如果API提供的话）
+                                    thumbnails.add(cleanUrl); // 暂时使用视频URL作为缩略图
+                                }
+                            }
+                            
+                            result.setSuccess(true);
+                            result.setUrls(urls);
+                            result.setThumbnails(thumbnails);
+                            result.setUrl(urls.get(0)); // 兼容性：设置第一个URL
+                            result.setDuration(response.getDuration());
+                            log.info("视频生成任务完成: taskId={}, urlCount={}", taskId, urls.size());
+                        } else {
+                            // 单个视频URL
+                            result.setSuccess(true);
+                            result.setUrl(videoUrl);
+                            result.setDuration(response.getDuration());
+                            log.info("视频生成任务完成: taskId={}, url={}", taskId, videoUrl);
+                        }
                     } else {
                         result.setSuccess(false);
                         result.setErrorMessage("任务完成但无视频数据");
@@ -350,6 +441,13 @@ public class VolcanoApiService {
         private String type;
         private String text;
         private String video_url;
+        private VideoImageUrl image_url;
+        private String role; // first_frame, last_frame
+    }
+    
+    @Data
+    public static class VideoImageUrl {
+        private String url;
     }
 
     @Data
@@ -366,5 +464,8 @@ public class VolcanoApiService {
         private String thumbnail;
         private Integer duration;
         private String errorMessage;
+        private Integer count; // 生成数量
+        private java.util.List<String> urls; // 多个视频URL
+        private java.util.List<String> thumbnails; // 多个缩略图URL
     }
 }
