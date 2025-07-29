@@ -18,15 +18,23 @@ export default function History() {
   // 过滤和排序历史记录
   const filteredHistory = history
     .filter(item => {
-      const matchesSearch = item.prompt.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = filterType === 'all' || item.type === filterType;
+      if (!item || typeof item !== 'object') return false;
+      const prompt = item.prompt || '';
+      const type = item.type || '';
+      const matchesSearch = prompt.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'all' || type === filterType;
       return matchesSearch && matchesType;
     })
     .sort((a, b) => {
+      if (!a || !b) return 0;
       if (sortBy === 'newest') {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
       } else {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateA - dateB;
       }
     });
 
@@ -54,31 +62,47 @@ export default function History() {
     toast.success(`已删除 ${selectedItems.length} 个项目`);
   };
 
-  const handleDownload = (item: any) => {
+  const handleDownload = (item: GeneratedContent) => {
+    if (!item || !item.url) {
+      toast.error('下载失败：无效的文件链接');
+      return;
+    }
+    
     const link = document.createElement('a');
     link.href = item.url;
-    link.download = `textvision-${item.id}.${item.type === 'video' ? 'mp4' : 'jpg'}`;
+    const fileId = item.id || 'unknown';
+    const fileType = item.type === 'video' ? 'mp4' : 'jpg';
+    link.download = `textvision-${fileId}.${fileType}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     toast.success('下载开始');
   };
 
-  const handleShare = async (item: any) => {
-    if (navigator.share) {
-      try {
+  const handleShare = async (item: GeneratedContent) => {
+    if (!item || !item.url) {
+      toast.error('分享失败：无效的内容链接');
+      return;
+    }
+    
+    try {
+      if (navigator.share) {
         await navigator.share({
-          title: '我的AI创作',
-          text: item.prompt,
+          title: '文生视界 - 创作分享',
+          text: item.prompt || '精彩创作内容',
           url: item.url
         });
-      } catch (error) {
-        navigator.clipboard.writeText(item.url);
+      } else {
+        await navigator.clipboard.writeText(item.url);
         toast.success('链接已复制到剪贴板');
       }
-    } else {
-      navigator.clipboard.writeText(item.url);
-      toast.success('链接已复制到剪贴板');
+    } catch (error) {
+      try {
+        await navigator.clipboard.writeText(item.url);
+        toast.success('链接已复制到剪贴板');
+      } catch (clipboardError) {
+        toast.error('分享失败：无法访问剪贴板');
+      }
     }
   };
 
@@ -252,10 +276,14 @@ export default function History() {
                   {/* 图片/视频预览 */}
                   <div className="relative aspect-video">
                     <img
-                      src={item.url}
-                      alt={item.prompt}
-                      className="w-full h-full object-cover"
-                    />
+                    src={item.url || '/placeholder-image.png'}
+                    alt={item.prompt || '生成内容'}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder-image.png';
+                    }}
+                  />
                     
                     {/* 类型标识 */}
                     <div className="absolute top-2 left-2">
@@ -309,18 +337,18 @@ export default function History() {
 
                   {/* 内容信息 */}
                   <div className="p-4">
-                    <p className="text-sm text-gray-900 font-medium line-clamp-2 mb-2">
-                      {item.prompt}
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {item.prompt || '无描述'}
                     </p>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{item.style}</span>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                      <span>{item.style || '默认风格'}</span>
                       <span>{formatDate(item.createdAt)}</span>
                     </div>
                     
-                    <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
-                      <span>{item.size}</span>
-                      <span>#{item.id.slice(-6)}</span>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span>{item.size || '未知尺寸'}</span>
+                      <span>#{item.id ? item.id.slice(-6) : 'unknown'}</span>
                     </div>
                   </div>
                 </motion.div>

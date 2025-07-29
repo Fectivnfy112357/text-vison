@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
@@ -20,10 +20,41 @@ export default function Templates() {
     getFilteredTemplates 
   } = useTemplateStore();
   
-  const filteredTemplates = getFilteredTemplates();
+  const filteredTemplates = useMemo(() => {
+    let filtered = templates.filter(template => template && typeof template === 'object');
+    
+    if (selectedCategory !== '全部') {
+      filtered = filtered.filter(template => 
+        template.category && template.category === selectedCategory
+      );
+    }
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(template => {
+        const title = template.title || '';
+        const description = template.description || '';
+        const tags = template.tags || [];
+        
+        return title.toLowerCase().includes(query) ||
+               description.toLowerCase().includes(query) ||
+               tags.some(tag => tag && tag.toLowerCase().includes(query));
+      });
+    }
+    
+    return filtered;
+  }, [templates, selectedCategory, searchQuery]);
 
   useEffect(() => {
-    fetchTemplates();
+    const loadTemplates = async () => {
+      try {
+        await fetchTemplates();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '加载模板失败，请重试';
+        toast.error(errorMessage);
+      }
+    };
+    loadTemplates();
   }, [fetchTemplates]);
 
   const handleCategoryChange = (category: string) => {
@@ -34,7 +65,7 @@ export default function Templates() {
     // 移除toast提示，避免与Generate页面的提示重复
   };
 
-  const popularTemplates = templates.filter(t => t.isPopular).slice(0, 6);
+  const popularTemplates = templates.filter(t => t && t.isPopular).slice(0, 6);
 
   return (
     <div className="min-h-screen pt-8 pb-16">
@@ -75,9 +106,13 @@ export default function Templates() {
                 >
                   <div className="relative aspect-video">
                     <img
-                      src={template.preview}
-                      alt={template.title}
+                      src={template.preview || '/placeholder-template.png'}
+                      alt={template.title || '模板预览'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder-template.png';
+                      }}
                     />
                     
                     {/* 类型标识 */}
@@ -116,19 +151,19 @@ export default function Templates() {
                   </div>
 
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{template.title}</h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
+                    <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
                     
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        {template.category}
+                        {template.category || '其他'}
                       </span>
                       <div className="flex items-center space-x-3">
                         <span className="flex items-center space-x-1">
                           <Eye className="w-3 h-3" />
-                          <span>{template.views}</span>
+                          <span>{template.views || 0}</span>
                         </span>
-                        <span>{template.style}</span>
+                        <span>{template.style || '默认风格'}</span>
                       </div>
                     </div>
                   </div>
@@ -263,10 +298,14 @@ export default function Templates() {
                   >
                     <div className="relative aspect-video">
                       <img
-                        src={template.preview}
-                        alt={template.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                          src={template.preview || '/placeholder-template.png'}
+                          alt={template.title || '模板预览'}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder-template.png';
+                          }}
+                        />
                       
                       {/* 类型标识 */}
                       <div className="absolute top-3 left-3">
@@ -296,19 +335,19 @@ export default function Templates() {
                     </div>
 
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">{template.title}</h3>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
+                      <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
                       
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                          {template.category}
+                          {template.category || '其他'}
                         </span>
                         <div className="flex items-center space-x-3">
                           <span className="flex items-center space-x-1">
                             <Eye className="w-3 h-3" />
-                            <span>{template.views}</span>
+                            <span>{template.views || 0}</span>
                           </span>
-                          <span>{template.style}</span>
+                          <span>{template.style || '默认风格'}</span>
                         </div>
                       </div>
                     </div>
@@ -325,9 +364,13 @@ export default function Templates() {
                     <div className="flex items-center space-x-4">
                       <div className="relative w-24 h-16 flex-shrink-0">
                         <img
-                          src={template.preview}
-                          alt={template.title}
+                          src={template.preview || '/placeholder-template.png'}
+                          alt={template.title || '模板预览'}
                           className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder-template.png';
+                          }}
                         />
                         <div className="absolute top-1 left-1">
                           <div className="bg-black/50 backdrop-blur-sm rounded px-1 py-0.5 flex items-center space-x-1">
@@ -341,17 +384,17 @@ export default function Templates() {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 mb-1">{template.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description}</p>
+                        <h3 className="font-semibold text-gray-900 mb-1">{template.title || '未命名模板'}</h3>
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description || '暂无描述'}</p>
                         
                         <div className="flex items-center space-x-4 text-xs text-gray-500">
                           <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                            {template.category}
+                            {template.category || '其他'}
                           </span>
-                          <span>{template.style}</span>
+                          <span>{template.style || '默认风格'}</span>
                           <span className="flex items-center space-x-1">
                             <Eye className="w-3 h-3" />
-                            <span>{template.views}</span>
+                            <span>{template.views || 0}</span>
                           </span>
                         </div>
                       </div>

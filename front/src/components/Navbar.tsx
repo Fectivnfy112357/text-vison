@@ -65,11 +65,15 @@ export default function Navbar() {
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={user.avatar || '/default-avatar.png'}
+                      alt={user.name || '用户'}
                       className="w-8 h-8 rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/default-avatar.png';
+                      }}
                     />
-                    <span className="text-sm font-medium text-gray-700">{user.name}</span>
+                    <span className="text-sm font-medium text-gray-700">{user.name || '用户'}</span>
                   </div>
                   <button
                     onClick={logout}

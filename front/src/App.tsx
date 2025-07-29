@@ -19,7 +19,27 @@ export default function App() {
           <Route path="/templates" element={<Templates />} />
         </Routes>
         <Footer />
-        <Toaster position="top-center" richColors />
+        <Toaster 
+          position="top-center" 
+          richColors 
+          closeButton
+          toastOptions={{
+            style: {
+              pointerEvents: 'auto',
+              userSelect: 'none',
+              cursor: 'default',
+              touchAction: 'none',
+              WebkitUserDrag: 'none',
+              userDrag: 'none',
+              WebkitTouchCallout: 'none',
+              KhtmlUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none',
+              draggable: false
+            },
+            className: 'select-none pointer-events-auto'
+          }}
+        />
       </div>
     </Router>
   );

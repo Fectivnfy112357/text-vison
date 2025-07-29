@@ -66,9 +66,13 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
     >
       <div className="relative aspect-video overflow-hidden">
         <img
-          src={template.imageUrl}
-          alt={template.title}
+          src={template.imageUrl || '/placeholder-template.png'}
+          alt={template.title || '模板预览'}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-template.png';
+          }}
         />
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <div className="bg-white/90 rounded-full p-3">
@@ -92,14 +96,14 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
       
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 mb-1 truncate">
-          {template.title}
+          {template.title || '未命名模板'}
         </h3>
         <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-          {template.description}
+          {template.description || '暂无描述'}
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-            {template.category}
+            {template.category || '其他'}
           </span>
           <Link
             to={`/generate?template=${template.id}`}

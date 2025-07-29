@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { authAPI, clearToken } from '@/lib/api';
 
 interface User {
   id: string;
@@ -12,9 +13,10 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string, confirmPassword: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
+  checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -25,33 +27,45 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0],
-        avatar: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20portrait%20friendly%20professional&image_size=square`
+      const response = await authAPI.login(email, password);
+      console.log('Login response:', response);
+      
+      // 检查响应数据是否存在，用户数据在 response.user 中
+      if (!response || !response.user || !response.user.id) {
+        throw new Error('登录响应数据格式错误');
+      }
+      
+      const user: User = {
+        id: response.user.id.toString(),
+        email: response.user.email || '',
+        name: response.user.name || '',
+        avatar: response.user.avatar
       };
-      set({ user: mockUser, isAuthenticated: true, isLoading: false });
+      set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
       throw error;
     }
   },
 
-  register: async (email: string, password: string, name: string) => {
+  register: async (email: string, password: string, name: string, confirmPassword: string) => {
     set({ isLoading: true });
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockUser: User = {
-        id: '1',
-        email,
-        name,
-        avatar: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=user%20avatar%20portrait%20friendly%20professional&image_size=square`
+      const response = await authAPI.register(email, password, name, confirmPassword);
+      console.log('Register response:', response);
+      
+      // 检查响应数据是否存在，用户数据在 response.user 中
+      if (!response || !response.user || !response.user.id) {
+        throw new Error('注册响应数据格式错误');
+      }
+      
+      const user: User = {
+        id: response.user.id.toString(),
+        email: response.user.email || '',
+        name: response.user.name || '',
+        avatar: response.user.avatar
       };
-      set({ user: mockUser, isAuthenticated: true, isLoading: false });
+      set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -59,10 +73,28 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    clearToken();
     set({ user: null, isAuthenticated: false });
   },
 
   setUser: (user: User) => {
     set({ user, isAuthenticated: true });
+  },
+
+  checkAuth: async () => {
+    try {
+      const userProfile = await authAPI.getProfile();
+      const user: User = {
+        id: userProfile.id.toString(),
+        email: userProfile.email,
+        name: userProfile.name,
+        avatar: userProfile.avatar
+      };
+      set({ user, isAuthenticated: true });
+    } catch (error) {
+      // Token 无效或过期，清除认证状态
+      clearToken();
+      set({ user: null, isAuthenticated: false });
+    }
   }
 }));

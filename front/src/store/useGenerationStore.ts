@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { contentAPI } from '@/lib/api';
 
 export interface GeneratedContent {
   id: string;
@@ -31,26 +32,35 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
     set({ isGenerating: true });
     
     try {
-      // 模拟生成过程
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const result = await contentAPI.generateContent({
+        prompt,
+        type,
+        style: options.style || '默认风格',
+        size: options.size || 'landscape_16_9',
+        referenceImage: options.referenceImage
+      });
       
-      const imageSize = options.size || 'landscape_16_9';
-      const encodedPrompt = encodeURIComponent(prompt);
+      console.log('Generation API response:', result);
+      
+      // 安全检查 API 响应数据
+      if (!result || typeof result !== 'object') {
+        throw new Error('生成内容失败：无效的响应数据');
+      }
+      
+      if (!result.id) {
+        throw new Error('生成内容失败：缺少内容ID');
+      }
       
       const newContent: GeneratedContent = {
-        id: Date.now().toString(),
-        type,
-        prompt,
-        url: type === 'image' 
-          ? `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodedPrompt}&image_size=${imageSize}`
-          : `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodedPrompt}%20video%20animation&image_size=${imageSize}`,
-        thumbnail: type === 'video' 
-          ? `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodedPrompt}%20thumbnail&image_size=square`
-          : undefined,
-        createdAt: new Date(),
-        size: imageSize,
-        style: options.style,
-        referenceImage: options.referenceImage
+        id: result.id.toString(),
+        type: result.type || type,
+        prompt: result.prompt || prompt,
+        url: result.url || '',
+        thumbnail: result.thumbnail || undefined,
+        createdAt: new Date(result.createdAt || Date.now()),
+        size: result.size || options.size || 'landscape_16_9',
+        style: result.style || options.style || '默认风格',
+        referenceImage: result.referenceImage || options.referenceImage
       };
       
       set({ 

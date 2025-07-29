@@ -44,21 +44,21 @@ export default function Generate() {
   useEffect(() => {
     const templateId = searchParams.get('template');
     if (templateId && templates.length > 0) {
-      const template = templates.find(t => t.id === templateId);
+      const template = templates.find(t => t && t.id === templateId);
       if (template) {
-        // 检查是否已经应用过这个特定的模板
-        const currentTemplateKey = `${templateId}-${template.title}`;
+        const templateTitle = template.title || '未命名模板';
+        const currentTemplateKey = `${templateId}-${templateTitle}`;
         if (!templateAppliedRef.current || templateAppliedRef.current !== currentTemplateKey) {
-          setPrompt(template.prompt);
-          setType(template.type);
-          setSize(template.size);
-          setStyle(template.style);
+          setPrompt(template.prompt || '');
+          setType(template.type || 'image');
+          setSize(template.size || 'landscape_16_9');
+          setStyle(template.style || '默认风格');
           templateAppliedRef.current = currentTemplateKey; // 记录具体的模板标识
-          toast.success(`已应用模板：${template.title}`);
+          toast.success(`已应用模板：${templateTitle}`);
         }
       }
     } else if (!searchParams.get('template')) {
-      // 如果URL中没有模板参数，重置应用状态
+      // 如果没有模板参数，清除标识
       templateAppliedRef.current = null;
     }
   }, [searchParams, templates]);
@@ -99,38 +99,53 @@ export default function Generate() {
       });
       toast.success('生成成功！');
     } catch (error) {
-      toast.error('生成失败，请重试');
+      // 显示具体的错误信息
+      const errorMessage = error instanceof Error ? error.message : '生成失败，请重试';
+      toast.error(errorMessage);
     }
   };
 
   const handleDownload = () => {
-    if (currentGeneration) {
-      const link = document.createElement('a');
-      link.href = currentGeneration.url;
-      link.download = `textvision-${currentGeneration.id}.${currentGeneration.type === 'video' ? 'mp4' : 'jpg'}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('下载开始');
+    if (!currentGeneration || !currentGeneration.url) {
+      toast.error('下载失败：无效的文件链接');
+      return;
     }
+    
+    const link = document.createElement('a');
+    link.href = currentGeneration.url;
+    const fileId = currentGeneration.id || 'unknown';
+    const fileType = currentGeneration.type === 'video' ? 'mp4' : 'jpg';
+    link.download = `textvision-${fileId}.${fileType}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('下载开始');
   };
 
   const handleShare = async () => {
-    if (currentGeneration && navigator.share) {
-      try {
+    if (!currentGeneration || !currentGeneration.url) {
+      toast.error('分享失败：无效的内容链接');
+      return;
+    }
+    
+    try {
+      if (navigator.share) {
         await navigator.share({
-          title: '我的AI创作',
-          text: currentGeneration.prompt,
+          title: '文生视界 - 我的创作',
+          text: currentGeneration.prompt || '精彩创作内容',
           url: currentGeneration.url
         });
-      } catch (error) {
-        // 如果分享失败，复制链接到剪贴板
-        navigator.clipboard.writeText(currentGeneration.url);
+      } else {
+        await navigator.clipboard.writeText(currentGeneration.url);
         toast.success('链接已复制到剪贴板');
       }
-    } else if (currentGeneration) {
-      navigator.clipboard.writeText(currentGeneration.url);
-      toast.success('链接已复制到剪贴板');
+    } catch (error) {
+      try {
+        await navigator.clipboard.writeText(currentGeneration.url);
+        toast.success('链接已复制到剪贴板');
+      } catch (clipboardError) {
+        toast.error('分享失败：无法访问剪贴板');
+      }
     }
   };
 
@@ -356,9 +371,13 @@ export default function Generate() {
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden">
                       <img
-                        src={currentGeneration.url}
-                        alt="生成结果"
+                        src={currentGeneration.url || '/placeholder-generation.png'}
+                        alt={currentGeneration.prompt || '生成结果'}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-generation.png';
+                        }}
                       />
                       {currentGeneration.type === 'video' && (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -370,12 +389,12 @@ export default function Generate() {
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">
-                        <strong>提示词：</strong>{currentGeneration.prompt}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {currentGeneration.type === 'video' ? '视频' : '图片'} • {currentGeneration.style} • {currentGeneration.size}
-                      </p>
+                      <p className="text-gray-700 mb-4">
+                      <strong>提示词：</strong>{currentGeneration.prompt || '无描述'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {currentGeneration.type === 'video' ? '视频' : '图片'} • {currentGeneration.style || '默认风格'} • {currentGeneration.size || '未知尺寸'}
+                    </p>
                     </div>
                     
                     <div className="flex space-x-3">

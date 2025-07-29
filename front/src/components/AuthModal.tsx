@@ -13,27 +13,39 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login, register, isLoading } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 注册时验证密码确认
+    if (mode === 'register' && password !== confirmPassword) {
+      toast.error('两次输入的密码不一致');
+      return;
+    }
     
     try {
       if (mode === 'login') {
         await login(email, password);
         toast.success('登录成功！');
       } else {
-        await register(email, password, name);
+        await register(email, password, name, confirmPassword);
         toast.success('注册成功！');
       }
       onClose();
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
       setName('');
     } catch (error) {
-      toast.error(mode === 'login' ? '登录失败，请检查邮箱和密码' : '注册失败，请重试');
+      console.log(error);
+      // 显示具体的错误信息
+      const errorMessage = error instanceof Error ? error.message : '操作失败，请重试';
+      toast.error(errorMessage);
     }
   };
 
@@ -125,6 +137,32 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
               </button>
             </div>
           </div>
+
+          {mode === 'register' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                确认密码
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="请再次输入密码"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
