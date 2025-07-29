@@ -4,7 +4,7 @@
 
     <!-- 分页查询用户操作日志 -->
     <select id="selectUserOperationLogsPage" resultType="com.textvision.entity.UserOperationLog">
-        SELECT * FROM user_operation_logs 
+        SELECT * FROM user_operation_log 
         WHERE user_id = #{userId}
         <if test="operationType != null and operationType != ''">
             AND operation = #{operationType}
@@ -16,14 +16,14 @@
             AND created_at >= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
         ORDER BY created_at DESC
     </select>
 
     <!-- 统计用户操作次数（带条件） -->
     <select id="countByUserIdAndConditions" resultType="long">
-        SELECT COUNT(*) FROM user_operation_logs 
+        SELECT COUNT(*) FROM user_operation_log 
         WHERE user_id = #{userId}
         <if test="operationType != null and operationType != ''">
             AND operation = #{operationType}
@@ -32,7 +32,7 @@
             AND created_at >= #{startTime}
         </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
+            AND created_at &lt;= #{endTime}
         </if>
     </select>
 
@@ -46,8 +46,8 @@
 
     <!-- 删除过期日志 -->
     <delete id="deleteExpiredLogs">
-        DELETE FROM user_operation_logs 
-        WHERE created_at < #{beforeTime}
+        DELETE FROM user_operation_log 
+        WHERE created_at &lt; #{beforeTime}
     </delete>
 
 </mapper>

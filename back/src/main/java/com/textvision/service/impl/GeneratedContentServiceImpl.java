@@ -75,6 +75,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         content.setReferenceImage(request.getReferenceImage());
         content.setTemplateId(request.getTemplateId());
         content.setStatus("processing");
+        content.setUrl(""); // 初始设置为空字符串，生成完成后更新
         
         // 构建生成参数
         Map<String, Object> params = new HashMap<>();

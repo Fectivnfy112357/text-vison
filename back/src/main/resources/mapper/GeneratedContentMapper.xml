@@ -3,64 +3,40 @@
 <mapper namespace="com.textvision.mapper.GeneratedContentMapper">
 
     <!-- 查询用户最近的生成内容 -->
-    <select id="selectRecentByUserId" resultType="com.textvision.entity.GeneratedContent">
-        SELECT * FROM generated_contents 
-        WHERE user_id = #{userId} AND deleted = 0 
-        ORDER BY created_at DESC 
-        LIMIT #{limit}
-    </select>
+    <select id="selectRecentByUserId" resultType="com.textvision.entity.GeneratedContent"> SELECT *
+        FROM generated_content WHERE user_id = #{userId} AND deleted = 0 ORDER BY created_at DESC
+        LIMIT #{limit} </select>
 
     <!-- 分页查询用户生成内容（带条件） -->
-    <select id="selectUserContentsPage" resultType="com.textvision.entity.GeneratedContent">
-        SELECT * FROM generated_contents 
-        WHERE user_id = #{userId} AND deleted = 0
-        <if test="type != null and type != ''">
-            AND type = #{type}
-        </if>
-        <if test="status != null and status != ''">
-            AND status = #{status}
-        </if>
-        <if test="startTime != null">
-            AND created_at >= #{startTime}
-        </if>
+    <select id="selectUserContentsPage" resultType="com.textvision.entity.GeneratedContent"> SELECT
+        * FROM generated_content WHERE user_id = #{userId} AND deleted = 0 <if
+            test="type != null and type != ''"> AND type = #{type} </if>
+        <if
+            test="status != null and status != ''"> AND status = #{status} </if>
+        <if
+            test="startTime != null"> AND created_at >= #{startTime} </if>
         <if test="endTime != null">
-            AND created_at <= #{endTime}
-        </if>
-        <if test="keyword != null and keyword != ''">
-            AND (prompt LIKE CONCAT('%', #{keyword}, '%') 
-                 OR style LIKE CONCAT('%', #{keyword}, '%'))
-        </if>
-        ORDER BY created_at DESC
-    </select>
+        AND created_at &lt;= #{endTime} </if>
+        <if test="keyword != null and keyword != ''"> AND
+        (prompt LIKE CONCAT('%', #{keyword}, '%') OR style LIKE CONCAT('%', #{keyword}, '%')) </if>
+        ORDER BY created_at DESC </select>
 
     <!-- 统计用户生成内容数量（带条件） -->
-    <select id="countUserContents" resultType="long">
-        SELECT COUNT(*) FROM generated_contents 
-        WHERE user_id = #{userId} AND deleted = 0
-        <if test="type != null and type != ''">
-            AND type = #{type}
-        </if>
-        <if test="status != null and status != ''">
-            AND status = #{status}
-        </if>
+    <select id="countUserContents" resultType="long"> SELECT COUNT(*) FROM generated_content WHERE
+        user_id = #{userId} AND deleted = 0 <if test="type != null and type != ''"> AND type =
+        #{type} </if>
+        <if test="status != null and status != ''"> AND status = #{status} </if>
     </select>
 
     <!-- 统计用户今日生成次数 -->
-    <select id="getTodayGenerationCount" resultType="long">
-        SELECT COUNT(*) FROM generated_contents 
-        WHERE user_id = #{userId} AND deleted = 0 
-              AND DATE(created_at) = CURDATE()
-    </select>
+    <select id="getTodayGenerationCount" resultType="long"> SELECT COUNT(*) FROM generated_content
+        WHERE user_id = #{userId} AND deleted = 0 AND DATE(created_at) = CURDATE() </select>
 
     <!-- 批量删除用户的生成内容 -->
-    <update id="batchDeleteUserContents">
-        UPDATE generated_contents 
-        SET deleted = 1, updated_at = NOW() 
-        WHERE user_id = #{userId} AND deleted = 0
-        <if test="contentIds != null and contentIds.size() > 0">
-            AND id IN
-            <foreach collection="contentIds" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
+    <update id="batchDeleteUserContents"> UPDATE generated_content SET deleted = 1, updated_at =
+        NOW() WHERE user_id = #{userId} AND deleted = 0 <if
+            test="contentIds != null and contentIds.size() > 0"> AND id IN <foreach
+                collection="contentIds" item="id" open="(" separator="," close=")"> #{id} </foreach>
         </if>
     </update>
+</mapper>

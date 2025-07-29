@@ -1,10 +1,13 @@
 package com.textvision.controller;
 
+import com.textvision.common.PageRequest;
+import com.textvision.common.PageResult;
 import com.textvision.common.Result;
 import com.textvision.dto.LoginResponse;
 import com.textvision.dto.UserLoginRequest;
 import com.textvision.dto.UserRegisterRequest;
 import com.textvision.dto.UserResponse;
+import com.textvision.entity.UserOperationLog;
 import com.textvision.service.UserOperationLogService;
 import com.textvision.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -166,6 +169,25 @@ public class UserController {
         
         boolean exists = userService.existsByName(username);
         return Result.success(exists);
+    }
+
+    @GetMapping("/operation-logs")
+    @Operation(summary = "获取用户操作日志", description = "分页获取当前用户的操作日志")
+    public Result<PageResult<UserOperationLog>> getUserOperationLogs(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String operationType,
+            @RequestParam(required = false) String resourceType) {
+        log.debug("获取用户操作日志: userId={}, page={}, size={}", userId, page, size);
+        
+        PageRequest pageRequest = new PageRequest();
+        pageRequest.setPage(page);
+        pageRequest.setSize(size);
+        
+        PageResult<UserOperationLog> logs = userOperationLogService.getUserOperationLogs(
+                userId, pageRequest, operationType, resourceType, null, null);
+        return Result.success(logs);
     }
 
     /**

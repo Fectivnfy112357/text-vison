@@ -4,17 +4,17 @@
 
     <!-- 根据邮箱查找用户 -->
     <select id="findByEmail" parameterType="string" resultType="com.textvision.entity.User">
-        SELECT * FROM users WHERE email = #{email} AND deleted = 0
+        SELECT * FROM user WHERE email = #{email} AND deleted = 0
     </select>
 
     <!-- 检查邮箱是否存在 -->
     <select id="existsByEmail" parameterType="string" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM users WHERE email = #{email} AND deleted = 0
+        SELECT COUNT(*) > 0 FROM user WHERE email = #{email} AND deleted = 0
     </select>
 
     <!-- 检查用户名是否存在 -->
     <select id="existsByName" parameterType="string" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM users WHERE name = #{name} AND deleted = 0
+        SELECT COUNT(*) > 0 FROM user WHERE name = #{name} AND deleted = 0
     </select>
 
 </mapper>
