@@ -667,41 +667,44 @@ export default function Generate() {
                 生成结果
               </h2>
               
-              {isGenerating ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-                  <p className="text-gray-600">正在生成中，请稍候...</p>
-                </div>
-              ) : history && history.length > 0 ? (
-                <div className="space-y-6">
-                  {/* 显示最多4个历史结果，最新的在前面 */}
+              {history && history.length > 0 ? (
+                <div className="grid grid-cols-2 gap-6">
+                  {/* 显示最多4个结果，2x2网格布局 */}
                   {history.slice(0, 4).map((generation, genIndex) => (
-                    <div key={generation.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                      {/* 生成信息头部 */}
+                    <div key={generation.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:shadow-md transition-shadow">
+                      {/* 生成状态指示 */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
                           <div className={`w-3 h-3 rounded-full ${
+                            generation.status === 'generating' ? 'bg-yellow-500 animate-pulse' :
+                            generation.status === 'processing' ? 'bg-blue-500 animate-pulse' :
                             genIndex === 0 ? 'bg-green-500' : 'bg-gray-400'
                           }`}></div>
                           <span className="text-sm font-medium text-gray-700">
-                            {genIndex === 0 ? '最新生成' : `历史生成 ${genIndex + 1}`}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {generation.type === 'image' ? '图片' : '视频'} · {generation.urls?.length || 0} 个
+                            {generation.status === 'generating' ? '生成中' :
+                             generation.status === 'processing' ? '处理中' :
+                             genIndex === 0 ? '最新' : `历史${genIndex + 1}`}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-400">
-                          {new Date(generation.createdAt).toLocaleString()}
+                        <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                          {generation.type === 'image' ? '图片' : '视频'}
                         </span>
                       </div>
 
                       {/* 提示词 */}
                       <div className="mb-4">
-                        <p className="text-sm text-gray-600 line-clamp-2">{generation.prompt}</p>
+                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{generation.prompt}</p>
                       </div>
 
-                      {/* 结果网格 */}
-                      {generation.urls && generation.urls.length > 0 && (
+                      {/* 结果展示 */}
+                      {generation.status === 'generating' || generation.status === 'processing' ? (
+                        <div className="flex flex-col items-center justify-center py-12 bg-gray-100 rounded-lg">
+                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mb-3"></div>
+                          <p className="text-sm text-gray-500">
+                            {generation.status === 'generating' ? '正在生成...' : '正在处理...'}
+                          </p>
+                        </div>
+                      ) : generation.urls && generation.urls.length > 0 ? (
                         <div className={`grid gap-3 ${
                           generation.urls.length === 1 ? 'grid-cols-1' :
                           generation.urls.length === 2 ? 'grid-cols-2' :
@@ -714,48 +717,77 @@ export default function Generate() {
                                 <video
                                   src={url}
                                   controls
-                                  className="w-full h-32 object-cover rounded-lg shadow-sm"
+                                  className="w-full h-32 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                   poster={generation.thumbnails?.[index]}
                                 />
                               ) : (
                                 <img
                                   src={url}
                                   alt={`生成结果 ${index + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg shadow-sm"
+                                  className="w-full h-32 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                 />
                               )}
                               
                               {/* 操作按钮 */}
-                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
                                 <button
                                   onClick={() => handleDownload(url, index)}
-                                  className="bg-black bg-opacity-60 text-white p-1.5 rounded-md hover:bg-opacity-80 transition-all"
+                                  className="bg-black bg-opacity-70 text-white p-2 rounded-lg hover:bg-opacity-90 transition-all backdrop-blur-sm"
                                   title="下载"
                                 >
-                                  <Download className="w-3 h-3" />
+                                  <Download className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleShare(url)}
-                                  className="bg-black bg-opacity-60 text-white p-1.5 rounded-md hover:bg-opacity-80 transition-all"
+                                  className="bg-black bg-opacity-70 text-white p-2 rounded-lg hover:bg-opacity-90 transition-all backdrop-blur-sm"
                                   title="分享"
                                 >
-                                  <Share2 className="w-3 h-3" />
+                                  <Share2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
                           ))}
                         </div>
+                      ) : (
+                        <div className="flex items-center justify-center py-12 bg-gray-100 rounded-lg">
+                          <div className="text-center">
+                            <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                            <p className="text-sm text-gray-500">等待结果</p>
+                          </div>
+                        </div>
                       )}
+                    </div>
+                  ))}
+                  
+                  {/* 如果结果少于4个，显示空白占位 */}
+                  {Array.from({ length: Math.max(0, 4 - history.length) }).map((_, index) => (
+                    <div key={`empty-${index}`} className="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Wand2 className="w-6 h-6 text-gray-400" />
+                          </div>
+                          <p className="text-sm text-gray-400">等待生成</p>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ImageIcon className="w-12 h-12 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500">暂无生成结果</p>
-                  <p className="text-sm text-gray-400 mt-1">输入提示词并点击生成按钮开始创作</p>
+                <div className="grid grid-cols-2 gap-6">
+                  {/* 显示4个空白占位 */}
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={`placeholder-${index}`} className="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Wand2 className="w-6 h-6 text-gray-400" />
+                          </div>
+                          <p className="text-sm text-gray-400">等待生成</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </motion.div>

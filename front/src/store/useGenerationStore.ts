@@ -43,6 +43,28 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
     set({ isGenerating: true });
     
     try {
+      // 创建一个临时的生成中状态项，插入到历史记录的第一位
+      const tempContent: GeneratedContent = {
+        id: 'temp-' + Date.now(),
+        type: type,
+        prompt: prompt,
+        url: '',
+        urls: [],
+        createdAt: new Date(),
+        size: options.size || 'landscape_16_9',
+        style: options.style || '默认风格',
+        referenceImage: options.referenceImage,
+        status: 'generating'
+      };
+      
+      // 将临时项插入到历史记录的第一位，保持其他历史记录
+      const currentHistory = get().history;
+      const updatedHistory = [tempContent, ...currentHistory].slice(0, 4);
+      set({ 
+        history: updatedHistory,
+        currentGeneration: tempContent
+      });
+      
       const result = await contentAPI.generateContent(
         prompt,
         type,
@@ -78,22 +100,29 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         status: result.status || 'processing'
       };
       
+      // 替换临时项为真实的生成内容
+      const historyWithoutTemp = get().history.filter(item => item.id !== tempContent.id);
+      const finalHistory = [newContent, ...historyWithoutTemp].slice(0, 4);
+      
       set({ 
         currentGeneration: newContent,
+        history: finalHistory,
         isGenerating: false
       });
       
       // 如果状态是processing，启动轮询检查状态
       if (newContent.status === 'processing') {
         get().startPolling(newContent.id);
-      } else if (newContent.status === 'completed') {
-        // 如果生成完成，将新内容添加到历史记录前面，并限制最多4个
-        const currentHistory = get().history;
-        const updatedHistory = [newContent, ...currentHistory.filter(item => item.id !== newContent.id)].slice(0, 4);
-        set({ history: updatedHistory });
       }
     } catch (error) {
-      set({ isGenerating: false });
+      // 发生错误时，移除临时项
+      const currentHistory = get().history;
+      const historyWithoutTemp = currentHistory.filter(item => !item.id.startsWith('temp-'));
+      set({ 
+        isGenerating: false,
+        history: historyWithoutTemp,
+        currentGeneration: null
+      });
       throw error;
     }
   },
@@ -170,7 +199,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
   checkGenerationStatus: async (contentId: string) => {
     try {
       const result = await contentAPI.getContent(contentId);
-      const { currentGeneration } = get();
+      const { currentGeneration, history } = get();
       
       if (currentGeneration && currentGeneration.id === contentId) {
         const updatedContent: GeneratedContent = {
@@ -188,18 +217,19 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
           status: result.status
         };
         
-        set({ currentGeneration: updatedContent });
+        // 更新历史记录中的对应项
+        const updatedHistory = history.map(item => 
+          item.id === contentId ? updatedContent : item
+        );
         
-        // 如果生成完成或失败，停止轮询并更新历史记录
+        set({ 
+          currentGeneration: updatedContent,
+          history: updatedHistory
+        });
+        
+        // 如果生成完成或失败，停止轮询
         if (result.status === 'completed' || result.status === 'failed') {
           get().stopPolling();
-          
-          // 如果生成完成，将内容添加到历史记录前面
-          if (result.status === 'completed') {
-            const currentHistory = get().history;
-            const updatedHistory = [updatedContent, ...currentHistory.filter(item => item.id !== updatedContent.id)].slice(0, 4);
-            set({ history: updatedHistory });
-          }
         }
       }
     } catch (error) {
