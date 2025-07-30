@@ -616,52 +616,7 @@ export default function Generate() {
                       </label>
                     </div>
                   </div>
-
-                  {/* 首帧和尾帧图片 */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">首帧图片</label>
-                      {firstFrameImage ? (
-                        <div className="relative">
-                          <img src={firstFrameImage} alt="首帧" className="w-full h-16 object-cover rounded-lg" />
-                          <button
-                            onClick={() => setFirstFrameImage(null)}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center hover:bg-red-600 text-xs"
-                          >×</button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => firstFrameInputRef.current?.click()}
-                          className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-16 flex flex-col justify-center"
-                        >
-                          <Upload className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-                          <p className="text-gray-600 text-xs">上传首帧</p>
-                        </div>
-                      )}
-                      <input ref={firstFrameInputRef} type="file" accept="image/*" onChange={handleFirstFrameUpload} className="hidden" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">尾帧图片</label>
-                      {lastFrameImage ? (
-                        <div className="relative">
-                          <img src={lastFrameImage} alt="尾帧" className="w-full h-16 object-cover rounded-lg" />
-                          <button
-                            onClick={() => setLastFrameImage(null)}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center hover:bg-red-600 text-xs"
-                          >×</button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => lastFrameInputRef.current?.click()}
-                          className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-16 flex flex-col justify-center"
-                        >
-                          <Upload className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-                          <p className="text-gray-600 text-xs">上传尾帧</p>
-                        </div>
-                      )}
-                      <input ref={lastFrameInputRef} type="file" accept="image/*" onChange={handleLastFrameUpload} className="hidden" />
-                    </div>
-                  </div>
+                
                 </div>
               )}
             </motion.div>
