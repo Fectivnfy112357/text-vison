@@ -57,6 +57,35 @@ public class GenerateContentRequest {
      */
     private String quality;
 
+    // ========== 图片生成参数 ==========
+    
+    /**
+     * 返回格式（仅图片生成）
+     * 可选值：url, b64_json
+     * 默认值：url
+     */
+    private String responseFormat;
+    
+    /**
+     * 随机数种子（仅图片生成）
+     * 用于控制模型生成内容的随机性
+     * 取值范围：[-1, 2147483647]
+     * 默认值：-1（自动生成）
+     */
+    @Min(value = -1, message = "随机数种子最小值为-1")
+    @Max(value = 2147483647, message = "随机数种子最大值为2147483647")
+    private Integer seed;
+    
+    /**
+     * 引导比例（仅图片生成）
+     * 模型输出结果与prompt的一致程度
+     * 取值范围：[1, 10]
+     * 默认值：2.5
+     */
+    @Min(value = 1, message = "引导比例最小值为1")
+    @Max(value = 10, message = "引导比例最大值为10")
+    private Double guidanceScale;
+
     // ========== 视频生成参数 ==========
     
     /**
@@ -128,4 +157,9 @@ public class GenerateContentRequest {
      * 是否高清（仅视频生成）
      */
     private Boolean hd;
+
+    /**
+     * 是否添加水印
+     */
+    private Boolean watermark;
 }

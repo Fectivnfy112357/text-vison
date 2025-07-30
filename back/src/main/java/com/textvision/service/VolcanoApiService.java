@@ -48,9 +48,13 @@ public class VolcanoApiService {
      * @param size 尺寸
      * @param style 风格
      * @param quality 质量
+     * @param responseFormat 返回格式
+     * @param seed 随机数种子
+     * @param guidanceScale 引导比例
      * @return 生成结果
      */
-    public ImageGenerationResult generateImage(String prompt, String size, String style, String quality) {
+    public ImageGenerationResult generateImage(String prompt, String size, String style, String quality, 
+                                             String responseFormat, Integer seed, Double guidanceScale) {
         try {
             String url = baseUrl + imageEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
@@ -61,6 +65,21 @@ public class VolcanoApiService {
             request.setSize(convertSizeFormat(size));
             request.setQuality(quality != null ? quality : "standard");
             request.setN(1);
+            
+            // 设置返回格式
+            if (responseFormat != null && !responseFormat.trim().isEmpty()) {
+                request.setResponseFormat(responseFormat);
+            }
+            
+            // 设置随机数种子
+            if (seed != null && seed >= -1 && seed <= 2147483647) {
+                request.setSeed(seed);
+            }
+            
+            // 设置引导比例
+            if (guidanceScale != null && guidanceScale >= 1.0 && guidanceScale <= 10.0) {
+                request.setGuidanceScale(guidanceScale);
+            }
             
             // 如果有风格参数，添加到提示词中
             if (style != null && !style.trim().isEmpty()) {
@@ -375,6 +394,9 @@ public class VolcanoApiService {
         private String size;
         private String quality;
         private Integer n;
+        private String responseFormat;
+        private Integer seed;
+        private Double guidanceScale;
     }
 
     @Data

@@ -224,7 +224,7 @@ export const contentAPI = {
   batchDeleteContents: async (ids: string[]) => {
     return await request('/contents/batch', {
       method: 'DELETE',
-      body: JSON.stringify({ ids }),
+      body: JSON.stringify(ids.map(id => parseInt(id))),
     });
   },
 };

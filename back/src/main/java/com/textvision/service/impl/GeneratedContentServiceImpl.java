@@ -94,6 +94,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
             params.put("lastFrameImage", request.getLastFrameImage());
             params.put("hd", request.getHd());
         }
+        // 添加水印参数
+        params.put("watermark", request.getWatermark());
         content.setGenerationParams(params);
         
         // 保存到数据库
@@ -241,7 +243,10 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getPrompt(),
                         request.getSize(),
                         request.getStyle(),
-                        request.getQuality()
+                        request.getQuality(),
+                        request.getResponseFormat(),
+                        request.getSeed(),
+                        request.getGuidanceScale()
                 );
                 resultUrl = result.getUrl();
                 thumbnail = result.getUrl(); // 图片没有缩略图，使用原图

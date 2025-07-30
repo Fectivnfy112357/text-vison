@@ -16,20 +16,13 @@ export default function History() {
   const { history, loadHistory, refreshHistory, removeFromHistory, clearHistory, isLoadingHistory } = useGenerationStore();
   const { isAuthenticated } = useAuthStore();
 
-  // 组件挂载时加载历史记录
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadHistory();
-    }
-  }, [isAuthenticated, loadHistory]);
-
-  // 当过滤类型改变时重新加载
+  // 组件挂载时和过滤类型改变时加载历史记录
   useEffect(() => {
     if (isAuthenticated) {
       const type = filterType === 'all' ? undefined : filterType;
       loadHistory(1, 20, type);
     }
-  }, [filterType, isAuthenticated, loadHistory]);
+  }, [isAuthenticated, loadHistory, filterType]);
 
   // 过滤和排序历史记录
   const filteredHistory = history
