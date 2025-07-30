@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, Sparkles, Image as ImageIcon, Video, Download, Share2, Wand2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, Sparkles, Image as ImageIcon, Video, Download, Share2, Wand2, Settings, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
@@ -14,6 +14,8 @@ export default function Generate() {
   const [watermark, setWatermark] = useState(false);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
+  const [isGeneratingAnimation, setIsGeneratingAnimation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 图片专用参数
@@ -167,6 +169,8 @@ export default function Generate() {
       return;
     }
 
+    setIsGeneratingAnimation(true);
+    
     try {
       const params: any = {
         watermark,
@@ -203,6 +207,8 @@ export default function Generate() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '生成失败，请重试';
       toast.error(errorMessage);
+    } finally {
+      setIsGeneratingAnimation(false);
     }
   };
 
@@ -292,161 +298,219 @@ export default function Generate() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pt-8 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-8 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
-        {/* 页面标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        {/* 页面标题 - 更现代化的设计 */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4"
+          >
             AI创作工坊
-          </h1>
-          <p className="text-xl text-gray-600 mb-6">
-            将您的想象力转化为令人惊艳的视觉作品
-          </p>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto"
+          >
+            将您的想象力转化为令人惊艳的视觉作品，体验前所未有的创作乐趣
+          </motion.p>
 
-          {/* 模板选择按钮 */}
-          <button
+          {/* 模板选择按钮 - 更现代的设计 */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowTemplates(!showTemplates)}
-            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
+            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-2xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-300 flex items-center space-x-3 mx-auto shadow-lg hover:shadow-xl"
           >
             <Wand2 className="w-5 h-5" />
             <span>{showTemplates ? '隐藏模板' : '选择模板'}</span>
-          </button>
-        </div>
+            <motion.div
+              animate={{ rotate: showTemplates ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </motion.div>
+          </motion.button>
+        </motion.div>
 
-        {/* 模板选择区域 */}
-        {showTemplates && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6 mb-8"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">选择模板</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {templates.slice(0, 12).map((template) => (
-                <motion.div
-                  key={template.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleTemplateSelect(template)}
-                  className="cursor-pointer bg-gray-50 rounded-xl p-3 hover:shadow-md transition-all"
+        {/* 模板选择区域 - 更流畅的动画 */}
+        <AnimatePresence>
+          {showTemplates && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 mb-8 overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <Wand2 className="w-6 h-6 mr-3 text-purple-600" />
+                  选择模板
+                </h2>
+                <button
+                  onClick={() => setShowTemplates(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <div className="aspect-square mb-3 rounded-lg overflow-hidden bg-gray-200">
-                    <img
-                      src={template.imageUrl || template.preview}
-                      alt={template.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(template.title + ' ' + template.category)}&image_size=square`;
-                      }}
-                    />
-                  </div>
-                  <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">{template.title}</h3>
-                  <p className="text-xs text-gray-500 mb-2">{template.category}</p>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={`px-2 py-1 rounded-full ${template.type === 'image' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                      }`}>
-                      {template.type === 'image' ? '图片' : '视频'}
-                    </span>
-                    <span className="text-gray-400">{template.views || 0} 次使用</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {templates.slice(0, 12).map((template, index) => (
+                  <motion.div
+                    key={template.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleTemplateSelect(template)}
+                    className="cursor-pointer bg-white rounded-2xl p-4 hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-purple-200 group"
+                  >
+                    <div className="aspect-square mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 group-hover:shadow-md transition-shadow">
+                      <img
+                        src={template.imageUrl || template.preview}
+                        alt={template.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(template.title + ' ' + template.category)}&image_size=square`;
+                        }}
+                      />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-purple-700 transition-colors">{template.title}</h3>
+                    <p className="text-xs text-gray-500 mb-3">{template.category}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`px-3 py-1 rounded-full font-medium ${template.type === 'image' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                        }`}>
+                        {template.type === 'image' ? '图片' : '视频'}
+                      </span>
+                      <span className="text-gray-400">{template.views || 0} 次</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* 主要创作区域 */}
-        <div className="grid lg:grid-cols-2 gap-8 flex-1">
+        {/* 主要创作区域 - 简单稳定的布局 */}
+        <div className="grid lg:grid-cols-2 gap-8 flex-1 items-start">
           {/* 左侧：创作输入和参数配置 */}
-          <div className="flex flex-col space-y-6">
-            {/* 文本输入和基础设置 */}
+          <div className="flex flex-col space-y-6 w-full">
+            {/* 文本输入和基础设置 - 更现代的卡片设计 */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <Wand2 className="w-5 h-5 mr-2 text-purple-600" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mr-3">
+                  <Wand2 className="w-5 h-5 text-white" />
+                </div>
                 描述您的创意
               </h2>
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="请详细描述您想要生成的内容，例如：一只可爱的小猫坐在彩虹桥上，背景是梦幻的星空..."
-                className="w-full h-32 p-4 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all mb-3"
-                maxLength={500}
-              />
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm text-gray-500">
-                  {prompt.length}/500 字符
-                </span>
-                <button
-                  onClick={() => setPrompt('')}
-                  className="text-sm text-purple-600 hover:text-purple-700"
-                >
-                  清空
-                </button>
+              <div className="relative">
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="请详细描述您想要生成的内容，例如：一只可爱的小猫坐在彩虹桥上，背景是梦幻的星空..."
+                  className="w-full h-40 p-6 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 resize-none transition-all duration-300 text-gray-700 placeholder-gray-400 bg-gray-50/50 backdrop-blur-sm"
+                  maxLength={500}
+                />
+                <div className="absolute bottom-4 right-4 flex items-center space-x-3">
+                  <span className={`text-sm font-medium ${prompt.length > 450 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {prompt.length}/500
+                  </span>
+                  {prompt.length > 0 && (
+                    <button
+                      onClick={() => setPrompt('')}
+                      className="text-sm text-purple-600 hover:text-purple-700 font-medium px-3 py-1 rounded-lg hover:bg-purple-50 transition-all"
+                    >
+                      清空
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* 类型选择和基础设置 */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              {/* 类型选择和基础设置 - 更现代的设计 */}
+              <div className="grid grid-cols-2 gap-6 mt-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     生成类型
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setType('image')}
-                      className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg transition-all text-sm ${type === 'image'
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                          : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'image'
+                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                          : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
                         }`}
                     >
-                      <ImageIcon className="w-4 h-4" />
-                      <span className="font-medium">图片</span>
-                    </button>
-                    <button
+                      <ImageIcon className="w-5 h-5" />
+                      <span>图片</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setType('video')}
-                      className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg transition-all text-sm ${type === 'video'
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                          : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'video'
+                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                          : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
                         }`}
                     >
-                      <Video className="w-4 h-4" />
-                      <span className="font-medium">视频</span>
-                    </button>
+                      <Video className="w-5 h-5" />
+                      <span>视频</span>
+                    </motion.button>
                   </div>
                 </div>
 
-                {/* 参考图片上传 */}
+                {/* 参考图片上传 - 更现代的设计 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     参考图片
                   </label>
                   {referenceImage ? (
-                    <div className="relative">
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="relative group"
+                    >
                       <img
                         src={referenceImage}
                         alt="参考图片"
-                        className="w-full h-16 object-cover rounded-lg"
+                        className="w-full h-20 object-cover rounded-xl shadow-md"
                       />
                       <button
                         onClick={() => setReferenceImage(null)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        ×
+                        <X className="w-3 h-3" />
                       </button>
-                    </div>
+                    </motion.div>
                   ) : (
-                    <div
+                    <motion.div
+                      whileHover={{ scale: 1.02, borderColor: '#8b5cf6' }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-16 flex flex-col justify-center"
+                      className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:bg-purple-50 transition-all duration-300 h-20 flex flex-col justify-center group"
                     >
-                      <Upload className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-                      <p className="text-gray-600 text-xs">上传图片</p>
-                    </div>
+                      <Upload className="w-5 h-5 text-gray-400 group-hover:text-purple-500 mx-auto mb-1 transition-colors" />
+                      <p className="text-gray-500 group-hover:text-purple-600 text-xs font-medium transition-colors">上传图片</p>
+                    </motion.div>
                   )}
                   <input
                     ref={fileInputRef}
@@ -458,15 +522,16 @@ export default function Generate() {
                 </div>
               </div>
 
-              {/* 水印选项 */}
-              <div className="bg-gray-50 rounded-lg p-3">
+              {/* 水印选项 - 更现代的设计 */}
+              <div className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-2xl p-6 mt-6 border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="watermark" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="watermark" className="text-sm font-semibold text-gray-700 flex items-center">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
                       添加水印
                     </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      在生成的内容上添加平台标识
+                    <p className="text-xs text-gray-500 mt-2 ml-4">
+                      在生成的内容上添加平台标识，保护您的创作
                     </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -477,296 +542,425 @@ export default function Generate() {
                       onChange={(e) => setWatermark(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-blue-500 shadow-inner"></div>
                   </label>
                 </div>
               </div>
             </motion.div>
 
-            {/* 高级参数配置 */}
+            {/* 高级参数配置 - 可折叠设计 */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                {type === 'image' ? <ImageIcon className="w-5 h-5 mr-2 text-purple-600" /> : <Video className="w-5 h-5 mr-2 text-purple-600" />}
-                {type === 'image' ? '图片参数' : '视频参数'}
-              </h2>
-
-              {type === 'image' ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">图片尺寸</label>
-                    <select
-                      value={size}
-                      onChange={(e) => setSize(e.target.value)}
-                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                    >
-                      <option value="1024x1024">正方形 (1024x1024)</option>
-                      <option value="1152x896">横屏 (1152x896)</option>
-                      <option value="896x1152">竖屏 (896x1152)</option>
-                      <option value="1216x832">宽屏 (1216x832)</option>
-                      <option value="832x1216">长屏 (832x1216)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">图片质量</label>
-                    <select
-                      value={quality}
-                      onChange={(e) => setQuality(e.target.value)}
-                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                    >
-                      <option value="standard">标准质量</option>
-                      <option value="hd">高清质量</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">艺术风格</label>
-                    <input
-                      type="text"
-                      value={style}
-                      onChange={(e) => setStyle(e.target.value)}
-                      placeholder="如：油画、水彩、卡通等"
-                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">随机种子</label>
-                    <input
-                      type="number"
-                      value={seed || ''}
-                      onChange={(e) => setSeed(e.target.value ? Number(e.target.value) : undefined)}
-                      placeholder="可选"
-                      className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                    />
-                  </div>
+              <div 
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="p-8 cursor-pointer hover:bg-gray-50/50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mr-3">
+                      {type === 'image' ? <ImageIcon className="w-5 h-5 text-white" /> : <Video className="w-5 h-5 text-white" />}
+                    </div>
+                    {type === 'image' ? '图片参数' : '视频参数'}
+                  </h2>
+                  <motion.div
+                    animate={{ rotate: showAdvanced ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  </motion.div>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">分辨率</label>
-                      <select
-                        value={resolution}
-                        onChange={(e) => setResolution(e.target.value)}
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                      >
-                        {resolutionOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">时长</label>
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                      >
-                        {durationOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">画面比例</label>
-                      <select
-                        value={ratio}
-                        onChange={(e) => setRatio(e.target.value)}
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                      >
-                        {ratioOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">帧率</label>
-                      <input
-                        type="number"
-                        value={fps}
-                        onChange={(e) => setFps(Number(e.target.value))}
-                        min="12"
-                        max="60"
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-                  </div>
+              </div>
 
-                  {/* 固定摄像头选项 */}
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <label htmlFor="cameraFixed" className="text-sm font-medium text-gray-700">
-                          固定摄像头
-                        </label>
-                        <p className="text-xs text-gray-500 mt-1">减少镜头运动，画面更稳定</p>
+              <AnimatePresence>
+                {showAdvanced && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="px-8 pb-8"
+                  >
+                    <div className="border-t border-gray-100 pt-6">
+
+                    {type === 'image' ? (
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">图片尺寸</label>
+                          <select
+                            value={size}
+                            onChange={(e) => setSize(e.target.value)}
+                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                          >
+                            <option value="1024x1024">正方形 (1024x1024)</option>
+                            <option value="1152x896">横屏 (1152x896)</option>
+                            <option value="896x1152">竖屏 (896x1152)</option>
+                            <option value="1216x832">宽屏 (1216x832)</option>
+                            <option value="832x1216">长屏 (832x1216)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">图片质量</label>
+                          <select
+                            value={quality}
+                            onChange={(e) => setQuality(e.target.value)}
+                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                          >
+                            <option value="standard">标准质量</option>
+                            <option value="hd">高清质量</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
+                          <input
+                            type="text"
+                            value={style}
+                            onChange={(e) => setStyle(e.target.value)}
+                            placeholder="如：油画、水彩、卡通等"
+                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-3">随机种子</label>
+                          <input
+                            type="number"
+                            value={seed || ''}
+                            onChange={(e) => setSeed(e.target.value ? Number(e.target.value) : undefined)}
+                            placeholder="可选，用于复现结果"
+                            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                          />
+                        </div>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          id="cameraFixed"
-                          checked={cameraFixed}
-                          onChange={(e) => setCameraFixed(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                      </label>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">分辨率</label>
+                            <select
+                              value={resolution}
+                              onChange={(e) => setResolution(e.target.value)}
+                              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                            >
+                              {resolutionOptions.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">时长</label>
+                            <select
+                              value={duration}
+                              onChange={(e) => setDuration(Number(e.target.value))}
+                              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                            >
+                              {durationOptions.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">画面比例</label>
+                            <select
+                              value={ratio}
+                              onChange={(e) => setRatio(e.target.value)}
+                              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                            >
+                              {ratioOptions.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">帧率</label>
+                            <input
+                              type="number"
+                              value={fps}
+                              onChange={(e) => setFps(Number(e.target.value))}
+                              min="12"
+                              max="60"
+                              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 固定摄像头选项 - 更现代的设计 */}
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label htmlFor="cameraFixed" className="text-sm font-semibold text-gray-700 flex items-center">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                固定摄像头
+                              </label>
+                              <p className="text-xs text-gray-500 mt-2 ml-4">减少镜头运动，画面更稳定</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                id="cameraFixed"
+                                checked={cameraFixed}
+                                onChange={(e) => setCameraFixed(e.target.checked)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-indigo-500 shadow-inner"></div>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     </div>
-                  </div>
-                
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
-            {/* 生成按钮 */}
+            {/* 生成按钮 - 更现代的设计 */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ delay: 0.2 }}
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-4 rounded-2xl font-semibold text-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-6 rounded-3xl font-bold text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group"
             >
-              <Sparkles className="w-5 h-5" />
-              <span>{isGenerating ? '生成中...' : '开始生成'}</span>
+              {/* 背景动画效果 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* 生成中的动画效果 */}
+              {(isGenerating || isGeneratingAnimation) && (
+                <motion.div
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                />
+              )}
+              
+              <div className="relative z-10 flex items-center space-x-3">
+                <motion.div
+                  animate={isGenerating || isGeneratingAnimation ? { rotate: 360 } : { rotate: 0 }}
+                  transition={{ duration: 1, repeat: isGenerating || isGeneratingAnimation ? Infinity : 0, ease: "linear" }}
+                >
+                  <Sparkles className="w-6 h-6" />
+                </motion.div>
+                <span>{isGenerating ? '生成中...' : '开始生成'}</span>
+              </div>
             </motion.button>
           </div>
 
-          {/* 右侧：生成结果展示 */}
+          {/* 右侧：生成结果展示 - 独立的固定高度容器 */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-lg p-6 flex flex-col"
+            className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)]"
+            style={{ minHeight: '600px' }}
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">生成结果</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-3">
+                  <ImageIcon className="w-5 h-5 text-white" />
+                </div>
+                生成结果
+              </h2>
+              {history && history.length > 0 && (
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {history.length} 个作品
+                </span>
+              )}
+            </div>
 
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex items-center justify-center h-full">
               {history && history.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 w-full h-full">
+                <div className="grid grid-cols-2 gap-4 w-full h-full">
                   {/* 显示最多4个结果，2x2网格布局 */}
                   {history.slice(0, 4).map((generation, genIndex) => (
                     <motion.div
                       key={generation.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: genIndex * 0.1 }}
-                      className="border border-gray-200 rounded-xl p-2 bg-gray-50 hover:shadow-md transition-shadow h-full flex flex-col"
+                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ delay: genIndex * 0.1, type: "spring", stiffness: 100 }}
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      className="border-2 border-gray-100 rounded-2xl p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 transition-all duration-300 h-full flex flex-col group"
                     >
-                      {/* 生成状态指示 */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${generation.status === 'generating' ? 'bg-yellow-500 animate-pulse' :
-                              generation.status === 'processing' ? 'bg-blue-500 animate-pulse' :
-                                genIndex === 0 ? 'bg-green-500' : 'bg-gray-400'
-                            }`}></div>
-                          <span className="text-xs font-medium text-gray-700">
+                      {/* 生成状态指示 - 更现代的设计 */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <motion.div 
+                            animate={generation.status === 'generating' || generation.status === 'processing' ? { scale: [1, 1.2, 1] } : {}}
+                            transition={{ duration: 1, repeat: generation.status === 'generating' || generation.status === 'processing' ? Infinity : 0 }}
+                            className={`w-3 h-3 rounded-full ${generation.status === 'generating' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/50' :
+                                generation.status === 'processing' ? 'bg-gradient-to-r from-blue-400 to-blue-600 shadow-lg shadow-blue-500/50' :
+                                  genIndex === 0 ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/50' : 'bg-gray-400'
+                              }`}
+                          ></motion.div>
+                          <span className="text-xs font-semibold text-gray-700">
                             {generation.status === 'generating' ? '生成中' :
                               generation.status === 'processing' ? '处理中' :
-                                genIndex === 0 ? '最新' : `历史${genIndex + 1}`}
+                                genIndex === 0 ? '最新作品' : `历史作品 ${genIndex + 1}`}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                        <span className={`text-xs font-medium px-3 py-1 rounded-full ${generation.type === 'image' ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700' : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700'
+                          }`}>
                           {generation.type === 'image' ? '图片' : '视频'}
                         </span>
                       </div>
 
-                      {/* 提示词 */}
-                      <div className="mb-3">
-                        <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{generation.prompt}</p>
+                      {/* 提示词 - 更好的排版 */}
+                      <div className="mb-4 bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed font-medium">{generation.prompt}</p>
                       </div>
 
-                      {/* 结果展示 */}
+                      {/* 结果展示 - 更现代的加载动画 */}
                       {generation.status === 'generating' || generation.status === 'processing' ? (
-                        <div className="flex flex-col items-center justify-center py-8 bg-gray-100 rounded-lg">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mb-2"></div>
-                          <p className="text-xs text-gray-500">
-                            {generation.status === 'generating' ? '正在生成...' : '正在处理...'}
-                          </p>
+                        <div className="flex flex-col items-center justify-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full mb-4"
+                          ></motion.div>
+                          <motion.p 
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="text-sm text-gray-600 font-medium"
+                          >
+                            {generation.status === 'generating' ? '正在生成创作...' : '正在处理内容...'}
+                          </motion.p>
                         </div>
                       ) : generation.urls && generation.urls.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {generation.urls.slice(0, 1).map((url, index) => (
-                            <div key={index} className="relative group">
+                            <motion.div 
+                              key={index} 
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.2 }}
+                              className="relative group overflow-hidden rounded-2xl"
+                            >
                               {generation.type === 'video' ? (
                                 <video
                                   src={url}
                                   controls
-                                  className="w-full aspect-video object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                  className="w-full aspect-video object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
                                   poster={generation.thumbnails?.[index]}
                                 />
                               ) : (
                                 <img
                                   src={url}
                                   alt={`生成结果 ${index + 1}`}
-                                  className="w-full aspect-square object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                  className="w-full aspect-square object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
                                 />
                               )}
 
-                              {/* 操作按钮 */}
-                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                                <button
+                              {/* 操作按钮 - 更现代的设计 */}
+                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 flex space-x-2">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
                                   onClick={() => handleDownload(url, index)}
-                                  className="bg-black bg-opacity-70 text-white p-1.5 rounded-lg hover:bg-opacity-90 transition-all backdrop-blur-sm"
+                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transition-all shadow-lg"
                                   title="下载"
                                 >
-                                  <Download className="w-3 h-3" />
-                                </button>
-                                <button
+                                  <Download className="w-4 h-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
                                   onClick={() => handleShare(url)}
-                                  className="bg-black bg-opacity-70 text-white p-1.5 rounded-lg hover:bg-opacity-90 transition-all backdrop-blur-sm"
+                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transition-all shadow-lg"
                                   title="分享"
                                 >
-                                  <Share2 className="w-3 h-3" />
-                                </button>
+                                  <Share2 className="w-4 h-4" />
+                                </motion.button>
                               </div>
-                            </div>
+
+                              {/* 悬浮信息 */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <p className="text-white text-xs font-medium">点击操作按钮进行下载或分享</p>
+                              </div>
+                            </motion.div>
                           ))}
                           {generation.urls.length > 1 && (
-                            <p className="text-xs text-gray-500 text-center">+{generation.urls.length - 1} 更多</p>
+                            <motion.p 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="text-xs text-gray-500 text-center bg-gray-100 py-2 rounded-lg font-medium"
+                            >
+                              +{generation.urls.length - 1} 更多作品
+                            </motion.p>
                           )}
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center py-8 bg-gray-100 rounded-lg">
+                        <div className="flex items-center justify-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
                           <div className="text-center">
-                            <ImageIcon className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                            <p className="text-xs text-gray-500">等待结果</p>
+                            <motion.div
+                              animate={{ y: [0, -10, 0] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                            </motion.div>
+                            <p className="text-sm text-gray-500 font-medium">等待生成结果</p>
                           </div>
                         </div>
                       )}
                     </motion.div>
                   ))}
 
-                  {/* 如果结果少于4个，显示空白占位 */}
+                  {/* 如果结果少于4个，显示空白占位 - 更现代的设计 */}
                   {Array.from({ length: Math.max(0, 4 - history.length) }).map((_, index) => (
-                    <div key={`empty-${index}`} className="border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 h-full flex flex-col">
+                    <motion.div 
+                      key={`empty-${index}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: (history.length + index) * 0.1 }}
+                      className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 transition-all duration-300"
+                    >
                       <div className="flex items-center justify-center h-full">
                         <div className="text-center">
-                          <ImageIcon className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                          <p className="text-xs text-gray-500">等待生成</p>
+                          <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, delay: index * 0.5 }}
+                          >
+                            <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                          </motion.div>
+                          <p className="text-sm text-gray-400 font-medium">等待创作</p>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2 w-full h-full">
+                <div className="grid grid-cols-2 gap-4 w-full h-full">
                   {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={`placeholder-${index}`} className="border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 h-full flex flex-col">
+                    <motion.div 
+                      key={`placeholder-${index}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 transition-all duration-300 group"
+                    >
                       <div className="flex items-center justify-center h-full">
                         <div className="text-center">
-                          <ImageIcon className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                          <p className="text-xs text-gray-500">等待生成</p>
+                          <motion.div
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
+                          >
+                            <ImageIcon className="w-8 h-8 text-gray-300 group-hover:text-purple-400 mx-auto mb-3 transition-colors" />
+                          </motion.div>
+                          <p className="text-sm text-gray-400 group-hover:text-purple-500 font-medium transition-colors">等待创作</p>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </motion.div>
         </div>
