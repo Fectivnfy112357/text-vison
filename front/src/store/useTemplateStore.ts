@@ -23,10 +23,10 @@ interface TemplateState {
   selectedCategory: string;
   searchQuery: string;
   isLoading: boolean;
-  fetchTemplates: () => Promise<void>;
+  fetchTemplates: (category?: string, searchQuery?: string) => Promise<void>;
   setSelectedCategory: (category: string) => void;
   setSearchQuery: (query: string) => void;
-  getFilteredTemplates: () => Template[];
+  loadCategories: () => Promise<void>;
 }
 
 
@@ -38,13 +38,26 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
   searchQuery: '',
   isLoading: false,
 
-  fetchTemplates: async () => {
+  fetchTemplates: async (category?: string, searchQuery?: string) => {
     set({ isLoading: true });
     try {
-      const [templatesData, categoriesData] = await Promise.all([
-        templateAPI.getTemplates(1, 100), // 获取更多模板
-        templateAPI.getCategories()
-      ]);
+      let templatesData;
+      
+      // 根据是否有搜索关键词选择不同的API
+      if (searchQuery && searchQuery.trim()) {
+        templatesData = await templateAPI.searchTemplates(
+          searchQuery.trim(),
+          1,
+          100,
+          category && category !== '全部' ? category : undefined
+        );
+      } else {
+        templatesData = await templateAPI.getTemplates(
+          1,
+          100,
+          category && category !== '全部' ? category : undefined
+        );
+      }
       
       // 转换后端数据格式
       const templates = templatesData.records
@@ -65,11 +78,8 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           isPopular: template.isPopular || false
         }));
       
-      const categories = ['全部', ...categoriesData];
-      
       set({ 
-        templates, 
-        categories,
+        templates,
         isLoading: false 
       });
     } catch (error) {
@@ -78,34 +88,27 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     }
   },
 
+  loadCategories: async () => {
+    try {
+      const categoriesData = await templateAPI.getCategories();
+      const categories = ['全部', ...categoriesData];
+      set({ categories });
+    } catch (error) {
+      console.error('加载分类失败:', error);
+    }
+  },
+
   setSelectedCategory: (category: string) => {
+    const { searchQuery, fetchTemplates } = get();
     set({ selectedCategory: category });
+    // 分类改变时自动调用后端筛选
+    fetchTemplates(category, searchQuery);
   },
 
   setSearchQuery: (query: string) => {
+    const { selectedCategory, fetchTemplates } = get();
     set({ searchQuery: query });
-  },
-
-  getFilteredTemplates: () => {
-    const { templates, selectedCategory, searchQuery } = get();
-    
-    let filtered = templates;
-    
-    // 按分类筛选
-    if (selectedCategory !== '全部') {
-      filtered = filtered.filter(template => template.category === selectedCategory);
-    }
-    
-    // 按搜索关键词筛选
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(template => 
-        template.title.toLowerCase().includes(query) ||
-        template.description.toLowerCase().includes(query) ||
-        template.tags.some(tag => tag.toLowerCase().includes(query))
-      );
-    }
-    
-    return filtered;
+    // 搜索关键词改变时自动调用后端筛选
+    fetchTemplates(selectedCategory, query);
   }
 }));

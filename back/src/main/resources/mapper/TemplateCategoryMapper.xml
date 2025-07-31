@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.textvision.mapper.TemplateCategoryMapper">
+
+    <!-- 获取启用状态的分类列表（按排序权重排序） -->
+    <select id="selectEnabledCategories" resultType="com.textvision.entity.TemplateCategory">
+        SELECT * FROM template_category 
+        WHERE status = 1 AND deleted = 0 
+        ORDER BY sort_order ASC, created_at ASC
+    </select>
+
+    <!-- 根据名称查找分类 -->
+    <select id="selectByName" resultType="com.textvision.entity.TemplateCategory">
+        SELECT * FROM template_category 
+        WHERE name = #{name} AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 更新分类排序 -->
+    <update id="updateSortOrder">
+        UPDATE template_category 
+        SET sort_order = #{sortOrder}, updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+</mapper>

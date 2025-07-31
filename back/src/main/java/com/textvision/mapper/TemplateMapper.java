@@ -59,4 +59,12 @@ public interface TemplateMapper extends BaseMapper<Template> {
      * @return 模板列表
      */
     List<Template> selectByTag(@Param("tag") String tag);
+
+    /**
+     * 根据分类ID查询模板
+     * 
+     * @param categoryId 分类ID
+     * @return 模板列表
+     */
+    List<Template> selectByCategoryId(@Param("categoryId") Long categoryId);
 }

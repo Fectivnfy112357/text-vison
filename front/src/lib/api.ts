@@ -171,6 +171,69 @@ export const templateAPI = {
   },
 };
 
+// 模板分类相关 API
+export const templateCategoryAPI = {
+  // 获取所有启用的分类
+  getAllCategories: async () => {
+    return await request('/template-categories');
+  },
+
+  // 获取分类名称列表
+  getCategoryNames: async () => {
+    return await request('/template-categories/names');
+  },
+
+  // 根据ID获取分类详情
+  getCategoryById: async (id: number) => {
+    return await request(`/template-categories/${id}`);
+  },
+
+  // 创建新分类
+  createCategory: async (category: {
+    name: string;
+    description?: string;
+    icon?: string;
+    sortOrder?: number;
+    status?: number;
+  }) => {
+    return await request('/template-categories', {
+      method: 'POST',
+      body: JSON.stringify(category),
+    });
+  },
+
+  // 更新分类信息
+  updateCategory: async (id: number, category: {
+    name?: string;
+    description?: string;
+    icon?: string;
+    sortOrder?: number;
+    status?: number;
+  }) => {
+    return await request(`/template-categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(category),
+    });
+  },
+
+  // 删除分类
+  deleteCategory: async (id: number) => {
+    return await request(`/template-categories/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // 更新分类排序
+  updateSortOrder: async (id: number, sortOrder: number) => {
+    return await request(`/template-categories/${id}/sort-order?sortOrder=${sortOrder}`, {
+      method: 'PUT',
+    });
+  },
+};
+
+// 兼容性：保持原有的 getCategories 接口
+templateAPI.getCategories = templateCategoryAPI.getCategoryNames;
+
 // 内容生成相关 API
 export const contentAPI = {
   // 生成内容

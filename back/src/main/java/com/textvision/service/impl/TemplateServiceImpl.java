@@ -11,6 +11,7 @@ import com.textvision.entity.Template;
 import com.textvision.exception.BusinessException;
 import com.textvision.mapper.TemplateMapper;
 import com.textvision.service.TemplateService;
+import com.textvision.service.TemplateCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> implements TemplateService {
 
     private final TemplateMapper templateMapper;
+    private final TemplateCategoryService templateCategoryService;
 
     @Override
     public PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String category, String type) {
@@ -59,7 +61,8 @@ public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> i
 
     @Override
     public List<String> getAllCategories() {
-        return templateMapper.selectAllCategories();
+        // 使用新的分类服务获取分类名称列表
+        return templateCategoryService.getCategoryNames();
     }
 
     @Override

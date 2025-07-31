@@ -1,16 +1,14 @@
 package com.textvision.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * 模板实体类
+ * 模板分类实体类
  * 
  * @author TextVision Team
  * @since 1.0.0
@@ -18,68 +16,38 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName(value = "template", autoResultMap = true)
-public class Template {
+@TableName("template_category")
+public class TemplateCategory {
 
     /**
-     * 模板ID
+     * 分类ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * 模板标题
+     * 分类名称
      */
-    @TableField("title")
-    private String title;
+    @TableField("name")
+    private String name;
 
     /**
-     * 模板描述
+     * 分类描述
      */
     @TableField("description")
     private String description;
 
     /**
-     * 模板提示词
+     * 分类图标
      */
-    @TableField("prompt")
-    private String prompt;
+    @TableField("icon")
+    private String icon;
 
     /**
-     * 模板分类
+     * 排序权重
      */
-    @TableField("category")
-    private String category;
-
-    /**
-     * 分类ID
-     */
-    @TableField("category_id")
-    private Long categoryId;
-
-    /**
-     * 标签列表
-     */
-    @TableField(value = "tags", typeHandler = JacksonTypeHandler.class)
-    private List<String> tags;
-
-    /**
-     * 模板预览图
-     */
-    @TableField("image_url")
-    private String imageUrl;
-
-    /**
-     * 类型：image-图片，video-视频
-     */
-    @TableField("type")
-    private String type;
-
-    /**
-     * 使用次数
-     */
-    @TableField("usage_count")
-    private Integer usageCount;
+    @TableField("sort_order")
+    private Integer sortOrder;
 
     /**
      * 状态：0-禁用，1-启用

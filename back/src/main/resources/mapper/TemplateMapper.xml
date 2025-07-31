@@ -6,7 +6,9 @@
     <select id="selectPageWithConditions" resultType="com.textvision.entity.Template">
         SELECT * FROM template WHERE status = 1 AND deleted = 0
         <if test="category != null and category != ''">
-            AND category = #{category}
+            AND (category = #{category} OR category_id IN (
+                SELECT id FROM template_category WHERE name = #{category} AND status = 1 AND deleted = 0
+            ))
         </if>
         <if test="type != null and type != ''">
             AND type = #{type}
@@ -47,6 +49,14 @@
         SELECT * FROM template 
         WHERE status = 1 AND deleted = 0 
               AND tags LIKE CONCAT('%', #{tag}, '%') 
+        ORDER BY usage_count DESC, created_at DESC
+    </select>
+
+    <!-- 根据分类ID查询模板 -->
+    <select id="selectByCategoryId" resultType="com.textvision.entity.Template">
+        SELECT * FROM template 
+        WHERE category_id = #{categoryId} 
+        AND status = 1 AND deleted = 0
         ORDER BY usage_count DESC, created_at DESC
     </select>
 

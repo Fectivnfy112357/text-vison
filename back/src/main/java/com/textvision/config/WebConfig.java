@@ -34,6 +34,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/templates/popular",
                         "/api/templates/search",
                         "/api/templates/by-tag",
+                        "/api/template-categories",
+                        "/api/template-categories/names",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/swagger-resources/**",

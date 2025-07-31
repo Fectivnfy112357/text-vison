@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
@@ -17,45 +17,25 @@ export default function Templates() {
     fetchTemplates, 
     setSelectedCategory, 
     setSearchQuery,
-    getFilteredTemplates 
+    loadCategories 
   } = useTemplateStore();
   
-  const filteredTemplates = useMemo(() => {
-    let filtered = templates.filter(template => template && typeof template === 'object');
-    
-    if (selectedCategory !== '全部') {
-      filtered = filtered.filter(template => 
-        template.category && template.category === selectedCategory
-      );
-    }
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(template => {
-        const title = template.title || '';
-        const description = template.description || '';
-        const tags = template.tags || [];
-        
-        return title.toLowerCase().includes(query) ||
-               description.toLowerCase().includes(query) ||
-               tags.some(tag => tag && tag.toLowerCase().includes(query));
-      });
-    }
-    
-    return filtered;
-  }, [templates, selectedCategory, searchQuery]);
+  // 直接使用templates状态，后端已经处理了筛选
+  const filteredTemplates = templates.filter(template => template && typeof template === 'object');
 
   useEffect(() => {
-    const loadTemplates = async () => {
+    const loadData = async () => {
       try {
+        // 先加载分类，再加载模板
+        await loadCategories();
         await fetchTemplates();
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '加载模板失败，请重试';
+        const errorMessage = error instanceof Error ? error.message : '加载数据失败，请重试';
         toast.error(errorMessage);
       }
     };
-    loadTemplates();
-  }, [fetchTemplates]);
+    loadData();
+   }, [fetchTemplates, loadCategories]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);

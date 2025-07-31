@@ -41,6 +41,11 @@ public enum ResultCode {
     TEMPLATE_NOT_FOUND(6001, "模板不存在"),
     TEMPLATE_DISABLED(6002, "模板已被禁用"),
     TEMPLATE_CATEGORY_INVALID(6003, "模板分类无效"),
+    
+    // 分类相关
+    CATEGORY_NOT_FOUND(6101, "分类不存在"),
+    CATEGORY_NAME_EXISTS(6102, "分类名称已存在"),
+    SYSTEM_CATEGORY_CANNOT_DELETE(6103, "系统默认分类不能删除"),
 
     // 生成相关
     GENERATION_FAILED(7001, "内容生成失败"),
