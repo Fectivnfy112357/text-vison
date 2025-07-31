@@ -783,11 +783,10 @@ export default function Generate() {
                   {history.slice(0, 4).map((generation, genIndex) => (
                     <motion.div
                       key={generation.id}
-                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: genIndex * 0.1, type: "spring", stiffness: 100 }}
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className="border-2 border-gray-100 rounded-2xl p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 transition-all duration-300 h-full flex flex-col group"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: genIndex * 0.1 }}
+                      className="border-2 border-gray-100 rounded-2xl p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group"
                     >
                       {/* 生成状态指示 - 更现代的设计 */}
                       <div className="flex items-center justify-between mb-4">
@@ -847,37 +846,33 @@ export default function Generate() {
                                 <video
                                   src={url}
                                   controls
-                                  className="w-full aspect-video object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
+                                  className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300"
                                   poster={generation.thumbnails?.[index]}
                                 />
                               ) : (
                                 <img
                                   src={url}
                                   alt={`生成结果 ${index + 1}`}
-                                  className="w-full aspect-square object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
+                                  className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300"
                                 />
                               )}
 
                               {/* 操作按钮 - 更现代的设计 */}
-                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 flex space-x-2">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
+                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
+                                <button
                                   onClick={() => handleDownload(url, index)}
-                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transition-all shadow-lg"
+                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                                   title="下载"
                                 >
                                   <Download className="w-4 h-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
+                                </button>
+                                <button
                                   onClick={() => handleShare(url)}
-                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transition-all shadow-lg"
+                                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                                   title="分享"
                                 >
                                   <Share2 className="w-4 h-4" />
-                                </motion.button>
+                                </button>
                               </div>
 
                               {/* 悬浮信息 */}
@@ -916,10 +911,10 @@ export default function Generate() {
                   {Array.from({ length: Math.max(0, 4 - history.length) }).map((_, index) => (
                     <motion.div 
                       key={`empty-${index}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (history.length + index) * 0.1 }}
-                      className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 transition-all duration-300"
+                      className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:-translate-y-1 transition-all duration-300"
                     >
                       <div className="flex items-center justify-center h-full">
                         <div className="text-center">
@@ -936,28 +931,36 @@ export default function Generate() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4 w-full h-full">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <motion.div 
-                      key={`placeholder-${index}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 transition-all duration-300 group"
+                <div className="flex items-center justify-center h-full w-full min-h-[400px]">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="text-center flex flex-col items-center"
+                  >
+                    <motion.div
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="mb-6 flex justify-center"
                     >
-                      <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                          <motion.div
-                            animate={{ y: [0, -5, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
-                          >
-                            <ImageIcon className="w-8 h-8 text-gray-300 group-hover:text-purple-400 mx-auto mb-3 transition-colors" />
-                          </motion.div>
-                          <p className="text-sm text-gray-400 group-hover:text-purple-500 font-medium transition-colors">等待创作</p>
-                        </div>
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl flex items-center justify-center shadow-lg">
+                        <Sparkles className="w-10 h-10 text-purple-500" />
                       </div>
                     </motion.div>
-                  ))}
+                    <h3 className="text-2xl font-bold text-gray-700 mb-3">等待您的创作</h3>
+                    <p className="text-gray-500 text-lg mb-6 max-w-md text-center">
+                      输入您的创意描述，让AI为您创造精彩的视觉作品
+                    </p>
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="flex items-center justify-center space-x-2 text-purple-500"
+                    >
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                    </motion.div>
+                  </motion.div>
                 </div>
               )}
               </div>
