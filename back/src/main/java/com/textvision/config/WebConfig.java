@@ -33,6 +33,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/templates/categories",
                         "/api/templates/popular",
                         "/api/templates/search",
+                        "/api/art-styles",
                         "/api/templates/by-tag",
                         "/api/template-categories",
                         "/api/template-categories/names",

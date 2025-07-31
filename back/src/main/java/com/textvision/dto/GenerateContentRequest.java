@@ -43,6 +43,11 @@ public class GenerateContentRequest {
     private String style;
 
     /**
+     * 艺术风格ID
+     */
+    private Long styleId;
+
+    /**
      * 参考图片URL
      */
     private String referenceImage;

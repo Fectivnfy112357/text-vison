@@ -257,7 +257,20 @@ export const contentAPI = {
     });
   },
 
-  // 获取用户生成内容列表
+  // 艺术风格管理
+  getArtStyles: async (type?: 'image' | 'video' | 'both') => {
+    let url = '/art-styles';
+    if (type) {
+      url += `?type=${type}`;
+    }
+    return await request(url);
+  },
+
+  getArtStyleById: async (id: number) => {
+    return await request(`/art-styles/${id}`);
+  },
+
+  // 用户内容管理
   getUserContents: async (page = 1, size = 20, type?: string) => {
     let url = `/contents?page=${page}&size=${size}`;
     if (type) {

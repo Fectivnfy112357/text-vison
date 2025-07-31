@@ -93,6 +93,30 @@ INSERT INTO `generated_content` (`user_id`, `type`, `prompt`, `url`, `thumbnail`
                                                                                                                  (1, 'image', '现代建筑设计', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20architecture%20design&image_size=portrait_4_3', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20architecture%20thumbnail&image_size=square', '4:3', '建筑风格', 'completed'),
                                                                                                                  (2, 'video', '城市夜景延时摄影', 'https://example.com/video/city-timelapse.mp4', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=city%20night%20timelapse%20thumbnail&image_size=landscape_16_9', '16:9', '延时摄影', 'completed');
 
+-- 艺术风格表
+CREATE TABLE IF NOT EXISTS `art_style` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '风格ID',
+    `name` VARCHAR(50) NOT NULL COMMENT '风格名称',
+    `description` VARCHAR(200) NOT NULL COMMENT '风格描述',
+    `applicable_type` VARCHAR(20) NOT NULL COMMENT '适用类型：image-图片，video-视频，both-两者',
+    `sort_order` INT DEFAULT 0 COMMENT '排序权重',
+    `status` TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='艺术风格表';
+
+-- 插入艺术风格初始数据
+INSERT INTO `art_style` (`name`, `description`, `applicable_type`, `sort_order`) VALUES
+('动漫风格', '动漫风', 'both', 1),
+('油画风格', '油画风', 'both', 2),
+('水彩风格', '水彩风', 'both', 3),
+('素描风格', '素描风', 'image', 4),
+('写实风格', '写实风', 'both', 5),
+('卡通风格', '卡通风', 'both', 6),
+('科幻风格', '科幻风', 'both', 7),
+('古典风格', '古典风', 'both', 8);
+
 -- 添加外键约束
 ALTER TABLE `generated_content` ADD CONSTRAINT `fk_generated_content_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
 ALTER TABLE `generated_content` ADD CONSTRAINT `fk_generated_content_template` FOREIGN KEY (`template_id`) REFERENCES `template` (`id`) ON DELETE SET NULL;

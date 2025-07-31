@@ -13,6 +13,7 @@ import com.textvision.entity.GeneratedContent;
 import com.textvision.entity.Template;
 import com.textvision.exception.BusinessException;
 import com.textvision.mapper.GeneratedContentMapper;
+import com.textvision.service.ArtStyleService;
 import com.textvision.service.GeneratedContentService;
 import com.textvision.service.TemplateService;
 import com.textvision.service.VolcanoApiService;
@@ -43,6 +44,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private final GeneratedContentMapper generatedContentMapper;
     private final TemplateService templateService;
     private final VolcanoApiService volcanoApiService;
+    private final ArtStyleService artStyleService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,11 +67,21 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
             }
         }
 
+        // 处理艺术风格
+        String finalPrompt = request.getPrompt();
+        if (request.getStyleId() != null) {
+            String styleDescription = artStyleService.getStyleDescription(request.getStyleId());
+            if (styleDescription != null && !styleDescription.trim().isEmpty()) {
+                finalPrompt = styleDescription + ", " + request.getPrompt();
+                log.info("应用艺术风格: styleId={}, description={}", request.getStyleId(), styleDescription);
+            }
+        }
+
         // 创建生成内容记录
         GeneratedContent content = new GeneratedContent();
         content.setUserId(userId);
         content.setType(request.getType());
-        content.setPrompt(request.getPrompt());
+        content.setPrompt(finalPrompt);
         content.setSize(request.getSize());
         content.setStyle(request.getStyle());
         content.setReferenceImage(request.getReferenceImage());
@@ -106,8 +118,13 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
             templateService.incrementUsageCount(template.getId());
         }
         
+        // 创建修改后的请求对象用于异步生成
+        GenerateContentRequest modifiedRequest = new GenerateContentRequest();
+        BeanUtils.copyProperties(request, modifiedRequest);
+        modifiedRequest.setPrompt(finalPrompt);
+        
         // 异步调用生成API
-        asyncGenerateContent(content.getId(), request);
+        asyncGenerateContent(content.getId(), modifiedRequest);
         
         return convertToGeneratedContentResponse(content);
     }

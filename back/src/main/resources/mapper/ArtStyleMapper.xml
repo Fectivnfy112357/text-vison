@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.textvision.mapper.ArtStyleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.textvision.entity.ArtStyle">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="applicable_type" property="applicableType" />
+        <result column="sort_order" property="sortOrder" />
+        <result column="status" property="status" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted
+    </sql>
+
+    <!-- 根据适用类型查询艺术风格列表 -->
+    <select id="selectByApplicableType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM art_style
+        WHERE deleted = 0
+        AND status = 1
+        AND (applicable_type = #{applicableType} OR applicable_type = 'both')
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询启用状态的艺术风格列表 -->
+    <select id="selectEnabledStyles" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM art_style
+        WHERE deleted = 0
+        AND status = 1
+        <if test="applicableType != null and applicableType != ''">
+            AND (applicable_type = #{applicableType} OR applicable_type = 'both')
+        </if>
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+</mapper>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, Image as ImageIcon, Video, Download, Share2, Wand2, Settings, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useArtStyleStore } from '@/store/useArtStyleStore';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { useTemplateStore } from '@/store/useTemplateStore';
@@ -21,6 +22,7 @@ export default function Generate() {
   // 图片专用参数
   const [size, setSize] = useState('1024x1024');
   const [style, setStyle] = useState('');
+  const [styleId, setStyleId] = useState<number | undefined>(undefined);
   const [quality, setQuality] = useState('standard');
   const [responseFormat, setResponseFormat] = useState('url');
   const [seed, setSeed] = useState<number | undefined>(undefined);
@@ -46,6 +48,7 @@ export default function Generate() {
 
   const { generateContent, isGenerating, currentGeneration, stopPolling, history, loadHistory } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
+  const { styles, fetchStyles, getStylesByType } = useArtStyleStore();
 
   // 组件卸载时清理轮询
   useEffect(() => {
@@ -54,12 +57,13 @@ export default function Generate() {
     };
   }, [stopPolling]);
 
-  // 页面加载时获取历史记录
+  // 页面加载时获取历史记录和艺术风格
   useEffect(() => {
     if (isAuthenticated) {
       loadHistory();
     }
-  }, [isAuthenticated, loadHistory]);
+    fetchStyles();
+  }, [isAuthenticated, loadHistory, fetchStyles]);
 
   // 视频参数选项
   const resolutionOptions = [
@@ -180,6 +184,7 @@ export default function Generate() {
       if (type === 'image') {
         params.size = size;
         params.style = style;
+        params.styleId = styleId;
         params.quality = quality;
         params.responseFormat = responseFormat;
         if (seed !== undefined && seed >= -1 && seed <= 2147483647) {
@@ -191,6 +196,7 @@ export default function Generate() {
       }
 
       if (type === 'video') {
+        params.styleId = styleId;
         params.resolution = resolution;
         params.duration = duration;
         params.ratio = ratio;
@@ -616,13 +622,28 @@ export default function Generate() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
-                          <input
-                            type="text"
-                            value={style}
-                            onChange={(e) => setStyle(e.target.value)}
-                            placeholder="如：油画、水彩、卡通等"
+                          <select
+                            value={styleId || ''}
+                            onChange={(e) => {
+                              const selectedId = e.target.value ? Number(e.target.value) : undefined;
+                              setStyleId(selectedId);
+                              // 同时更新style字段以保持兼容性
+                              if (selectedId) {
+                                const selectedStyle = styles.find(s => s.id === selectedId);
+                                setStyle(selectedStyle?.name || '');
+                              } else {
+                                setStyle('');
+                              }
+                            }}
                             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-                          />
+                          >
+                            <option value="">选择艺术风格（可选）</option>
+                            {getStylesByType(type).map((artStyle) => (
+                              <option key={artStyle.id} value={artStyle.id}>
+                                {artStyle.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-3">随机种子</label>
@@ -684,6 +705,31 @@ export default function Generate() {
                               max="60"
                               className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
                             />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
+                            <select
+                              value={styleId || ''}
+                              onChange={(e) => {
+                                const selectedId = e.target.value ? Number(e.target.value) : undefined;
+                                setStyleId(selectedId);
+                                // 同时更新style字段以保持兼容性
+                                if (selectedId) {
+                                  const selectedStyle = styles.find(s => s.id === selectedId);
+                                  setStyle(selectedStyle?.name || '');
+                                } else {
+                                  setStyle('');
+                                }
+                              }}
+                              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                            >
+                              <option value="">选择艺术风格（可选）</option>
+                              {getStylesByType(type).map((artStyle) => (
+                                <option key={artStyle.id} value={artStyle.id}>
+                                  {artStyle.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </div>
 
