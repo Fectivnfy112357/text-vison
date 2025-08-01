@@ -23,6 +23,7 @@ export default function Generate() {
   const [firstFrameImage] = useState<string | null>(null);
   const [lastFrameImage] = useState<string | null>(null);
   const [selectedStyleId, setSelectedStyleId] = useState<number | undefined>(undefined);
+  const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
 
@@ -49,7 +50,7 @@ export default function Generate() {
   const { generateContent, isGenerating, currentGeneration, stopPolling, history, loadHistory } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
   const { fetchStyles, styles, getStylesByType } = useArtStyleStore();
-  const { templates } = useTemplateStore();
+  const { templates, useTemplate } = useTemplateStore();
 
   // 组件卸载时清理轮询
   useEffect(() => {
@@ -79,6 +80,7 @@ export default function Generate() {
       if (template) {
         setPrompt(template.prompt || '');
         setType(template.type || 'image');
+        setCurrentTemplateId(templateId);
         toast.success(`已应用模板：${template.title}`);
       }
     }
@@ -212,6 +214,17 @@ export default function Generate() {
       }
 
       await generateContent(prompt, type, params);
+      
+      // 如果使用了模板，增加模板使用次数
+      if (currentTemplateId) {
+        try {
+          await useTemplate(currentTemplateId);
+        } catch (error) {
+          console.error('更新模板使用次数失败:', error);
+          // 不影响主要功能，只记录错误
+        }
+      }
+      
       toast.success('生成成功！');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '生成失败，请重试';

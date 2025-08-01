@@ -166,6 +166,13 @@ export const templateAPI = {
   getPopularTemplates: async (limit = 10) => {
     return await request(`/templates/popular?limit=${limit}`);
   },
+
+  // 使用模板（增加使用次数）
+  useTemplate: async (id: string) => {
+    return await request(`/templates/${id}/use`, {
+      method: 'POST',
+    });
+  },
 };
 
 // 模板分类相关 API
@@ -240,12 +247,18 @@ export const contentAPI = {
       type,
       templateId,
       size,
-      style,
     };
     
     // 如果有额外选项，合并到请求体中
     if (options) {
       Object.assign(requestBody, options);
+    }
+    
+    // 如果options中有styleId，使用styleId；否则使用style
+    if (options?.styleId) {
+      requestBody.styleId = options.styleId;
+    } else if (style) {
+      requestBody.style = style;
     }
     
     return await request('/contents/generate', {

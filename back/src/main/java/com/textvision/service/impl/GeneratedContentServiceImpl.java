@@ -70,12 +70,19 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
 
         // 处理艺术风格
         String finalPrompt = request.getPrompt();
+        String styleName = "默认风格";
         if (request.getStyleId() != null) {
-            String styleDescription = artStyleService.getStyleDescription(request.getStyleId());
-            if (styleDescription != null && !styleDescription.trim().isEmpty()) {
-                finalPrompt = styleDescription + ", " + request.getPrompt();
-                log.info("应用艺术风格: styleId={}, description={}", request.getStyleId(), styleDescription);
+            ArtStyle artStyle = artStyleService.getById(request.getStyleId());
+            if (artStyle != null) {
+                styleName = artStyle.getName();
+                String styleDescription = artStyle.getDescription();
+                if (styleDescription != null && !styleDescription.trim().isEmpty()) {
+                    finalPrompt = styleDescription + ", " + request.getPrompt();
+                    log.info("应用艺术风格: styleId={}, name={}, description={}", request.getStyleId(), styleName, styleDescription);
+                }
             }
+        } else if (request.getStyle() != null && !request.getStyle().trim().isEmpty()) {
+            styleName = request.getStyle();
         }
 
         // 创建生成内容记录
@@ -84,7 +91,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         content.setType(request.getType());
         content.setPrompt(finalPrompt);
         content.setSize(request.getSize());
-        content.setStyle(request.getStyle());
+        content.setStyle(styleName);
         content.setReferenceImage(request.getReferenceImage());
         content.setTemplateId(request.getTemplateId());
         content.setStatus("processing");

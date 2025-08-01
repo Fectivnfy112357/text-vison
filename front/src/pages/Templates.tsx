@@ -7,19 +7,19 @@ import { toast } from 'sonner';
 
 export default function Templates() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
-  const { 
-    templates, 
-    categories, 
-    searchQuery, 
+
+  const {
+    templates,
+    categories,
+    searchQuery,
     selectedCategory,
-    isLoading, 
-    fetchTemplates, 
-    setSelectedCategory, 
+    isLoading,
+    fetchTemplates,
+    setSelectedCategory,
     setSearchQuery,
-    loadCategories 
+    loadCategories
   } = useTemplateStore();
-  
+
   // 直接使用templates状态，后端已经处理了筛选
   const filteredTemplates = templates.filter(template => template && typeof template === 'object');
 
@@ -35,7 +35,7 @@ export default function Templates() {
       }
     };
     loadData();
-   }, [fetchTemplates, loadCategories]);
+  }, [fetchTemplates, loadCategories]);
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -62,7 +62,7 @@ export default function Templates() {
 
         {/* 热门模板轮播 */}
         {popularTemplates.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-12"
@@ -74,7 +74,7 @@ export default function Templates() {
               </h2>
               <p className="text-purple-100">最受欢迎的创作模板</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {popularTemplates.map((template, index) => (
                 <motion.div
@@ -94,7 +94,7 @@ export default function Templates() {
                         target.src = '/placeholder-template.png';
                       }}
                     />
-                    
+
                     {/* 类型标识 */}
                     <div className="absolute top-3 left-3">
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
@@ -133,7 +133,7 @@ export default function Templates() {
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
-                    
+
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
                         {template.categoryId || '其他'}
@@ -154,7 +154,7 @@ export default function Templates() {
         )}
 
         {/* 搜索和过滤器 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg p-6 mb-8"
@@ -177,21 +177,19 @@ export default function Templates() {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid'
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                    }`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list'
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                    }`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -210,11 +208,10 @@ export default function Templates() {
                 <button
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id === 0 ? '全部' : category.id.toString())}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedCategory === (category.id === 0 ? '全部' : category.id.toString())
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === (category.id === 0 ? '全部' : category.id.toString())
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {category.name}
                 </button>
@@ -232,7 +229,7 @@ export default function Templates() {
             </div>
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-16"
@@ -257,10 +254,10 @@ export default function Templates() {
             </button>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={viewMode === 'grid' 
+            className={viewMode === 'grid'
               ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
               : 'space-y-4'
             }
@@ -278,15 +275,15 @@ export default function Templates() {
                   >
                     <div className="relative aspect-video">
                       <img
-                          src={template.preview || '/placeholder-template.png'}
-                          alt={template.title || '模板预览'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-template.png';
-                          }}
-                        />
-                      
+                        src={template.preview || '/placeholder-template.png'}
+                        alt={template.title || '模板预览'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-template.png';
+                        }}
+                      />
+
                       {/* 类型标识 */}
                       <div className="absolute top-3 left-3">
                         <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
@@ -317,7 +314,7 @@ export default function Templates() {
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
-                      
+
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
                           {template.categoryId || '其他'}
@@ -327,9 +324,22 @@ export default function Templates() {
                             <Eye className="w-3 h-3" />
                             <span>{template.views || 0}</span>
                           </span>
-                          <span>{template.style || '默认风格'}</span>
                         </div>
                       </div>
+
+                      {/* 标签显示 */}
+                      {template.tags && template.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {template.tags.slice(0, 3).map((tag, tagIndex) => (
+                            <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                              {tag}
+                            </span>
+                          ))}
+                          {template.tags.length > 3 && (
+                            <span className="text-gray-400 text-xs">+{template.tags.length - 3}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 ) : (
@@ -362,23 +372,36 @@ export default function Templates() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 mb-1">{template.title || '未命名模板'}</h3>
                         <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description || '暂无描述'}</p>
-                        
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+
+                        <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
                           <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
                             {template.categoryId || '其他'}
                           </span>
-                          <span>{template.style || '默认风格'}</span>
                           <span className="flex items-center space-x-1">
                             <Eye className="w-3 h-3" />
                             <span>{template.views || 0}</span>
                           </span>
                         </div>
+
+                        {/* 标签显示 */}
+                        {template.tags && template.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {template.tags.slice(0, 4).map((tag, tagIndex) => (
+                              <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                                {tag}
+                              </span>
+                            ))}
+                            {template.tags.length > 4 && (
+                              <span className="text-gray-400 text-xs">+{template.tags.length - 4}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      
+
                       <div className="flex-shrink-0">
                         <Link
                           to={`/generate?template=${template.id}`}
@@ -399,7 +422,7 @@ export default function Templates() {
 
         {/* 加载更多 */}
         {filteredTemplates.length > 0 && filteredTemplates.length % 12 === 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center mt-12"

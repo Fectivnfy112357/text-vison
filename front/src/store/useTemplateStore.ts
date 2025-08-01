@@ -36,6 +36,7 @@ interface TemplateState {
   setSelectedCategory: (categoryId: string) => void;
   setSearchQuery: (query: string) => void;
   loadCategories: () => Promise<void>;
+  useTemplate: (templateId: string) => Promise<void>;
 }
 
 
@@ -123,5 +124,29 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     // 如果是"全部"则传递undefined，否则传递实际的categoryId
     const actualCategoryId = selectedCategory === '全部' ? undefined : selectedCategory;
     fetchTemplates(actualCategoryId, query);
+  },
+
+  useTemplate: async (templateId: string) => {
+    try {
+      // 调用API增加使用次数
+      await templateAPI.useTemplate(templateId);
+      
+      // 更新本地状态中对应模板的使用次数
+      const { templates } = get();
+      const updatedTemplates = templates.map(template => {
+        if (template.id === templateId) {
+          return {
+            ...template,
+            views: (template.views || 0) + 1
+          };
+        }
+        return template;
+      });
+      
+      set({ templates: updatedTemplates });
+    } catch (error) {
+      console.error('更新模板使用次数失败:', error);
+      throw error;
+    }
   }
 }));
