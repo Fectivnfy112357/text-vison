@@ -8,4 +8,8 @@ export default defineConfig({
     react(),
     tsconfigPaths()
   ],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['frp-oil.com', 'localhost', '127.0.0.1']
+  }
 })

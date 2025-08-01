@@ -201,14 +201,14 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen pt-8 pb-16">
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 lg:mb-8">
+          <h1 className="text-3xl xs:text-4xl font-bold text-gray-900 mb-3 lg:mb-4">
             创作历史
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg xs:text-xl text-gray-600 px-2">
             回顾您的精彩创作历程
           </p>
         </div>
@@ -217,26 +217,26 @@ export default function History() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
+          className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+          <div className="flex flex-col space-y-4">
             {/* 搜索框 */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="搜索创作内容..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 lg:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
               />
             </div>
 
             {/* 过滤器 */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="w-5 h-5 text-gray-500" />
-                <div className="min-w-[120px]">
+            <div className="flex flex-col xs:flex-row xs:items-center space-y-3 xs:space-y-0 xs:space-x-4">
+              <div className="flex items-center space-x-2 flex-1">
+                <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
                   <CustomSelect
                     value={filterType}
                     onChange={(value) => setFilterType(value as 'all' | 'image' | 'video')}
@@ -246,7 +246,7 @@ export default function History() {
                 </div>
               </div>
 
-              <div className="min-w-[120px]">
+              <div className="flex-1 min-w-0">
                 <CustomSelect
                   value={sortBy}
                   onChange={(value) => {
@@ -261,11 +261,11 @@ export default function History() {
 
           {/* 批量操作 */}
           {filteredHistory.length > 0 && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between space-y-3 xs:space-y-0 mt-4 pt-4 border-t border-gray-200">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleSelectAll}
-                  className="text-sm text-purple-600 hover:text-purple-700"
+                  className="text-sm text-purple-600 hover:text-purple-700 min-h-[44px] flex items-center"
                 >
                   {selectedItems.length === filteredHistory.length ? '取消全选' : '全选'}
                 </button>
@@ -280,7 +280,7 @@ export default function History() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleDeleteSelected}
-                    className="flex items-center space-x-1 px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-1 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors min-h-[44px]"
                   >
                     <Trash2 className="w-4 h-4" />
                     <span>删除选中</span>
@@ -334,7 +334,7 @@ export default function History() {
             </Link>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             <AnimatePresence>
               {filteredHistory.map((item, index) => (
                 <motion.div
@@ -348,7 +348,7 @@ export default function History() {
                   onClick={() => handleSelectItem(item.id)}
                 >
                   {/* 图片/视频预览 */}
-                  <div className="relative h-48 overflow-hidden group/media">
+                  <div className="relative h-40 xs:h-48 overflow-hidden group/media">
                     {item.type === 'video' ? (
                       <div
                         className="relative w-full h-full bg-black cursor-pointer"
@@ -409,7 +409,7 @@ export default function History() {
                           e.stopPropagation();
                           handleDownload(item);
                         }}
-                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 lg:p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="下载"
                       >
                         <Download className="w-4 h-4" />
@@ -419,7 +419,7 @@ export default function History() {
                           e.stopPropagation();
                           handleShare(item);
                         }}
-                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 lg:p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="分享"
                       >
                         <Share2 className="w-4 h-4" />
@@ -433,19 +433,19 @@ export default function History() {
                   </div>
 
                   {/* 内容信息 */}
-                  <div className="p-4">
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  <div className="p-3 lg:p-4">
+                    <p className="text-sm text-gray-600 mb-2 lg:mb-3 line-clamp-2">
                       {item.prompt || '无描述'}
                     </p>
 
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                      <span>{item.style || '默认风格'}</span>
-                      <span>{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1 lg:mb-2">
+                      <span className="truncate flex-1 mr-2">{item.style || '默认风格'}</span>
+                      <span className="flex-shrink-0">{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span>{item.size || '未知尺寸'}</span>
-                      <span>#{item.id ? item.id.slice(-6) : 'unknown'}</span>
+                      <span className="truncate flex-1 mr-2">{item.size || '未知尺寸'}</span>
+                      <span className="flex-shrink-0">#{item.id ? item.id.slice(-6) : 'unknown'}</span>
                     </div>
                   </div>
                 </motion.div>

@@ -48,14 +48,14 @@ export default function Templates() {
   const popularTemplates = templates.filter(t => t && t.isPopular).slice(0, 6);
 
   return (
-    <div className="min-h-screen pt-8 pb-16">
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 lg:mb-8">
+          <h1 className="text-3xl xs:text-4xl font-bold text-gray-900 mb-3 lg:mb-4">
             模板库
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg xs:text-xl text-gray-600 px-2">
             精选优质模板，激发您的创作灵感
           </p>
         </div>
@@ -65,17 +65,17 @@ export default function Templates() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
+            className="mb-8 lg:mb-12"
           >
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-8 text-white mb-6">
-              <h2 className="text-2xl font-bold mb-2 flex items-center">
-                <Star className="w-6 h-6 mr-2" />
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-6 lg:p-8 text-white mb-4 lg:mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold mb-2 flex items-center">
+                <Star className="w-5 h-5 lg:w-6 lg:h-6 mr-2" />
                 热门推荐
               </h2>
-              <p className="text-purple-100">最受欢迎的创作模板</p>
+              <p className="text-purple-100 text-sm lg:text-base">最受欢迎的创作模板</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {popularTemplates.map((template, index) => (
                 <motion.div
                   key={template.id}
@@ -157,65 +157,69 @@ export default function Templates() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
+          className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-            {/* 搜索框 */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="搜索模板..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
+          <div className="flex flex-col space-y-4">
+            {/* 搜索框和视图切换 */}
+            <div className="flex flex-col xs:flex-row xs:items-center space-y-3 xs:space-y-0 xs:space-x-4">
+              {/* 搜索框 */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="搜索模板..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
+                />
+              </div>
 
-            {/* 视图切换 */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+              {/* 视图切换 */}
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
+                  className={`p-3 lg:p-2 rounded-lg transition-colors min-w-[48px] min-h-[48px] lg:min-w-auto lg:min-h-auto flex items-center justify-center ${
+                    viewMode === 'grid'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                  }`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
+                  className={`p-3 lg:p-2 rounded-lg transition-colors min-w-[48px] min-h-[48px] lg:min-w-auto lg:min-h-auto flex items-center justify-center ${
+                    viewMode === 'list'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                  }`}
                 >
                   <List className="w-5 h-5" />
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* 分类过滤 */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center space-x-2 mb-3">
-              <Filter className="w-5 h-5 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">分类筛选</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.id === 0 ? '全部' : category.id.toString())}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === (category.id === 0 ? '全部' : category.id.toString())
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            {/* 分类过滤 */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex items-center space-x-2 mb-3">
+                <Filter className="w-5 h-5 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">分类筛选</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.id === 0 ? '全部' : category.id.toString())}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[40px] ${
+                      selectedCategory === (category.id === 0 ? '全部' : category.id.toString())
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
-                >
-                  {category.name}
-                </button>
-              ))}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -258,7 +262,7 @@ export default function Templates() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={viewMode === 'grid'
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+              ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
               : 'space-y-4'
             }
           >
@@ -303,10 +307,10 @@ export default function Templates() {
                         <Link
                           to={`/generate?template=${template.id}`}
                           onClick={() => handleUseTemplate(template)}
-                          className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 min-h-[44px]"
                         >
                           <Wand2 className="w-4 h-4" />
-                          <span>使用模板</span>
+                          <span className="text-sm lg:text-base">使用模板</span>
                         </Link>
                       </div>
                     </div>
@@ -406,10 +410,10 @@ export default function Templates() {
                         <Link
                           to={`/generate?template=${template.id}`}
                           onClick={() => handleUseTemplate(template)}
-                          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 min-h-[44px]"
                         >
                           <Wand2 className="w-4 h-4" />
-                          <span>使用</span>
+                          <span className="text-sm lg:text-base">使用</span>
                         </Link>
                       </div>
                     </div>
