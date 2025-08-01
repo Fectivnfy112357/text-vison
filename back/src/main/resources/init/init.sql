@@ -1,123 +1,174 @@
--- 创建数据库
-CREATE DATABASE IF NOT EXISTS text_vision DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE text_vision;
+create table art_style
+(
+    id              bigint auto_increment comment '风格ID'
+        primary key,
+    name            varchar(50)                         not null comment '风格名称',
+    description     varchar(200)                        not null comment '风格描述',
+    applicable_type varchar(20)                         not null comment '适用类型：image-图片，video-视频，both-两者',
+    sort_order      int       default 0                 null comment '排序权重',
+    status          tinyint   default 1                 null comment '状态：0-禁用，1-启用',
+    created_at      timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    updated_at      timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted         tinyint   default 0                 null comment '逻辑删除：0-未删除，1-已删除'
+)
+    comment '艺术风格表';
 
--- 用户表
-CREATE TABLE IF NOT EXISTS `user` (
-                                      `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '用户ID',
-                                      `email` VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
-                                      `name` VARCHAR(50) NOT NULL COMMENT '用户名',
-                                      `password` VARCHAR(255) NOT NULL COMMENT '密码',
-                                      `avatar` VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
-                                      `status` TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
-                                      `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                      `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                      `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+create table template_category
+(
+    id          bigint auto_increment comment '分类ID'
+        primary key,
+    name        varchar(50)                         not null comment '分类名称',
+    description varchar(200)                        null comment '分类描述',
+    icon        varchar(100)                        null comment '分类图标',
+    sort_order  int       default 0                 null comment '排序权重',
+    status      tinyint   default 1                 null comment '状态：0-禁用，1-启用',
+    created_at  timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    updated_at  timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted     tinyint   default 0                 null comment '逻辑删除：0-未删除，1-已删除',
+    constraint uk_name
+        unique (name)
+)
+    comment '模板分类表';
 
--- 模板表
-CREATE TABLE IF NOT EXISTS `template` (
-                                          `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '模板ID',
-                                          `title` VARCHAR(100) NOT NULL COMMENT '模板标题',
-                                          `description` TEXT COMMENT '模板描述',
-                                          `prompt` TEXT NOT NULL COMMENT '模板提示词',
-                                          `category` VARCHAR(50) NOT NULL COMMENT '模板分类',
-                                          `tags` JSON COMMENT '标签列表',
-                                          `image_url` longtext COMMENT '模板预览图',
-                                          `type` VARCHAR(20) NOT NULL COMMENT '类型：image-图片，video-视频',
-                                          `usage_count` INT DEFAULT 0 COMMENT '使用次数',
-                                          `status` TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
-                                          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                          `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模板表';
+create table template
+(
+    id           bigint auto_increment comment '模板ID'
+        primary key,
+    title        varchar(100)                        not null comment '模板标题',
+    description  text                                null comment '模板描述',
+    prompt       text                                not null comment '模板提示词',
+    category     varchar(50)                         not null comment '模板分类',
+    category_id  bigint                              null comment '分类ID',
+    art_style_id bigint                              null comment '艺术风格ID',
+    tags         json                                null comment '标签列表',
+    image_url    varchar(500)                        null comment '模板预览图',
+    type         varchar(20)                         not null comment '类型：image-图片，video-视频',
+    usage_count  int       default 0                 null comment '使用次数',
+    status       tinyint   default 1                 null comment '状态：0-禁用，1-启用',
+    created_at   timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    updated_at   timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted      tinyint   default 0                 null comment '逻辑删除：0-未删除，1-已删除',
+    constraint fk_template_category
+        foreign key (category_id) references template_category (id)
+            on delete set null
+)
+    comment '模板表';
 
--- 生成内容表
-CREATE TABLE IF NOT EXISTS `generated_content` (
-                                                   `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '内容ID',
-                                                   `user_id` BIGINT NOT NULL COMMENT '用户ID',
-                                                   `type` VARCHAR(20) NOT NULL COMMENT '类型：image-图片，video-视频',
-                                                   `prompt` TEXT NOT NULL COMMENT '生成提示词',
-                                                   `url` longtext NOT NULL COMMENT '生成内容URL',
-                                                   `thumbnail` longtext COMMENT '缩略图URL',
-                                                   `size` VARCHAR(20) COMMENT '尺寸比例',
-                                                   `style` VARCHAR(50) COMMENT '艺术风格',
-                                                   `reference_image` longtext COMMENT '参考图片URL',
-                                                   `template_id` BIGINT COMMENT '使用的模板ID',
-                                                   `generation_params` JSON COMMENT '生成参数',
-                                                   `status` VARCHAR(20) DEFAULT 'generating' COMMENT '状态：generating-生成中，completed-完成，failed-失败',
-                                                   `error_message` TEXT COMMENT '错误信息',
-                                                   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                                   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                                   `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
-                                                   INDEX `idx_user_id` (`user_id`),
-                                                   INDEX `idx_type` (`type`),
-                                                   INDEX `idx_status` (`status`),
-                                                   INDEX `idx_created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='生成内容表';
+create index idx_art_style_id
+    on template (art_style_id);
 
--- 用户操作日志表
-CREATE TABLE IF NOT EXISTS `user_operation_log` (
-                                                    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '日志ID',
-                                                    `user_id` BIGINT COMMENT '用户ID',
-                                                    `operation` VARCHAR(50) NOT NULL COMMENT '操作类型',
-                                                    `resource_type` VARCHAR(50) COMMENT '资源类型',
-                                                    `resource_id` BIGINT COMMENT '资源ID',
-                                                    `details` JSON COMMENT '操作详情',
-                                                    `ip_address` VARCHAR(45) COMMENT 'IP地址',
-                                                    `user_agent` VARCHAR(500) COMMENT '用户代理',
-                                                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                                    INDEX `idx_user_id` (`user_id`),
-                                                    INDEX `idx_operation` (`operation`),
-                                                    INDEX `idx_created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户操作日志表';
+create index idx_category_id
+    on template (category_id);
 
--- 插入初始化数据
+create index idx_sort_order
+    on template_category (sort_order);
 
--- 插入测试用户
-INSERT INTO `user` (`email`, `name`, `password`, `avatar`) VALUES
-                                                               ('admin@textvision.com', '管理员', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLO.EvzJNjjS', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20avatar%20portrait&image_size=square'),
-                                                               ('user@textvision.com', '测试用户', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLO.EvzJNjjS', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=friendly%20user%20avatar&image_size=square');
+create index idx_status
+    on template_category (status);
 
--- 插入模板数据
-INSERT INTO `template` (`title`, `description`, `prompt`, `category`, `tags`, `image_url`, `type`) VALUES
-                                                                                                       ('科幻风景', '创造未来感十足的科幻风景画面', '未来科技城市，霓虹灯闪烁，飞行汽车穿梭，高楼大厦直插云霄，科幻风格，高清画质', '风景', '["科幻", "未来", "城市"]', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=futuristic%20sci-fi%20cityscape%20with%20neon%20lights&image_size=landscape_16_9', 'image'),
-                                                                                                       ('梦幻人像', '生成唯美梦幻的人物肖像', '美丽女性肖像，梦幻光效，柔和色调，艺术摄影风格，高清细节', '人像', '["人像", "梦幻", "艺术"]', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=dreamy%20portrait%20photography%20with%20soft%20lighting&image_size=portrait_4_3', 'image'),
-                                                                                                       ('抽象艺术', '创作现代抽象艺术作品', '抽象几何图形，鲜艳色彩搭配，现代艺术风格，创意构图', '艺术', '["抽象", "现代", "几何"]', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20abstract%20geometric%20art%20with%20vibrant%20colors&image_size=square_hd', 'image'),
-                                                                                                       ('自然风光', '展现大自然的壮美景色', '壮丽山川，清澈湖水，蓝天白云，自然摄影风格，风光大片', '风景', '["自然", "山川", "风光"]', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=majestic%20natural%20landscape%20with%20mountains%20and%20lake&image_size=landscape_16_9', 'image'),
-                                                                                                       ('动态视频', '创建引人入胜的动态视频内容', '流畅的镜头运动，丰富的视觉效果，专业的剪辑风格', '视频', '["动态", "视频", "创意"]', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=dynamic%20video%20production%20concept&image_size=landscape_16_9', 'video');
+create table user
+(
+    id         bigint auto_increment comment '用户ID'
+        primary key,
+    email      varchar(100)                        not null comment '邮箱',
+    name       varchar(50)                         not null comment '用户名',
+    password   varchar(255)                        not null comment '密码',
+    avatar     varchar(500)                        null comment '头像URL',
+    status     tinyint   default 1                 null comment '状态：0-禁用，1-启用',
+    created_at timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    updated_at timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted    tinyint   default 0                 null comment '逻辑删除：0-未删除，1-已删除',
+    constraint email
+        unique (email)
+)
+    comment '用户表';
 
--- 插入示例生成内容
-INSERT INTO `generated_content` (`user_id`, `type`, `prompt`, `url`, `thumbnail`, `size`, `style`, `status`) VALUES
-                                                                                                                 (1, 'image', '美丽的日落风景', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20sunset%20landscape&image_size=landscape_16_9', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20sunset%20landscape%20thumbnail&image_size=square', '16:9', '自然风格', 'completed'),
-                                                                                                                 (1, 'image', '现代建筑设计', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20architecture%20design&image_size=portrait_4_3', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20architecture%20thumbnail&image_size=square', '4:3', '建筑风格', 'completed'),
-                                                                                                                 (2, 'video', '城市夜景延时摄影', 'https://example.com/video/city-timelapse.mp4', 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=city%20night%20timelapse%20thumbnail&image_size=landscape_16_9', '16:9', '延时摄影', 'completed');
+create table generated_content
+(
+    id                bigint auto_increment comment '内容ID'
+        primary key,
+    user_id           bigint                                not null comment '用户ID',
+    type              varchar(20)                           not null comment '类型：image-图片，video-视频',
+    prompt            text                                  not null comment '生成提示词',
+    url               longtext                              not null comment '生成内容URL',
+    thumbnail         longtext                              null comment '缩略图URL',
+    size              varchar(20)                           null comment '尺寸比例',
+    style             varchar(50)                           null comment '艺术风格',
+    processing_type   varchar(50)                           null comment '处理类型：outfit_change, character_change, weather_change, style_transfer',
+    reference_image   longtext                              null comment '参考图片URL',
+    template_id       bigint                                null comment '使用的模板ID',
+    generation_params json                                  null comment '生成参数',
+    status            varchar(20) default 'generating'      null comment '状态：generating-生成中，completed-完成，failed-失败',
+    error_message     text                                  null comment '错误信息',
+    created_at        timestamp   default CURRENT_TIMESTAMP null comment '创建时间',
+    updated_at        timestamp   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted           tinyint     default 0                 null comment '逻辑删除：0-未删除，1-已删除',
+    urls              json                                  null comment '多个生成内容URL（用于多视频生成）',
+    thumbnails        json                                  null comment '多个缩略图URL',
+    constraint fk_generated_content_template
+        foreign key (template_id) references template (id)
+            on delete set null,
+    constraint fk_generated_content_user
+        foreign key (user_id) references user (id)
+            on delete cascade
+)
+    comment '生成内容表';
 
--- 艺术风格表
-CREATE TABLE IF NOT EXISTS `art_style` (
-    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '风格ID',
-    `name` VARCHAR(50) NOT NULL COMMENT '风格名称',
-    `description` VARCHAR(200) NOT NULL COMMENT '风格描述',
-    `applicable_type` VARCHAR(20) NOT NULL COMMENT '适用类型：image-图片，video-视频，both-两者',
-    `sort_order` INT DEFAULT 0 COMMENT '排序权重',
-    `status` TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='艺术风格表';
+create index idx_created_at
+    on generated_content (created_at);
 
--- 插入艺术风格初始数据
-INSERT INTO `art_style` (`name`, `description`, `applicable_type`, `sort_order`) VALUES
-('动漫风格', '动漫风', 'both', 1),
-('油画风格', '油画风', 'both', 2),
-('水彩风格', '水彩风', 'both', 3),
-('素描风格', '素描风', 'image', 4),
-('写实风格', '写实风', 'both', 5),
-('卡通风格', '卡通风', 'both', 6),
-('科幻风格', '科幻风', 'both', 7),
-('古典风格', '古典风', 'both', 8);
+create index idx_processing_type
+    on generated_content (processing_type);
 
--- 添加外键约束
-ALTER TABLE `generated_content` ADD CONSTRAINT `fk_generated_content_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
-ALTER TABLE `generated_content` ADD CONSTRAINT `fk_generated_content_template` FOREIGN KEY (`template_id`) REFERENCES `template` (`id`) ON DELETE SET NULL;
-ALTER TABLE `user_operation_log` ADD CONSTRAINT `fk_user_operation_log_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL;
+create index idx_status
+    on generated_content (status);
+
+create index idx_type
+    on generated_content (type);
+
+create index idx_user_id
+    on generated_content (user_id);
+
+create table user_operation_log
+(
+    id            bigint auto_increment comment '日志ID'
+        primary key,
+    user_id       bigint                              null comment '用户ID',
+    operation     varchar(50)                         not null comment '操作类型',
+    resource_type varchar(50)                         null comment '资源类型',
+    resource_id   bigint                              null comment '资源ID',
+    details       json                                null comment '操作详情',
+    ip_address    varchar(45)                         null comment 'IP地址',
+    user_agent    varchar(500)                        null comment '用户代理',
+    created_at    timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint fk_user_operation_log_user
+        foreign key (user_id) references user (id)
+            on delete set null
+)
+    comment '用户操作日志表';
+
+create index idx_created_at
+    on user_operation_log (created_at);
+
+create index idx_operation
+    on user_operation_log (operation);
+
+create index idx_user_id
+    on user_operation_log (user_id);
+
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (1, '动漫风格', '动漫风', 'both', 1, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (2, '油画风格', '油画风', 'both', 2, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (3, '水彩风格', '水彩风', 'both', 3, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (4, '素描风格', '素描风', 'image', 4, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (5, '写实风格', '写实风', 'both', 5, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (6, '卡通风格', '卡通风', 'both', 6, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (7, '科幻风格', '科幻风', 'both', 7, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+INSERT INTO text_vision.art_style (id, name, description, applicable_type, sort_order, status, created_at, updated_at, deleted) VALUES (8, '古典风格', '古典风', 'both', 8, 1, '2025-08-01 09:16:21', '2025-08-01 09:16:21', 0);
+
+
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (2, '风景', '自然风光、城市景观等风景类模板', 'mountain', 1, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (3, '人像', '人物肖像、艺术摄影等人像类模板', 'user', 2, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (4, '艺术', '抽象艺术、创意设计等艺术类模板', 'palette', 3, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (5, '视频', '动态视频、动画效果等视频类模板', 'video', 4, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (6, '商业', '产品展示、营销推广等商业类模板', 'briefcase', 5, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
+INSERT INTO text_vision.template_category (id, name, description, icon, sort_order, status, created_at, updated_at, deleted) VALUES (7, '其他', '其他类型模板', 'more-horizontal', 99, 1, '2025-08-01 09:14:07', '2025-08-01 09:14:07', 0);
