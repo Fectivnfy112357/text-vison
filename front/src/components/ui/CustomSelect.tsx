@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
- import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface Option {
@@ -49,9 +49,15 @@ export default function CustomSelect({
   // 处理点击外部关闭
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setFocusedIndex(-1);
+      const target = event.target as Node;
+      // 检查点击是否在容器内或下拉选项内
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        // 检查是否点击在Portal渲染的下拉框内
+        const dropdownElement = document.querySelector('[data-dropdown-portal]');
+        if (!dropdownElement || !dropdownElement.contains(target)) {
+          setIsOpen(false);
+          setFocusedIndex(-1);
+        }
       }
     };
 
@@ -155,9 +161,14 @@ export default function CustomSelect({
       </div>
 
       {/* 下拉选项 - 使用Portal渲染到body */}
-      {isOpen && createPortal(
+      {createPortal(
         <div
-          className="absolute z-[99999] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+          data-dropdown-portal
+          className={`absolute z-[99999] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden transition-opacity duration-200 ease-out ${
+            isOpen 
+              ? 'opacity-100' 
+              : 'opacity-0 pointer-events-none'
+          }`}
           style={{
             top: dropdownPosition.top,
             left: dropdownPosition.left,
