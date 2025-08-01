@@ -1,5 +1,5 @@
 // API 基础配置和工具函数
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://frp-off.com:32626/api';
 
 // 获取存储的 JWT token
 const getToken = (): string | null => {
@@ -45,6 +45,13 @@ const request = async (endpoint: string, options: RequestInit = {}): Promise<any
     if (!response.ok) {
       if (response.status === 401) {
         // Token 过期或无效，清除本地存储
+        console.error('401 未授权错误详情:', {
+          endpoint,
+          token: getToken(),
+          tokenExists: !!getToken(),
+          responseData: data,
+          headers: Object.fromEntries(response.headers.entries())
+        });
         clearToken();
         throw new Error(data.message || '登录已过期，请重新登录');
       }
@@ -63,6 +70,10 @@ const request = async (endpoint: string, options: RequestInit = {}): Promise<any
     return data.data || data;
   } catch (error) {
     console.error('API请求错误:', error);
+    // 如果是网络错误，提供更友好的错误信息
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new Error('网络连接失败，请检查网络连接或稍后重试');
+    }
     throw error;
   }
 };

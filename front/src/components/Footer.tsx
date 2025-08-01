@@ -3,7 +3,7 @@ import { Heart, Github, Mail, Phone } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100">
+    <footer className="bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100 pb-32 lg:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 品牌信息 */}
@@ -12,8 +12,9 @@ const Footer: React.FC = () => {
               文生视界
             </h3>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              让创意无界，让想象成真。通过AI技术，将您的文字描述转化为精美的视觉作品，
-              开启全新的创作体验。
+              让创意无界,让想象成真。
+              通过AI技术,将您的文字描述转化为精美的视觉作品
+
             </p>
             <div className="flex items-center space-x-4">
               <a
@@ -41,7 +42,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* 快速链接 */}
-          <div>
+          <div className="hidden md:block">
             <h4 className="font-semibold text-gray-900 mb-4">快速链接</h4>
             <ul className="space-y-2">
               <li>
@@ -68,7 +69,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* 帮助支持 */}
-          <div>
+          <div className="hidden md:block">
             <h4 className="font-semibold text-gray-900 mb-4">帮助支持</h4>
             <ul className="space-y-2">
               <li>

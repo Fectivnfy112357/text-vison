@@ -51,6 +51,16 @@ export default function Generate() {
   const { fetchStyles, styles, getStylesByType } = useArtStyleStore();
   const { templates } = useTemplateStore();
 
+  // 调试信息 - 临时添加
+  // useEffect(() => {
+  //   console.log('认证状态调试信息:', {
+  //     isAuthenticated,
+  //     user,
+  //     token: localStorage.getItem('auth_token'),
+  //     tokenExists: !!localStorage.getItem('auth_token')
+  //   });
+  // }, [isAuthenticated, user]);
+
   // 组件卸载时清理轮询
   useEffect(() => {
     return () => {
@@ -169,12 +179,26 @@ export default function Generate() {
   };
 
   const handleGenerate = async () => {
+    console.log('开始生成 - 调试信息:', {
+      prompt: prompt.trim(),
+      isAuthenticated,
+      user,
+      token: localStorage.getItem('auth_token'),
+      tokenExists: !!localStorage.getItem('auth_token')
+    });
+    
     if (!prompt.trim()) {
       toast.error('请输入描述文本');
       return;
     }
 
     if (!isAuthenticated) {
+      console.error('认证失败 - 详细信息:', {
+        isAuthenticated,
+        user,
+        token: localStorage.getItem('auth_token'),
+        tokenExists: !!localStorage.getItem('auth_token')
+      });
       toast.error('请先登录后再进行创作');
       return;
     }
@@ -251,6 +275,7 @@ export default function Generate() {
           >
             将您的想象力转化为令人惊艳的视觉作品，体验前所未有的创作乐趣
           </motion.p>
+         
         </motion.div>
 
         {/* 主要创作区域 */}

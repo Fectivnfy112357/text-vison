@@ -140,7 +140,7 @@ interface ImageParametersProps {
 
 function ImageParameters({ params, onParamChange }: ImageParametersProps) {
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-3">图片尺寸</label>
         <CustomSelect
@@ -201,7 +201,7 @@ function VideoParameters({
 }: VideoParametersProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">分辨率</label>
           <CustomSelect

@@ -118,18 +118,11 @@ export default function Navbar() {
               ) : (
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => handleAuthClick('login')}
-                    className="flex items-center space-x-1 text-gray-600 hover:text-purple-600 transition-colors"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span className="text-sm font-medium">登录</span>
-                  </button>
-                  {/* <button
                     onClick={() => handleAuthClick('register')}
                     className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105"
                   >
-                    注册
-                  </button> */}
+                    登录/注册
+                  </button>
                 </div>
               )}
             </div>
@@ -150,18 +143,18 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Overlay */}
-        {isMobileMenuOpen && (
-          <div 
-            className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-            onClick={closeMobileMenu}
-          />
-        )}
+        <div 
+          className={`lg:hidden fixed inset-0 z-40 backdrop-blur-sm transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen ? 'bg-purple-900/20 opacity-100' : 'bg-transparent opacity-0 pointer-events-none'
+          }`}
+          onClick={closeMobileMenu}
+        />
 
         {/* Mobile Menu */}
-        <div className={`lg:hidden fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-purple-100 transform transition-transform duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
+        <div className={`lg:hidden fixed top-16 left-4 right-4 z-40 bg-white/95 backdrop-blur-md border border-purple-100 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out transform ${
+          isMobileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
         }`}>
-          <div className="px-4 py-6 space-y-4">
+          <div className="px-6 py-6 space-y-4">
             {/* Mobile Navigation Links */}
             <div className="space-y-2">
               {navItems.map((item) => {
@@ -225,12 +218,12 @@ export default function Navbar() {
                     <LogIn className="w-5 h-5" />
                     <span className="text-base font-medium">登录</span>
                   </button>
-                  {/* <button
+                  <button
                     onClick={() => handleAuthClick('register')}
                     className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-3 rounded-xl text-base font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200"
                   >
                     注册账号
-                  </button> */}
+                  </button>
                 </div>
               )}
             </div>

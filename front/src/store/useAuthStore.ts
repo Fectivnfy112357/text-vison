@@ -29,16 +29,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await authAPI.login(email, password);
       
-      // 检查响应数据是否存在，用户数据在 response.user 中
-      if (!response || !response.user || !response.user.id) {
+      // 检查响应数据格式，支持多种可能的数据结构
+      let userData;
+      if (response && response.user) {
+        // 如果响应中有 user 字段
+        userData = response.user;
+      } else if (response && response.id) {
+        // 如果响应直接包含用户数据
+        userData = response;
+      } else {
+        console.error('登录响应数据:', response);
+        throw new Error('登录响应数据格式错误');
+      }
+      
+      if (!userData || !userData.id) {
+        console.error('用户数据无效:', userData);
         throw new Error('登录响应数据格式错误');
       }
       
       const user: User = {
-        id: response.user.id.toString(),
-        email: response.user.email || '',
-        name: response.user.name || '',
-        avatar: response.user.avatar
+        id: userData.id.toString(),
+        email: userData.email || email,
+        name: userData.name || '',
+        avatar: userData.avatar
       };
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
@@ -52,16 +65,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await authAPI.register(email, password, name, confirmPassword);
       
-      // 检查响应数据是否存在，用户数据在 response.user 中
-      if (!response || !response.user || !response.user.id) {
+      // 检查响应数据格式，支持多种可能的数据结构
+      let userData;
+      if (response && response.user) {
+        // 如果响应中有 user 字段
+        userData = response.user;
+      } else if (response && response.id) {
+        // 如果响应直接包含用户数据
+        userData = response;
+      } else {
+        console.error('注册响应数据:', response);
+        throw new Error('注册响应数据格式错误');
+      }
+      
+      if (!userData || !userData.id) {
+        console.error('用户数据无效:', userData);
         throw new Error('注册响应数据格式错误');
       }
       
       const user: User = {
-        id: response.user.id.toString(),
-        email: response.user.email || '',
-        name: response.user.name || '',
-        avatar: response.user.avatar
+        id: userData.id.toString(),
+        email: userData.email || email,
+        name: userData.name || name,
+        avatar: userData.avatar
       };
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
@@ -80,16 +106,30 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
+    const token = localStorage.getItem('auth_token');
+    console.log('checkAuth 开始执行:', { tokenExists: !!token, tokenLength: token?.length });
+    
+    if (!token) {
+      console.log('没有token，设置为未认证状态');
+      set({ user: null, isAuthenticated: false });
+      return;
+    }
+    
     try {
+      console.log('尝试获取用户信息...');
       const userProfile = await authAPI.getProfile();
+      console.log('获取用户信息成功:', userProfile);
+      
       const user: User = {
         id: userProfile.id.toString(),
         email: userProfile.email,
         name: userProfile.name,
         avatar: userProfile.avatar
       };
+      console.log('设置认证状态为已登录:', user);
       set({ user, isAuthenticated: true });
     } catch (error) {
+      console.error('checkAuth 失败:', error);
       // Token 无效或过期，清除认证状态
       clearToken();
       set({ user: null, isAuthenticated: false });

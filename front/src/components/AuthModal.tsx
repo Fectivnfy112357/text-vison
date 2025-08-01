@@ -181,8 +181,7 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
               onClick={() => onSwitchMode(mode === 'login' ? 'register' : 'login')}
               className="ml-1 text-purple-600 hover:text-purple-700 font-medium transition-colors"
             >
-              {/* {mode === 'login' ? '立即注册' : '立即登录'} */}
-              {mode === 'login' ? '' : '立即登录'}
+              {mode === 'login' ? '立即注册' : '立即登录'}
             </button>
           </p>
         </div>
