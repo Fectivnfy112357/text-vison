@@ -38,6 +38,12 @@ export default function History() {
     }
   }, [isAuthenticated, loadHistory, filterType]);
 
+  
+  // 页面加载时滚动到顶部
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // 过滤和排序历史记录
   const filteredHistory = history
     .filter(item => {
