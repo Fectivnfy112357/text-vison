@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Image as ImageIcon, Download, Share2 } from 'lucide-react';
+import { Image as ImageIcon, Download, Share2, Play } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { toast } from 'sonner';
+import MediaPreviewModal from '@/components/ui/MediaPreviewModal';
 
 interface GenerationResult {
   id: string;
@@ -21,6 +23,20 @@ interface ResultsDisplayProps {
 
 export default function ResultsDisplay({ history, onDownload, onShare }: ResultsDisplayProps) {
   const { currentGeneration } = useGenerationStore();
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean;
+    mediaUrl: string;
+    mediaType: 'image' | 'video';
+    title?: string;
+  }>({ isOpen: false, mediaUrl: '', mediaType: 'image' });
+
+  const openPreview = (url: string, type: 'image' | 'video', title?: string) => {
+    setPreviewModal({ isOpen: true, mediaUrl: url, mediaType: type, title });
+  };
+
+  const closePreview = () => {
+    setPreviewModal({ isOpen: false, mediaUrl: '', mediaType: 'image' });
+  };
 
   const getStatusDisplay = (generation: GenerationResult, index: number) => {
     if (generation.status === 'generating') {
@@ -93,7 +109,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
                   </div>
 
                   {/* 结果展示 - 更现代的加载动画 */}
-                  {renderContent(generation, genIndex, onDownload, onShare)}
+                  {renderContent(generation, genIndex, onDownload, onShare, openPreview)}
                 </motion.div>
               ))}
 
@@ -125,6 +141,17 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
           )}
         </div>
       </div>
+      
+      {/* 媒体预览模态框 */}
+      <MediaPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={closePreview}
+        mediaUrl={previewModal.mediaUrl}
+        mediaType={previewModal.mediaType}
+        title={previewModal.title}
+        onDownload={() => onDownload(previewModal.mediaUrl)}
+        onShare={() => onShare(previewModal.mediaUrl)}
+      />
     </motion.div>
   );
 }
@@ -133,7 +160,8 @@ function renderContent(
   generation: GenerationResult, 
   index: number, 
   onDownload: (url?: string, index?: number) => void,
-  onShare: (url?: string) => void
+  onShare: (url?: string) => void,
+  openPreview: (url: string, type: 'image' | 'video', title?: string) => void
 ) {
   if (generation.status === 'generating' || generation.status === 'processing') {
     return (
@@ -165,34 +193,50 @@ function renderContent(
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="relative group overflow-hidden rounded-2xl"
+            className="relative group overflow-hidden rounded-2xl cursor-pointer"
+            onClick={() => openPreview(url, generation.type, generation.prompt)}
           >
             {generation.type === 'video' ? (
-              <video
-                src={url}
-                controls
-                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300"
-                poster={generation.thumbnails?.[urlIndex]}
-              />
+              <div className="relative w-full h-40 bg-black rounded-2xl overflow-hidden">
+                <video
+                  src={url}
+                  className="w-full h-40 object-cover transition-all duration-300 group-hover:scale-105"
+                  poster={generation.thumbnails?.[urlIndex]}
+                  muted
+                  preload="metadata"
+                />
+                {/* 简化的播放按钮 */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all duration-300">
+                  <div className="bg-white/90 backdrop-blur-sm text-gray-800 p-3 rounded-full shadow-lg group-hover:scale-110 transition-all duration-200">
+                    <Play className="w-6 h-6 ml-0.5" />
+                  </div>
+                </div>
+              </div>
             ) : (
               <img
                 src={url}
                 alt={`生成结果 ${urlIndex + 1}`}
-                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300"
+                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105"
               />
             )}
 
             {/* 操作按钮 - 更现代的设计 */}
             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
               <button
-                onClick={() => onDownload(url, urlIndex)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDownload(url, urlIndex);
+                }}
                 className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                 title="下载"
               >
                 <Download className="w-4 h-4" />
               </button>
               <button
-                onClick={() => onShare(url)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare(url);
+                }}
                 className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                 title="分享"
               >
@@ -202,7 +246,7 @@ function renderContent(
 
             {/* 悬浮信息 */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-white text-xs font-medium">点击操作按钮进行下载或分享</p>
+              <p className="text-white text-xs font-medium">点击{generation.type === 'video' ? '播放' : '查看'}大图</p>
             </div>
           </motion.div>
         ))}

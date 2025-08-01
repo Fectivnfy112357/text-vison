@@ -1,18 +1,33 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock, Loader2 } from 'lucide-react';
+import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock, Loader2, Play } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { contentAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import CustomSelect from '@/components/ui/CustomSelect';
+import MediaPreviewModal from '@/components/ui/MediaPreviewModal';
 
 export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean;
+    mediaUrl: string;
+    mediaType: 'image' | 'video';
+    title?: string;
+  }>({ isOpen: false, mediaUrl: '', mediaType: 'image' });
+
+  const openPreview = (url: string, type: 'image' | 'video', title?: string) => {
+    setPreviewModal({ isOpen: true, mediaUrl: url, mediaType: type, title });
+  };
+
+  const closePreview = () => {
+    setPreviewModal({ isOpen: false, mediaUrl: '', mediaType: 'image' });
+  };
 
   // 类型过滤器选项
   const filterTypeOptions = [
@@ -258,8 +273,8 @@ export default function History() {
                   <span className="text-sm text-gray-500">
                     已选择 {selectedItems.length} 个项目
                   </span>
-                )}
-              </div>
+                  )}
+                </div>
 
               {selectedItems.length > 0 && (
                 <div className="flex items-center space-x-2">
@@ -333,23 +348,41 @@ export default function History() {
                   onClick={() => handleSelectItem(item.id)}
                 >
                   {/* 图片/视频预览 */}
-                  <div className="relative aspect-video">
+                  <div className="relative aspect-video group/media">
                     {item.type === 'video' ? (
-                      <video
-                        src={item.url || '/placeholder-video.mp4'}
-                        className="w-full h-48 object-cover"
-                        controls
-                        preload="metadata"
-                        onError={(e) => {
-                          const target = e.target as HTMLVideoElement;
-                          target.poster = '/placeholder-video.jpg';
+                      <div 
+                        className="relative w-full h-48 bg-black overflow-hidden cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPreview(item.url || '', 'video', item.prompt);
                         }}
-                      />
+                      >
+                        <video
+                          src={item.url || '/placeholder-video.mp4'}
+                          className="w-full h-48 object-cover transition-all duration-300 group-hover/media:scale-105"
+                          muted
+                          preload="metadata"
+                          onError={(e) => {
+                            const target = e.target as HTMLVideoElement;
+                            target.poster = '/placeholder-video.jpg';
+                          }}
+                        />
+                        {/* 简化的播放按钮 */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/media:bg-black/10 transition-all duration-300">
+                          <div className="bg-white/90 backdrop-blur-sm text-gray-800 p-4 rounded-full shadow-lg group-hover/media:scale-110 transition-all duration-200">
+                            <Play className="w-8 h-8 ml-0.5" />
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <img
                         src={item.url || '/placeholder-image.png'}
                         alt={item.prompt || '生成内容'}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-cover cursor-pointer transition-all duration-300 group-hover/media:scale-105"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPreview(item.url || '', 'image', item.prompt);
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-image.png';
@@ -403,6 +436,11 @@ export default function History() {
                       >
                         <Share2 className="w-4 h-4" />
                       </button>
+                    </div>
+
+                    {/* 预览提示 */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300">
+                      <p className="text-white text-xs font-medium">点击{item.type === 'video' ? '播放' : '查看'}大图</p>
                     </div>
                   </div>
 
@@ -459,6 +497,17 @@ export default function History() {
             </button>
           </motion.div>
         )}
+
+        {/* 媒体预览模态框 */}
+        <MediaPreviewModal
+          isOpen={previewModal.isOpen}
+          onClose={closePreview}
+          mediaUrl={previewModal.mediaUrl}
+          mediaType={previewModal.mediaType}
+          title={previewModal.title}
+          onDownload={() => handleDownload({ id: '', url: previewModal.mediaUrl, type: previewModal.mediaType })}
+          onShare={() => handleShare({ id: '', url: previewModal.mediaUrl, prompt: previewModal.title, type: previewModal.mediaType })}
+        />
       </div>
     </div>
   );
