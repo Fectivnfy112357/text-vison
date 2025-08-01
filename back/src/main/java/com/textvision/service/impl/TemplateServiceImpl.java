@@ -8,6 +8,7 @@ import com.textvision.common.PageResult;
 import com.textvision.common.ResultCode;
 import com.textvision.dto.TemplateResponse;
 import com.textvision.entity.Template;
+import com.textvision.entity.TemplateCategory;
 import com.textvision.exception.BusinessException;
 import com.textvision.mapper.TemplateMapper;
 import com.textvision.service.TemplateService;
@@ -120,6 +121,27 @@ public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> i
     private TemplateResponse convertToTemplateResponse(Template template) {
         TemplateResponse response = new TemplateResponse();
         BeanUtils.copyProperties(template, response);
+        
+        // 根据categoryId获取分类名称
+        if (template.getCategoryId() != null) {
+            try {
+                TemplateCategory category = templateCategoryService.getById(template.getCategoryId());
+                if (category != null) {
+                    response.setCategory(category.getName());
+                } else {
+                    response.setCategory("其他");
+                }
+            } catch (Exception e) {
+                log.warn("获取分类信息失败: categoryId={}", template.getCategoryId(), e);
+                response.setCategory("其他");
+            }
+        } else {
+            response.setCategory("其他");
+        }
+        
+        // 设置标签列表
+        response.setTags(template.getTags());
+        
         return response;
     }
 }

@@ -37,7 +37,6 @@ create table template
     title        varchar(100)                        not null comment '模板标题',
     description  text                                null comment '模板描述',
     prompt       text                                not null comment '模板提示词',
-    category     varchar(50)                         not null comment '模板分类',
     category_id  bigint                              null comment '分类ID',
     art_style_id bigint                              null comment '艺术风格ID',
     tags         json                                null comment '标签列表',

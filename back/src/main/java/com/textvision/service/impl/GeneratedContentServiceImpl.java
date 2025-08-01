@@ -9,6 +9,7 @@ import com.textvision.common.PageResult;
 import com.textvision.common.ResultCode;
 import com.textvision.dto.GenerateContentRequest;
 import com.textvision.dto.GeneratedContentResponse;
+import com.textvision.entity.ArtStyle;
 import com.textvision.entity.GeneratedContent;
 import com.textvision.entity.Template;
 import com.textvision.exception.BusinessException;
@@ -350,6 +351,26 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private GeneratedContentResponse convertToGeneratedContentResponse(GeneratedContent content) {
         GeneratedContentResponse response = new GeneratedContentResponse();
         BeanUtils.copyProperties(content, response);
+        
+        // 如果style字段存储的是风格ID，需要转换为风格名称
+        if (content.getStyle() != null && !content.getStyle().trim().isEmpty()) {
+            try {
+                // 尝试解析为Long类型的ID
+                Long styleId = Long.parseLong(content.getStyle());
+                ArtStyle artStyle = artStyleService.getById(styleId);
+                if (artStyle != null) {
+                    response.setStyle(artStyle.getName());
+                } else {
+                    response.setStyle("默认风格");
+                }
+            } catch (NumberFormatException e) {
+                // 如果不是数字，说明已经是风格名称，直接使用
+                response.setStyle(content.getStyle());
+            }
+        } else {
+            response.setStyle("默认风格");
+        }
+        
         return response;
     }
 }
