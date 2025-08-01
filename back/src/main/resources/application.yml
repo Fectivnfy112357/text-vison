@@ -68,9 +68,8 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-      update-strategy: not_null
-      insert-strategy: not_null
-      select-strategy: not_empty
+      update-strategy: not-null
+      insert-strategy: not-null
   mapper-locations: classpath*:mapper/*.xml
   type-aliases-package: com.textvision.entity
 

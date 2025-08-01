@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
 import { Link } from 'react-router-dom';
@@ -54,7 +53,7 @@ export default function Templates() {
   );
 
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
         <div className="text-center mb-6 lg:mb-8">
@@ -68,11 +67,7 @@ export default function Templates() {
 
         {/* 热门模板轮播 */}
         {popularTemplates.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 lg:mb-12"
-          >
+          <div className="mb-8 lg:mb-12">
             <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-6 lg:p-8 text-white mb-4 lg:mb-6">
               <h2 className="text-xl lg:text-2xl font-bold mb-2 flex items-center">
                 <Star className="w-5 h-5 lg:w-6 lg:h-6 mr-2" />
@@ -81,15 +76,12 @@ export default function Templates() {
               <p className="text-purple-100 text-sm lg:text-base">最受欢迎的创作模板</p>
             </div>
 
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6" style={{ contain: 'layout' }}>
               {popularTemplates.map((template, index) => (
-                <motion.div
+                <div
                   key={template.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.3, ease: "easeOut" }}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
-                  style={{ willChange: 'transform' }}
+                  style={{ willChange: 'transform', contain: 'layout style' }}
                 >
                   <div className="relative aspect-video overflow-hidden">
                     <img
@@ -156,18 +148,14 @@ export default function Templates() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* 搜索和过滤器 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8"
-        >
+        <div className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8">
           <div className="flex flex-col space-y-4">
             {/* 搜索框和视图切换 */}
             <div className="flex flex-col xs:flex-row xs:items-center space-y-3 xs:space-y-0 xs:space-x-4">
@@ -231,7 +219,7 @@ export default function Templates() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* 模板网格/列表 */}
         {isLoading ? (
@@ -242,11 +230,7 @@ export default function Templates() {
             </div>
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
+          <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Search className="w-12 h-12 text-gray-400" />
             </div>
@@ -265,29 +249,22 @@ export default function Templates() {
             >
               重置筛选条件
             </button>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
             className={viewMode === 'grid'
               ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
               : 'space-y-4'
             }
-            style={{ willChange: 'contents' }}
+            style={{ contain: 'layout', willChange: 'contents' }}
           >
-            <AnimatePresence mode="wait">
-              {filteredTemplates.map((template, index) => (
-                viewMode === 'grid' ? (
-                  <motion.div
-                    key={template.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: index * 0.02, duration: 0.25, ease: "easeOut" }}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
-                    style={{ willChange: 'transform' }}
-                  >
+            {filteredTemplates.map((template, index) => (
+              viewMode === 'grid' ? (
+                <div
+                  key={template.id}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
+                  style={{ willChange: 'transform', contain: 'layout style' }}
+                >
                     <div className="relative aspect-video overflow-hidden">
                       <img
                           src={template.preview || '/placeholder-template.png'}
@@ -358,17 +335,13 @@ export default function Templates() {
                         </div>
                       )}
                     </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={template.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ delay: index * 0.02, duration: 0.25, ease: "easeOut" }}
-                    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200"
-                    style={{ willChange: 'transform' }}
-                  >
+                </div>
+              ) : (
+                <div
+                  key={template.id}
+                  className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200"
+                  style={{ willChange: 'transform', contain: 'layout style' }}
+                >
                     <div className="flex items-center space-x-4">
                       <div className="relative w-24 h-16 flex-shrink-0">
                         <img
@@ -431,24 +404,19 @@ export default function Templates() {
                         </Link>
                       </div>
                     </div>
-                  </motion.div>
-                )
-              ))}
-            </AnimatePresence>
-          </motion.div>
+                </div>
+              )
+            ))}
+          </div>
         )}
 
         {/* 加载更多 */}
         {filteredTemplates.length > 0 && filteredTemplates.length % 12 === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center mt-12"
-          >
+          <div className="text-center mt-12">
             <button className="bg-gray-100 text-gray-600 px-8 py-3 rounded-lg hover:bg-gray-200 transition-colors">
               加载更多模板
             </button>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

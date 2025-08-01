@@ -1,0 +1,193 @@
+/* 滚动性能优化 */
+
+/* 全局滚动优化 */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* 容器优化 */
+.scroll-container {
+  contain: layout style;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 卡片和列表项优化 */
+.optimized-card {
+  contain: layout style;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 图片优化 */
+.optimized-image {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  image-rendering: optimizeSpeed;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* 视频优化 */
+.optimized-video {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 网格布局优化 */
+.optimized-grid {
+  contain: layout;
+  will-change: contents;
+}
+
+/* 动画优化 */
+.optimized-animation {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 移动端特定优化 */
+@media (max-width: 768px) {
+  /* 减少重绘和回流 */
+  .mobile-optimized {
+    contain: strict;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  
+  /* 触摸滚动优化 */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+  
+  /* 减少动画复杂度 */
+  .reduced-motion {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+}
+
+/* 禁用不必要的动画在低性能设备上 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* GPU加速 */
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* 懒加载图片优化 */
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+
+/* 虚拟滚动容器 */
+.virtual-scroll {
+  overflow: auto;
+  height: 100%;
+  contain: strict;
+  will-change: scroll-position;
+}
+
+/* 防止布局抖动 */
+.layout-stable {
+  contain: layout size;
+}
+
+/* 优化文本渲染 */
+.optimized-text {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 减少重排的flex布局 */
+.optimized-flex {
+  contain: layout;
+  will-change: contents;
+}
+
+/* 模态框优化 */
+.modal-optimized {
+  contain: layout style;
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 按钮点击优化 */
+.optimized-button {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  touch-action: manipulation;
+}
+
+/* 输入框优化 */
+.optimized-input {
+  will-change: auto;
+  contain: layout;
+}
+
+/* 滚动条优化 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 防止选择文本时的性能问题 */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 优化过渡效果 */
+.smooth-transition {
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+  will-change: transform, opacity;
+}
+
+/* 内容变化时的优化 */
+.content-optimized {
+  contain: layout style;
+  will-change: contents;
+}

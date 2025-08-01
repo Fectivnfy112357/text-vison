@@ -251,32 +251,17 @@ export default function Generate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-4 lg:pt-8 pb-20 lg:pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-4 lg:pt-8 pb-20 lg:pb-8" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
 
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6 lg:mb-8"
-        >
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl xs:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3 lg:mb-4"
-          >
+        <div className="text-center mb-6 lg:mb-8">
+          <h1 className="text-3xl xs:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3 lg:mb-4">
             AI创作工坊
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg xs:text-xl text-gray-600 mb-4 lg:mb-6 max-w-2xl mx-auto px-2"
-          >
+          </h1>
+          <p className="text-lg xs:text-xl text-gray-600 mb-4 lg:mb-6 max-w-2xl mx-auto px-2">
             将您的想象力转化为令人惊艳的视觉作品，体验前所未有的创作乐趣
-          </motion.p>
-         
-        </motion.div>
+          </p>
+        </div>
 
         {/* 主要创作区域 */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8 flex-1">
@@ -307,39 +292,27 @@ export default function Generate() {
             />
 
             {/* 生成按钮 */}
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ delay: 0.2 }}
+            <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-4 lg:py-6 rounded-2xl lg:rounded-3xl font-bold text-lg lg:text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group min-h-[56px] lg:min-h-auto"
+              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-4 lg:py-6 rounded-2xl lg:rounded-3xl font-bold text-lg lg:text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group min-h-[56px] lg:min-h-auto"
+              style={{ willChange: 'transform' }}
             >
               {/* 背景动画效果 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* 生成中的动画效果 */}
               {(isGenerating || isGeneratingAnimation) && (
-                <motion.div
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
               )}
 
               <div className="relative z-10 flex items-center space-x-3">
-                <motion.div
-                  animate={isGenerating || isGeneratingAnimation ? { rotate: 360 } : { rotate: 0 }}
-                  transition={{ duration: 1, repeat: isGenerating || isGeneratingAnimation ? Infinity : 0, ease: "linear" }}
-                >
+                <div className={isGenerating || isGeneratingAnimation ? 'animate-spin' : ''}>
                   <Sparkles className="w-6 h-6" />
-                </motion.div>
+                </div>
                 <span>{isGenerating ? '生成中...' : '开始生成'}</span>
               </div>
-            </motion.button>
+            </button>
           </div>
 
           {/* 生成结果展示 - 移动端在顶部，桌面端在右侧 */}

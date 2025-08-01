@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock, Loader2, Play } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -201,7 +200,7 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
         <div className="text-center mb-6 lg:mb-8">
@@ -214,11 +213,7 @@ export default function History() {
         </div>
 
         {/* 搜索和过滤器 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8"
-        >
+        <div className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
             {/* 搜索框 */}
             <div className="relative flex-1 lg:max-w-md">
@@ -286,15 +281,11 @@ export default function History() {
               )}
             </div>
           )}
-        </motion.div>
+        </div>
 
         {/* 历史记录网格 */}
         {isLoadingHistory ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
+          <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
             </div>
@@ -304,13 +295,9 @@ export default function History() {
             <p className="text-gray-600">
               请稍候，正在获取您的创作历史
             </p>
-          </motion.div>
+          </div>
         ) : filteredHistory.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
+          <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Calendar className="w-12 h-12 text-gray-400" />
             </div>
@@ -329,21 +316,17 @@ export default function History() {
             >
               开始创作
             </Link>
-          </motion.div>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-            <AnimatePresence>
-              {filteredHistory.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
-                    }`}
-                  onClick={() => handleSelectItem(item.id)}
-                >
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6" style={{ contain: 'layout', willChange: 'contents' }}>
+            {filteredHistory.map((item, index) => (
+              <div
+                key={item.id}
+                className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                  }`}
+                onClick={() => handleSelectItem(item.id)}
+                style={{ willChange: 'transform', contain: 'layout style' }}
+              >
                   {/* 图片/视频预览 */}
                   <div className="relative h-40 xs:h-48 overflow-hidden group/media">
                     {item.type === 'video' ? (
@@ -445,19 +428,14 @@ export default function History() {
                       <span className="flex-shrink-0">#{item.id ? item.id.slice(-6) : 'unknown'}</span>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+              </div>
+            ))}
           </div>
         )}
 
         {/* 清空历史按钮 */}
         {history.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center mt-12"
-          >
+          <div className="text-center mt-12">
             <button
               onClick={async () => {
                 if (window.confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
@@ -480,7 +458,7 @@ export default function History() {
             >
               清空所有历史记录
             </button>
-          </motion.div>
+          </div>
         )}
 
         {/* 媒体预览模态框 */}
