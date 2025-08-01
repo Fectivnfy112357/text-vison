@@ -124,12 +124,12 @@ export default function Navbar() {
                     <LogIn className="w-4 h-4" />
                     <span className="text-sm font-medium">登录</span>
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => handleAuthClick('register')}
                     className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105"
                   >
                     注册
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
