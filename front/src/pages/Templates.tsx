@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
@@ -20,8 +20,11 @@ export default function Templates() {
     loadCategories
   } = useTemplateStore();
 
-  // 直接使用templates状态，后端已经处理了筛选
-  const filteredTemplates = templates.filter(template => template && typeof template === 'object');
+  // 直接使用templates状态，后端已经处理了筛选 - 使用useMemo优化性能
+  const filteredTemplates = useMemo(() => 
+    templates.filter(template => template && typeof template === 'object'),
+    [templates]
+  );
 
   useEffect(() => {
     const loadData = async () => {
@@ -45,7 +48,10 @@ export default function Templates() {
     // 移除toast提示，避免与Generate页面的提示重复
   };
 
-  const popularTemplates = templates.filter(t => t && t.isPopular).slice(0, 6);
+  const popularTemplates = useMemo(() => 
+    templates.filter(t => t && t.isPopular).slice(0, 6),
+    [templates]
+  );
 
   return (
     <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
@@ -79,16 +85,19 @@ export default function Templates() {
               {popularTemplates.map((template, index) => (
                 <motion.div
                   key={template.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                  transition={{ delay: index * 0.05, duration: 0.3, ease: "easeOut" }}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
+                  style={{ willChange: 'transform' }}
                 >
                   <div className="relative aspect-video overflow-hidden">
                     <img
                       src={template.preview || '/placeholder-template.png'}
                       alt={template.title || '模板预览'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      style={{ willChange: 'transform' }}
+                      loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = '/placeholder-template.png';
@@ -118,11 +127,11 @@ export default function Templates() {
                     </div>
 
                     {/* 悬停操作 - 确保完全覆盖 */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
                       <Link
                         to={`/generate?template=${template.id}`}
                         onClick={() => handleUseTemplate(template)}
-                        className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                        className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2"
                       >
                         <Wand2 className="w-4 h-4" />
                         <span>使用模板</span>
@@ -265,28 +274,32 @@ export default function Templates() {
               ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
               : 'space-y-4'
             }
+            style={{ willChange: 'contents' }}
           >
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {filteredTemplates.map((template, index) => (
                 viewMode === 'grid' ? (
                   <motion.div
                     key={template.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.02, duration: 0.25, ease: "easeOut" }}
+                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
+                    style={{ willChange: 'transform' }}
                   >
                     <div className="relative aspect-video overflow-hidden">
                       <img
-                        src={template.preview || '/placeholder-template.png'}
-                        alt={template.title || '模板预览'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-template.png';
-                        }}
-                      />
+                          src={template.preview || '/placeholder-template.png'}
+                          alt={template.title || '模板预览'}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          style={{ willChange: 'transform' }}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder-template.png';
+                          }}
+                        />
 
                       {/* 类型标识 */}
                       <div className="absolute top-3 left-3 z-20">
@@ -303,11 +316,11 @@ export default function Templates() {
                       </div>
 
                       {/* 悬停操作 - 确保完全覆盖 */}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
                         <Link
                           to={`/generate?template=${template.id}`}
                           onClick={() => handleUseTemplate(template)}
-                          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 min-h-[44px]"
+                          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
                         >
                           <Wand2 className="w-4 h-4" />
                           <span className="text-sm lg:text-base">使用模板</span>
@@ -349,11 +362,12 @@ export default function Templates() {
                 ) : (
                   <motion.div
                     key={template.id}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ delay: index * 0.02, duration: 0.25, ease: "easeOut" }}
+                    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200"
+                    style={{ willChange: 'transform' }}
                   >
                     <div className="flex items-center space-x-4">
                       <div className="relative w-24 h-16 flex-shrink-0">
@@ -410,7 +424,7 @@ export default function Templates() {
                         <Link
                           to={`/generate?template=${template.id}`}
                           onClick={() => handleUseTemplate(template)}
-                          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 min-h-[44px]"
+                          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
                         >
                           <Wand2 className="w-4 h-4" />
                           <span className="text-sm lg:text-base">使用</span>

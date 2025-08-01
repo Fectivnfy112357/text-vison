@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Share2, Play, Pause } from 'lucide-react';
@@ -45,7 +45,7 @@ export default function MediaPreviewModal({
     };
   }, [isOpen, onClose]);
 
-  const handleVideoToggle = () => {
+  const handleVideoToggle = useCallback(() => {
     if (videoRef) {
       if (isPlaying) {
         videoRef.pause();
@@ -54,7 +54,7 @@ export default function MediaPreviewModal({
       }
       setIsPlaying(!isPlaying);
     }
-  };
+  }, [videoRef, isPlaying]);
 
   const handleVideoRef = (ref: HTMLVideoElement | null) => {
     setVideoRef(ref);
@@ -70,7 +70,7 @@ export default function MediaPreviewModal({
     }
   };
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = useCallback(() => {
     if (onDownload) {
       onDownload();
     } else {
@@ -83,9 +83,9 @@ export default function MediaPreviewModal({
       document.body.removeChild(link);
       toast.success('下载开始');
     }
-  };
+  }, [onDownload, mediaUrl, mediaType]);
 
-  const handleShareClick = async () => {
+  const handleShareClick = useCallback(async () => {
     if (onShare) {
       onShare();
     } else {
@@ -109,7 +109,7 @@ export default function MediaPreviewModal({
         }
       }
     }
-  };
+  }, [onShare, title, mediaUrl]);
 
   if (!isOpen) return null;
 
@@ -119,17 +119,19 @@ export default function MediaPreviewModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, willChange: 'opacity' }}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative max-w-7xl max-h-[95vh] sm:max-h-[90vh] w-full bg-white rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
+          style={{ willChange: 'transform, opacity' }}
         >
           {/* 头部操作栏 */}
           <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent p-3 sm:p-4">
@@ -179,17 +181,20 @@ export default function MediaPreviewModal({
                   onClick={handleVideoToggle}
                   autoPlay
                   controls
+                  preload="metadata"
+                  style={{ willChange: 'transform' }}
                 />
 
                 {/* 自定义播放控制 - 只在未播放时显示 */}
                 {!isPlaying && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <motion.button
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                       onClick={handleVideoToggle}
-                      className="bg-white/20 backdrop-blur-sm text-white p-4 sm:p-6 rounded-full hover:bg-white/30 transition-all duration-200"
+                      className="bg-white/20 backdrop-blur-sm text-white p-4 sm:p-6 rounded-full hover:bg-white/30 transition-all duration-150"
+                      style={{ willChange: 'transform' }}
                     >
                       <Play className="w-8 h-8 sm:w-12 sm:h-12 ml-1" />
                     </motion.button>
@@ -201,6 +206,8 @@ export default function MediaPreviewModal({
                 src={mediaUrl}
                 alt={title || '预览图片'}
                 className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
+                style={{ willChange: 'transform' }}
+                loading="eager"
               />
             )}
           </div>

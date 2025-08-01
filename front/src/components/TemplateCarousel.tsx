@@ -1,15 +1,15 @@
 import { motion, useAnimation } from 'framer-motion';
-  import { Template } from '@/store/useTemplateStore';
-  import { Play, Image as ImageIcon } from 'lucide-react';
-  import { Link } from 'react-router-dom';
-  import { useCallback, useEffect, useRef } from 'react';
+import { Template } from '@/store/useTemplateStore';
+import { Play, Image as ImageIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, memo } from 'react';
 
 interface TemplateCarouselProps {
   templates: Template[];
 }
 
 const ITEM_WIDTH = 264; // w-64 (256px) + mx-2*2 (8px)
-const SCROLL_SPEED = 0.05; // px per ms
+const SCROLL_SPEED = 0.08; // px per ms - 提升滚动速度减少卡顿感
 
 export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
   const scrollRef1 = useRef<HTMLDivElement>(null);
@@ -59,22 +59,26 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
     };
   }, [templates, animateScroll, controls1, controls2]);
 
-  const TemplateCard = ({ template }: { template: Template }) => (
+  const TemplateCard = memo(({ template }: { template: Template }) => (
     <motion.div
-      whileHover={{ scale: 1.05, y: -5 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg overflow-hidden mx-2 group cursor-pointer"
+      style={{ willChange: 'transform' }}
     >
       <div className="relative aspect-video overflow-hidden">
         <img
           src={template.imageUrl || '/placeholder-template.png'}
           alt={template.title || '模板预览'}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+          style={{ willChange: 'transform' }}
+          loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = '/placeholder-template.png';
           }}
         />
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
           <div className="bg-white/90 rounded-full p-3">
             {template.type === 'video' ? (
               <Play className="w-6 h-6 text-purple-600" />
@@ -114,7 +118,7 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
         </div>
       </div>
     </motion.div>
-  );
+  ));
 
   // 创建足够多的模板以实现无缝循环，确保内容足够长以覆盖屏幕并提供平滑过渡
   const repeatedTemplates = Array(5).fill(templates).flat(); // 重复5次，确保内容足够长
@@ -127,6 +131,7 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
           ref={scrollRef1}
           className="flex w-max"
           animate={controls1}
+          style={{ willChange: 'transform' }}
         >
           {repeatedTemplates.map((template, index) => (
             <TemplateCard key={`row1-${template.id}-${index}`} template={template} />
@@ -140,6 +145,7 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
           ref={scrollRef2}
           className="flex w-max"
           animate={controls2}
+          style={{ willChange: 'transform' }}
         >
           {repeatedTemplates.map((template, index) => (
             <TemplateCard key={`row2-${template.id}-${index}`} template={template} />

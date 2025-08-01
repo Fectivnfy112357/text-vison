@@ -1,6 +1,6 @@
 # TextVision 应用配置
 server:
-  port: 8080
+  port: 8999
   servlet:
     context-path: /
     encoding:
