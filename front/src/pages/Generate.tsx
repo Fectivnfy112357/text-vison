@@ -86,6 +86,22 @@ export default function Generate() {
 
 
   const handleDownload = (specificUrl?: string, index?: number) => {
+    // 如果有具体的URL，直接下载
+    if (specificUrl) {
+      const link = document.createElement('a');
+      link.href = specificUrl;
+      // 从URL推断文件类型
+      const isVideo = specificUrl.includes('.mp4') || specificUrl.includes('video');
+      const fileType = isVideo ? 'mp4' : 'jpg';
+      const fileId = currentGeneration?.id || Date.now().toString();
+      link.download = `textvision-${fileId}${index !== undefined ? `-${index + 1}` : ''}.${fileType}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('下载开始');
+      return;
+    }
+
     if (!currentGeneration) {
       toast.error('下载失败：无效的内容');
       return;
@@ -93,17 +109,6 @@ export default function Generate() {
 
     const fileType = currentGeneration.type === 'video' ? 'mp4' : 'jpg';
     const fileId = currentGeneration.id || 'unknown';
-
-    if (specificUrl && index !== undefined) {
-      const link = document.createElement('a');
-      link.href = specificUrl;
-      link.download = `textvision-${fileId}-${index + 1}.${fileType}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success(`第${index + 1}个文件下载开始`);
-      return;
-    }
 
     const urls = currentGeneration.urls || (currentGeneration.url ? [currentGeneration.url] : []);
 

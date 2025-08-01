@@ -200,7 +200,7 @@ function renderContent(
               <div className="relative w-full h-40 bg-black rounded-2xl overflow-hidden">
                 <video
                   src={url}
-                  className="w-full h-40 object-cover transition-all duration-300 group-hover:scale-105"
+                  className="w-full h-40 object-cover transition-all duration-300 group-hover:scale-110"
                   poster={generation.thumbnails?.[urlIndex]}
                   muted
                   preload="metadata"
@@ -216,7 +216,7 @@ function renderContent(
               <img
                 src={url}
                 alt={`生成结果 ${urlIndex + 1}`}
-                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105"
+                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110"
               />
             )}
 
@@ -246,7 +246,7 @@ function renderContent(
 
             {/* 悬浮信息 */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-white text-xs font-medium">点击{generation.type === 'video' ? '播放' : '查看'}大图</p>
+              <p className="text-white text-xs font-medium">点击{generation.type === 'video' ? '播放视频' : '查看大图'}</p>
             </div>
           </motion.div>
         ))}

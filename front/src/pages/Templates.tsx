@@ -84,7 +84,7 @@ export default function Templates() {
                   transition={{ delay: index * 0.1 }}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
                 >
-                  <div className="relative aspect-video">
+                  <div className="relative aspect-video overflow-hidden">
                     <img
                       src={template.preview || '/placeholder-template.png'}
                       alt={template.title || '模板预览'}
@@ -96,7 +96,7 @@ export default function Templates() {
                     />
 
                     {/* 类型标识 */}
-                    <div className="absolute top-3 left-3">
+                    <div className="absolute top-3 left-3 z-20">
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
                         {template.type === 'video' ? (
                           <Video className="w-3 h-3 text-white" />
@@ -110,15 +110,15 @@ export default function Templates() {
                     </div>
 
                     {/* 热门标识 */}
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 right-3 z-20">
                       <div className="bg-yellow-500 rounded-lg px-2 py-1 flex items-center space-x-1">
                         <Star className="w-3 h-3 text-white fill-current" />
                         <span className="text-xs text-white font-medium">热门</span>
                       </div>
                     </div>
 
-                    {/* 悬停操作 */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    {/* 悬停操作 - 确保完全覆盖 */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
                       <Link
                         to={`/generate?template=${template.id}`}
                         onClick={() => handleUseTemplate(template)}
@@ -273,7 +273,7 @@ export default function Templates() {
                     transition={{ delay: index * 0.05 }}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
                   >
-                    <div className="relative aspect-video">
+                    <div className="relative aspect-video overflow-hidden">
                       <img
                         src={template.preview || '/placeholder-template.png'}
                         alt={template.title || '模板预览'}
@@ -285,7 +285,7 @@ export default function Templates() {
                       />
 
                       {/* 类型标识 */}
-                      <div className="absolute top-3 left-3">
+                      <div className="absolute top-3 left-3 z-20">
                         <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
                           {template.type === 'video' ? (
                             <Video className="w-3 h-3 text-white" />
@@ -298,8 +298,8 @@ export default function Templates() {
                         </div>
                       </div>
 
-                      {/* 悬停操作 */}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      {/* 悬停操作 - 确保完全覆盖 */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
                         <Link
                           to={`/generate?template=${template.id}`}
                           onClick={() => handleUseTemplate(template)}
