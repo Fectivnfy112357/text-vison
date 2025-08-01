@@ -219,34 +219,31 @@ export default function History() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8"
         >
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
             {/* 搜索框 */}
-            <div className="relative w-full">
+            <div className="relative flex-1 lg:max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="搜索创作内容..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 lg:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
               />
             </div>
 
             {/* 过滤器 */}
-            <div className="flex flex-col xs:flex-row xs:items-center space-y-3 xs:space-y-0 xs:space-x-4">
-              <div className="flex items-center space-x-2 flex-1">
-                <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <CustomSelect
-                    value={filterType}
-                    onChange={(value) => setFilterType(value as 'all' | 'image' | 'video')}
-                    options={filterTypeOptions}
-                    placeholder="选择类型"
-                  />
-                </div>
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 lg:flex-shrink-0">
+              <div className="w-full sm:w-[140px]">
+                <CustomSelect
+                  value={filterType}
+                  onChange={(value) => setFilterType(value as 'all' | 'image' | 'video')}
+                  options={filterTypeOptions}
+                  placeholder="选择类型"
+                />
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="w-full sm:w-[140px]">
                 <CustomSelect
                   value={sortBy}
                   onChange={(value) => {

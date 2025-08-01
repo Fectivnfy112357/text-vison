@@ -119,7 +119,7 @@ export default function MediaPreviewModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
       >
@@ -128,41 +128,41 @@ export default function MediaPreviewModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative max-w-7xl max-h-[90vh] w-full bg-white rounded-2xl shadow-2xl overflow-hidden"
+          className="relative max-w-7xl max-h-[95vh] sm:max-h-[90vh] w-full bg-white rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 头部操作栏 */}
-          <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent p-4">
+          <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                 {title && (
-                  <h3 className="text-white font-medium text-lg">{title}</h3>
+                  <h3 className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{title}</h3>
                 )}
-                <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
                   {mediaType === 'video' ? '视频' : '图片'}
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button
                   onClick={handleDownloadClick}
-                  className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-all duration-200"
+                  className="bg-white/20 backdrop-blur-sm text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-white/30 transition-all duration-200"
                   title="下载"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={handleShareClick}
                   className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-all duration-200"
                   title="分享"
                 >
-                  <Share2 className="w-5 h-5" />
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={onClose}
                   className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-all duration-200"
                   title="关闭"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function MediaPreviewModal({
                 <video
                   ref={handleVideoRef}
                   src={mediaUrl}
-                  className="w-full h-full object-contain max-h-[90vh]"
+                  className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
                   onClick={handleVideoToggle}
                   autoPlay
                   controls
@@ -189,9 +189,9 @@ export default function MediaPreviewModal({
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.2 }}
                       onClick={handleVideoToggle}
-                      className="bg-white/20 backdrop-blur-sm text-white p-6 rounded-full hover:bg-white/30 transition-all duration-200"
+                      className="bg-white/20 backdrop-blur-sm text-white p-4 sm:p-6 rounded-full hover:bg-white/30 transition-all duration-200"
                     >
-                      <Play className="w-12 h-12 ml-1" />
+                      <Play className="w-8 h-8 sm:w-12 sm:h-12 ml-1" />
                     </motion.button>
                   </div>
                 )}
@@ -200,7 +200,7 @@ export default function MediaPreviewModal({
               <img
                 src={mediaUrl}
                 alt={title || '预览图片'}
-                className="w-full h-full object-contain max-h-[90vh]"
+                className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
               />
             )}
           </div>

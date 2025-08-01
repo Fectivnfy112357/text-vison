@@ -55,12 +55,11 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 }}
-      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)]"
-      style={{ minHeight: '600px' }}
+      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)]"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-3">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-2 sm:mr-3">
             <ImageIcon className="w-5 h-5 text-white" />
           </div>
           生成结果
@@ -75,7 +74,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-center h-full">
           {history && history.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 w-full h-full">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 w-full h-full">
               {/* 显示最多4个结果，2x2网格布局 */}
               {history.slice(0, 4).map((generation, genIndex) => (
                 <motion.div
@@ -83,28 +82,28 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: genIndex * 0.1 }}
-                  className="border-2 border-gray-100 rounded-2xl p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group"
+                  className="border-2 border-gray-100 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group"
                 >
                   {/* 生成状态指示 - 更现代的设计 */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
                     <div className="flex items-center space-x-3">
                       <motion.div 
                         animate={generation.status === 'generating' || generation.status === 'processing' ? { scale: [1, 1.2, 1] } : {}}
                         transition={{ duration: 1, repeat: generation.status === 'generating' || generation.status === 'processing' ? Infinity : 0 }}
                         className={`w-3 h-3 rounded-full bg-gradient-to-r ${getStatusDisplay(generation, genIndex).color} shadow-lg`}
                       />
-                      <span className="text-xs font-semibold text-gray-700">
+                      <span className="text-xs sm:text-xs font-semibold text-gray-700">
                         {getStatusDisplay(generation, genIndex).text}
                       </span>
                     </div>
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${generation.type === 'image' ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700' : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700'
+                    <span className={`text-xs font-medium px-2 sm:px-3 py-1 rounded-full ${generation.type === 'image' ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700' : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700'
                       }`}>
                       {generation.type === 'image' ? '图片' : '视频'}
                     </span>
                   </div>
 
                   {/* 提示词 - 更好的排版 */}
-                  <div className="mb-4 bg-gray-50 rounded-xl p-3">
+                  <div className="mb-2 sm:mb-3 lg:mb-4 bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
                     <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed font-medium">{generation.prompt}</p>
                   </div>
 
@@ -120,7 +119,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: (history.length + index) * 0.1 }}
-                  className="border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:-translate-y-1 transition-all duration-300"
+                  className="border-2 border-dashed border-gray-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:-translate-y-1 transition-all duration-300"
                 >
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
@@ -128,9 +127,9 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 3, repeat: Infinity, delay: index * 0.5 }}
                       >
-                        <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                        <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300 mx-auto mb-2 sm:mb-3" />
                       </motion.div>
-                      <p className="text-sm text-gray-400 font-medium">等待创作</p>
+                      <p className="text-xs sm:text-sm text-gray-400 font-medium">等待创作</p>
                     </div>
                   </div>
                 </motion.div>
@@ -197,10 +196,10 @@ function renderContent(
             onClick={() => openPreview(url, generation.type, generation.prompt)}
           >
             {generation.type === 'video' ? (
-              <div className="relative w-full h-40 bg-black rounded-2xl overflow-hidden">
+              <div className="relative w-full h-24 sm:h-32 lg:h-40 bg-black rounded-xl sm:rounded-2xl overflow-hidden">
                 <video
                   src={url}
-                  className="w-full h-40 object-cover transition-all duration-300 group-hover:scale-110"
+                  className="w-full h-24 sm:h-32 lg:h-40 object-cover transition-all duration-300 group-hover:scale-110"
                   poster={generation.thumbnails?.[urlIndex]}
                   muted
                   preload="metadata"
@@ -216,21 +215,21 @@ function renderContent(
               <img
                 src={url}
                 alt={`生成结果 ${urlIndex + 1}`}
-                className="w-full h-40 object-cover rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110"
+                className="w-full h-24 sm:h-32 lg:h-40 object-cover rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110"
               />
             )}
 
             {/* 操作按钮 - 更现代的设计 */}
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
+            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-1 sm:space-x-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onDownload(url, urlIndex);
                 }}
-                className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                className="bg-white/90 backdrop-blur-sm text-gray-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                 title="下载"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={(e) => {
@@ -240,13 +239,13 @@ function renderContent(
                 className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
                 title="分享"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
 
             {/* 悬浮信息 */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-white text-xs font-medium">点击{generation.type === 'video' ? '播放视频' : '查看大图'}</p>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 sm:p-3 lg:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-white text-xs font-medium hidden sm:block">点击{generation.type === 'video' ? '播放视频' : '查看大图'}</p>
             </div>
           </motion.div>
         ))}
@@ -281,7 +280,7 @@ function renderContent(
 
 function EmptyState() {
   return (
-    <div className="flex items-center justify-center h-full w-full min-h-[400px]">
+    <div className="flex items-center justify-center h-full w-full min-h-[200px]">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

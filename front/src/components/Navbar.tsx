@@ -144,88 +144,90 @@ export default function Navbar() {
 
         {/* Mobile Menu Overlay */}
         <div 
-          className={`lg:hidden fixed inset-0 z-40 backdrop-blur-sm transition-all duration-300 ease-in-out ${
+          className={`lg:hidden fixed top-16 left-0 right-0 bottom-0 z-40 transition-all duration-300 ease-in-out ${
             isMobileMenuOpen ? 'bg-purple-900/20 opacity-100' : 'bg-transparent opacity-0 pointer-events-none'
           }`}
           onClick={closeMobileMenu}
         />
 
-        {/* Mobile Menu */}
-        <div className={`lg:hidden fixed top-16 left-4 right-4 z-40 bg-white/95 backdrop-blur-md border border-purple-100 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out transform ${
-          isMobileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+        {/* Mobile Menu - Absolute positioned */}
+        <div className={`lg:hidden absolute top-full left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-purple-100 transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
         }`}>
-          <div className="px-6 py-6 space-y-4">
-            {/* Mobile Navigation Links */}
-            <div className="space-y-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={closeMobileMenu}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      isActive
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="text-base font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4 space-y-4">
+              {/* Mobile Navigation Links */}
+              <div className="space-y-2">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={closeMobileMenu}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                        isActive
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-base font-medium">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
 
-            {/* Mobile User Actions */}
-            <div className="pt-4 border-t border-purple-100">
-              {isAuthenticated && user ? (
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 px-4 py-3">
-                    {user.avatar && !avatarErrorRef.current ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name || '用户'}
-                        className="w-10 h-10 rounded-full object-cover"
-                        onError={() => {
-                          avatarErrorRef.current = true;
-                        }}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                    )}
-                    <span className="text-base font-medium text-gray-700">{user.name || '用户'}</span>
+              {/* Mobile User Actions */}
+              <div className="pt-4 border-t border-purple-100">
+                {isAuthenticated && user ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 px-4 py-3">
+                      {user.avatar && !avatarErrorRef.current ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name || '用户'}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={() => {
+                            avatarErrorRef.current = true;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                      <span className="text-base font-medium text-gray-700">{user.name || '用户'}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        closeMobileMenu();
+                      }}
+                      className="w-full text-left px-4 py-3 text-base text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                    >
+                      退出登录
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      logout();
-                      closeMobileMenu();
-                    }}
-                    className="w-full text-left px-4 py-3 text-base text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-                  >
-                    退出登录
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <button
-                    onClick={() => handleAuthClick('login')}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    <span className="text-base font-medium">登录</span>
-                  </button>
-                  <button
-                    onClick={() => handleAuthClick('register')}
-                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-3 rounded-xl text-base font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200"
-                  >
-                    注册账号
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => handleAuthClick('login')}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200"
+                    >
+                      <LogIn className="w-5 h-5" />
+                      <span className="text-base font-medium">登录</span>
+                    </button>
+                    <button
+                      onClick={() => handleAuthClick('register')}
+                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-3 rounded-xl text-base font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200"
+                    >
+                      注册账号
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
