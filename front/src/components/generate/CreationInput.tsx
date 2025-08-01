@@ -29,7 +29,7 @@ export default function CreationInput({
   onReferenceImageChange,
   onWatermarkChange
 }: CreationInputProps) {
-  const { styles, getStylesByType } = useArtStyleStore();
+  const { getStylesByType } = useArtStyleStore();
   const [isDragging, setIsDragging] = useState(false);
 
   const handleImageUpload = (file: File) => {
@@ -129,8 +129,8 @@ export default function CreationInput({
         ) : (
           <div
             className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 flex flex-col justify-center h-48 ${isDragging
-                ? 'border-purple-400 bg-purple-50'
-                : 'border-gray-300 hover:bg-purple-50 hover:border-purple-300'
+              ? 'border-purple-400 bg-purple-50'
+              : 'border-gray-300 hover:bg-purple-50 hover:border-purple-300'
               }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -164,8 +164,8 @@ export default function CreationInput({
             <button
               onClick={() => onTypeChange('image')}
               className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'image'
-                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
-                  : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
+                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
                 }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,8 +176,8 @@ export default function CreationInput({
             <button
               onClick={() => onTypeChange('video')}
               className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'video'
-                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
-                  : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
+                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
                 }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -85,7 +85,7 @@ export default function History() {
     }
   };
 
-  const handleDownload = (item: GeneratedContent) => {
+  const handleDownload = (item: { id: string; url?: string; type?: string }) => {
     if (!item || !item.url) {
       toast.error('下载失败：无效的文件链接');
       return;
@@ -102,7 +102,7 @@ export default function History() {
     toast.success('下载开始');
   };
 
-  const handleShare = async (item: GeneratedContent) => {
+  const handleShare = async (item: { id: string; url?: string; prompt?: string; type?: string }) => {
     if (!item || !item.url) {
       toast.error('分享失败：无效的内容链接');
       return;
@@ -395,7 +395,7 @@ export default function History() {
                     
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                       <span>{item.style || '默认风格'}</span>
-                      <span>{formatDate(item.createdAt)}</span>
+                      <span>{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
                     </div>
                     
                     <div className="flex items-center justify-between text-xs text-gray-400">

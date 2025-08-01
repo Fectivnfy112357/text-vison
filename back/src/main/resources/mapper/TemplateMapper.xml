@@ -5,10 +5,8 @@
     <!-- 分页查询模板（带条件） -->
     <select id="selectPageWithConditions" resultType="com.textvision.entity.Template">
         SELECT * FROM template WHERE status = 1 AND deleted = 0
-        <if test="category != null and category != ''">
-            AND (category = #{category} OR category_id IN (
-                SELECT id FROM template_category WHERE name = #{category} AND status = 1 AND deleted = 0
-            ))
+        <if test="categoryId != null and categoryId != ''">
+            AND category_id = #{categoryId}
         </if>
         <if test="type != null and type != ''">
             AND type = #{type}

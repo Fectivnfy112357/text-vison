@@ -36,9 +36,9 @@ public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> i
     private final TemplateCategoryService templateCategoryService;
 
     @Override
-    public PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String category, String type) {
+    public PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String categoryId, String type) {
         Page<Template> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
-        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, category, type, pageRequest.getKeyword());
+        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, categoryId, type, pageRequest.getKeyword());
         
         List<TemplateResponse> responses = templatePage.getRecords().stream()
                 .map(this::convertToTemplateResponse)
@@ -97,7 +97,7 @@ public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> i
     }
 
     @Override
-    public PageResult<TemplateResponse> searchTemplates(String keyword, String category, String type, PageRequest pageRequest) {
+    public PageResult<TemplateResponse> searchTemplates(String keyword, String categoryId, String type, PageRequest pageRequest) {
         Page<Template> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
         
         // 设置搜索关键词
@@ -105,7 +105,7 @@ public class TemplateServiceImpl extends ServiceImpl<TemplateMapper, Template> i
             pageRequest.setKeyword(keyword.trim());
         }
         
-        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, category, type, pageRequest.getKeyword());
+        IPage<Template> templatePage = templateMapper.selectPageWithConditions(page, categoryId, type, pageRequest.getKeyword());
         
         List<TemplateResponse> responses = templatePage.getRecords().stream()
                 .map(this::convertToTemplateResponse)

@@ -20,11 +20,11 @@ public interface TemplateService extends IService<Template> {
      * 分页查询模板
      * 
      * @param pageRequest 分页请求
-     * @param category 分类
+     * @param categoryId 分类ID
      * @param type 类型
      * @return 模板分页数据
      */
-    PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String category, String type);
+    PageResult<TemplateResponse> getTemplates(PageRequest pageRequest, String categoryId, String type);
 
     /**
      * 根据ID获取模板
@@ -68,10 +68,10 @@ public interface TemplateService extends IService<Template> {
      * 搜索模板
      * 
      * @param keyword 关键词
-     * @param category 分类
+     * @param categoryId 分类ID
      * @param type 类型
      * @param pageRequest 分页请求
      * @return 模板分页数据
      */
-    PageResult<TemplateResponse> searchTemplates(String keyword, String category, String type, PageRequest pageRequest);
+    PageResult<TemplateResponse> searchTemplates(String keyword, String categoryId, String type, PageRequest pageRequest);
 }

@@ -22,12 +22,12 @@ public interface TemplateMapper extends BaseMapper<Template> {
      * 分页查询模板（带条件）
      * 
      * @param page 分页参数
-     * @param category 分类
+     * @param categoryId 分类ID
      * @param type 类型
      * @param keyword 关键词
      * @return 分页结果
      */
-    IPage<Template> selectPageWithConditions(Page<Template> page, @Param("category") String category, 
+    IPage<Template> selectPageWithConditions(Page<Template> page, @Param("categoryId") String categoryId, 
                                            @Param("type") String type, @Param("keyword") String keyword);
 
     /**

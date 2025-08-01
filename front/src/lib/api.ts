@@ -132,10 +132,10 @@ export const authAPI = {
 // 模板相关 API
 export const templateAPI = {
   // 获取模板列表
-  getTemplates: async (page = 1, size = 20, category?: string, type?: string) => {
+  getTemplates: async (page = 1, size = 20, categoryId?: string, type?: string) => {
     let url = `/templates?page=${page}&size=${size}`;
-    if (category && category !== '全部') {
-      url += `&category=${encodeURIComponent(category)}`;
+    if (categoryId && categoryId !== '全部') {
+      url += `&categoryId=${encodeURIComponent(categoryId)}`;
     }
     if (type) {
       url += `&type=${type}`;
@@ -154,10 +154,10 @@ export const templateAPI = {
   },
 
   // 搜索模板
-  searchTemplates: async (keyword: string, page = 1, size = 20, category?: string, type?: string) => {
+  searchTemplates: async (keyword: string, page = 1, size = 20, categoryId?: string, type?: string) => {
     let url = `/templates/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`;
-    if (category && category !== '全部') {
-      url += `&category=${encodeURIComponent(category)}`;
+    if (categoryId && categoryId !== '全部') {
+      url += `&categoryId=${encodeURIComponent(categoryId)}`;
     }
     if (type) {
       url += `&type=${type}`;

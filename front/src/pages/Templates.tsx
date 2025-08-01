@@ -37,8 +37,8 @@ export default function Templates() {
     loadData();
    }, [fetchTemplates, loadCategories]);
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
   };
 
   const handleUseTemplate = (template: any) => {
@@ -136,7 +136,7 @@ export default function Templates() {
                     
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        {template.category || '其他'}
+                        {template.categoryId || '其他'}
                       </span>
                       <div className="flex items-center space-x-3">
                         <span className="flex items-center space-x-1">
@@ -208,15 +208,15 @@ export default function Templates() {
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
-                  key={category}
-                  onClick={() => handleCategoryChange(category)}
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.id === 0 ? '全部' : category.id.toString())}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedCategory === category
+                    selectedCategory === (category.id === 0 ? '全部' : category.id.toString())
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {category}
+                  {category.name}
                 </button>
               ))}
             </div>
@@ -320,7 +320,7 @@ export default function Templates() {
                       
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                          {template.category || '其他'}
+                          {template.categoryId || '其他'}
                         </span>
                         <div className="flex items-center space-x-3">
                           <span className="flex items-center space-x-1">

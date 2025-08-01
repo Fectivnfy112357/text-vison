@@ -46,12 +46,6 @@ public class Template {
     private String prompt;
 
     /**
-     * 模板分类
-     */
-    @TableField("category")
-    private String category;
-
-    /**
      * 分类ID
      */
     @TableField("category_id")

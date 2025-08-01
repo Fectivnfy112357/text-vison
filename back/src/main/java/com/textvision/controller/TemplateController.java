@@ -39,14 +39,14 @@ public class TemplateController {
     public Result<PageResult<TemplateResponse>> getTemplates(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "createTime") String sortField,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        log.debug("分页查询模板: page={}, size={}, category={}, type={}, keyword={}", 
-                 page, size, category, type, keyword);
+        log.debug("分页查询模板: page={}, size={}, categoryId={}, type={}, keyword={}", 
+                 page, size, categoryId, type, keyword);
         
         PageRequest pageRequest = new PageRequest();
         pageRequest.setPage(page);
@@ -55,7 +55,7 @@ public class TemplateController {
         pageRequest.setSortBy(sortField);
         pageRequest.setSortDir(sortDirection);
         
-        PageResult<TemplateResponse> result = templateService.getTemplates(pageRequest, category, type);
+        PageResult<TemplateResponse> result = templateService.getTemplates(pageRequest, categoryId, type);
         return Result.success(result);
     }
 
@@ -114,7 +114,7 @@ public class TemplateController {
     @Operation(summary = "搜索模板", description = "根据关键词搜索模板")
     public Result<PageResult<TemplateResponse>> searchTemplates(
             @RequestParam String keyword,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -123,7 +123,7 @@ public class TemplateController {
             @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId,
             HttpServletRequest httpRequest) {
         
-        log.info("搜索模板: keyword={}, category={}, type={}", keyword, category, type);
+        log.info("搜索模板: keyword={}, categoryId={}, type={}", keyword, categoryId, type);
         
         PageRequest pageRequest = new PageRequest();
         pageRequest.setPage(page);
@@ -131,13 +131,13 @@ public class TemplateController {
         pageRequest.setSortBy(sortField);
         pageRequest.setSortDir(sortDirection);
         
-        PageResult<TemplateResponse> result = templateService.searchTemplates(keyword, category, type, pageRequest);
+        PageResult<TemplateResponse> result = templateService.searchTemplates(keyword, categoryId, type, pageRequest);
         
         // 记录搜索操作日志（如果用户已登录）
         if (userId != null) {
             Map<String, Object> details = new HashMap<>();
             details.put("keyword", keyword);
-            details.put("category", category);
+            details.put("categoryId", categoryId);
             details.put("type", type);
             details.put("resultCount", result.getTotal());
             details.put("searchTime", System.currentTimeMillis());

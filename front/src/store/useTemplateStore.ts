@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { templateAPI } from '@/lib/api';
+import { templateAPI, templateCategoryAPI } from '@/lib/api';
 
 export interface Template {
   id: string;
   title: string;
   description: string;
   prompt: string;
-  category: string;
+  categoryId: string;
   tags: string[];
   imageUrl: string;
   preview: string;
@@ -17,14 +17,23 @@ export interface Template {
   isPopular?: boolean;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+  icon?: string;
+  sortOrder?: number;
+  status?: number;
+}
+
 interface TemplateState {
   templates: Template[];
-  categories: string[];
+  categories: Category[];
   selectedCategory: string;
   searchQuery: string;
   isLoading: boolean;
-  fetchTemplates: (category?: string, searchQuery?: string) => Promise<void>;
-  setSelectedCategory: (category: string) => void;
+  fetchTemplates: (categoryId?: string, searchQuery?: string) => Promise<void>;
+  setSelectedCategory: (categoryId: string) => void;
   setSearchQuery: (query: string) => void;
   loadCategories: () => Promise<void>;
 }
@@ -33,12 +42,12 @@ interface TemplateState {
 
 export const useTemplateStore = create<TemplateState>((set, get) => ({
   templates: [],
-  categories: ['全部'],
+  categories: [{ id: 0, name: '全部' }],
   selectedCategory: '全部',
   searchQuery: '',
   isLoading: false,
 
-  fetchTemplates: async (category?: string, searchQuery?: string) => {
+  fetchTemplates: async (categoryId?: string, searchQuery?: string) => {
     set({ isLoading: true });
     try {
       let templatesData;
@@ -49,13 +58,13 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           searchQuery.trim(),
           1,
           100,
-          category && category !== '全部' ? category : undefined
+          categoryId
         );
       } else {
         templatesData = await templateAPI.getTemplates(
           1,
           100,
-          category && category !== '全部' ? category : undefined
+          categoryId
         );
       }
       
@@ -67,7 +76,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           title: template.title || '未命名模板',
           description: template.description || '暂无描述',
           prompt: template.prompt || '',
-          category: template.category || '其他',
+          categoryId: template.categoryId || template.category || '其他',
           tags: template.tags ? template.tags.split(',').filter(Boolean) : [],
           imageUrl: template.imageUrl || template.preview || '/placeholder-template.png',
           preview: template.preview || template.imageUrl || '/placeholder-template.png',
@@ -90,25 +99,29 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
 
   loadCategories: async () => {
     try {
-      const categoriesData = await templateAPI.getCategories();
-      const categories = ['全部', ...categoriesData];
+      const categoriesData = await templateCategoryAPI.getAllCategories();
+      const categories = [{ id: 0, name: '全部' }, ...categoriesData];
       set({ categories });
     } catch (error) {
       console.error('加载分类失败:', error);
     }
   },
 
-  setSelectedCategory: (category: string) => {
+  setSelectedCategory: (categoryId: string) => {
     const { searchQuery, fetchTemplates } = get();
-    set({ selectedCategory: category });
+    set({ selectedCategory: categoryId });
     // 分类改变时自动调用后端筛选
-    fetchTemplates(category, searchQuery);
+    // 如果是"全部"则传递undefined，否则传递实际的categoryId
+    const actualCategoryId = categoryId === '全部' ? undefined : categoryId;
+    fetchTemplates(actualCategoryId, searchQuery);
   },
 
   setSearchQuery: (query: string) => {
     const { selectedCategory, fetchTemplates } = get();
     set({ searchQuery: query });
     // 搜索关键词改变时自动调用后端筛选
-    fetchTemplates(selectedCategory, query);
+    // 如果是"全部"则传递undefined，否则传递实际的categoryId
+    const actualCategoryId = selectedCategory === '全部' ? undefined : selectedCategory;
+    fetchTemplates(actualCategoryId, query);
   }
 }));

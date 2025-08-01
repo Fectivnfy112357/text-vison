@@ -103,7 +103,7 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-            {template.category || '其他'}
+            {template.categoryId || '其他'}
           </span>
           <Link
             to={`/generate?template=${template.id}`}
