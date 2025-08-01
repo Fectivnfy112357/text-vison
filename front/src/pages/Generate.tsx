@@ -322,9 +322,6 @@ export default function Generate() {
 
                 {/* 参考图片上传 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    参考图片
-                  </label>
                   <ImageUploader
                     image={referenceImage}
                     onImageChange={setReferenceImage}
@@ -334,36 +331,6 @@ export default function Generate() {
                   />
                 </div>
               </div>
-
-              {/* 首帧和尾帧图片上传 - 仅视频模式显示 */}
-              {type === 'video' && (
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      首帧图片
-                    </label>
-                    <ImageUploader
-                      image={firstFrameImage}
-                      onImageChange={setFirstFrameImage}
-                      label="首帧图片"
-                      maxSize={30 * 1024 * 1024}
-                      aspectRatio="rectangle"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      尾帧图片
-                    </label>
-                    <ImageUploader
-                      image={lastFrameImage}
-                      onImageChange={setLastFrameImage}
-                      label="尾帧图片"
-                      maxSize={30 * 1024 * 1024}
-                      aspectRatio="rectangle"
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* 水印选项 */}
               <div className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-2xl p-6 mt-6 border border-gray-100">
