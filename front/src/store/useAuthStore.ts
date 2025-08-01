@@ -28,7 +28,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const response = await authAPI.login(email, password);
-      console.log('Login response:', response);
       
       // 检查响应数据是否存在，用户数据在 response.user 中
       if (!response || !response.user || !response.user.id) {
@@ -52,7 +51,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const response = await authAPI.register(email, password, name, confirmPassword);
-      console.log('Register response:', response);
       
       // 检查响应数据是否存在，用户数据在 response.user 中
       if (!response || !response.user || !response.user.id) {

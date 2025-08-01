@@ -52,9 +52,6 @@ const request = async (endpoint: string, options: RequestInit = {}): Promise<any
       // 抛出后端返回的具体错误信息
       throw new Error(data.message || `请求失败: ${response.status}`);
     }
-
-    // 添加调试信息
-    console.log('API响应:', { response: response, data: data });
     
     // 检查业务状态码 - 修复：确保code是数字类型的200
     if (data.code !== 200 && data.code !== '200') {

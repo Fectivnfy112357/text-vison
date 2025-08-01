@@ -42,7 +42,7 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
       setConfirmPassword('');
       setName('');
     } catch (error) {
-      console.log(error);
+      console.error(error);
       // 显示具体的错误信息
       const errorMessage = error instanceof Error ? error.message : '操作失败，请重试';
       toast.error(errorMessage);

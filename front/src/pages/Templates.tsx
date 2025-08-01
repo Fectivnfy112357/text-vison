@@ -369,7 +369,7 @@ export default function Templates() {
                         
                         <div className="flex items-center space-x-4 text-xs text-gray-500">
                           <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                            {template.category || '其他'}
+                            {template.categoryId || '其他'}
                           </span>
                           <span>{template.style || '默认风格'}</span>
                           <span className="flex items-center space-x-1">

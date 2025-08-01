@@ -6,14 +6,28 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { contentAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  
-  const { history, loadHistory, refreshHistory, removeFromHistory, clearHistory, isLoadingHistory } = useGenerationStore();
+
+  // 类型过滤器选项
+  const filterTypeOptions = [
+    { value: 'all', label: '全部类型' },
+    { value: 'image', label: '图片' },
+    { value: 'video', label: '视频' }
+  ];
+
+  // 排序选项
+  const sortByOptions = [
+    { value: 'newest', label: '最新优先' },
+    { value: 'oldest', label: '最早优先' }
+  ];
+
+  const { history, loadHistory, refreshHistory, isLoadingHistory } = useGenerationStore();
   const { isAuthenticated } = useAuthStore();
 
   // 组件挂载时和过滤类型改变时加载历史记录
@@ -48,8 +62,8 @@ export default function History() {
     });
 
   const handleSelectItem = (id: string) => {
-    setSelectedItems(prev => 
-      prev.includes(id) 
+    setSelectedItems(prev =>
+      prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
     );
@@ -65,18 +79,18 @@ export default function History() {
 
   const handleDeleteSelected = async () => {
     if (selectedItems.length === 0) return;
-    
+
     if (!window.confirm(`确定要删除选中的 ${selectedItems.length} 个项目吗？此操作不可恢复。`)) {
       return;
     }
-    
+
     try {
       // 使用API批量删除
       await contentAPI.batchDeleteContents(selectedItems);
-      
+
       // 刷新历史记录
       await refreshHistory();
-      
+
       setSelectedItems([]);
       toast.success(`已删除 ${selectedItems.length} 个项目`);
     } catch (error) {
@@ -90,7 +104,7 @@ export default function History() {
       toast.error('下载失败：无效的文件链接');
       return;
     }
-    
+
     const link = document.createElement('a');
     link.href = item.url;
     const fileId = item.id || 'unknown';
@@ -107,7 +121,7 @@ export default function History() {
       toast.error('分享失败：无效的内容链接');
       return;
     }
-    
+
     try {
       if (navigator.share) {
         await navigator.share({
@@ -133,7 +147,7 @@ export default function History() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return '刚刚';
     } else if (diffInHours < 24) {
@@ -179,7 +193,7 @@ export default function History() {
         </div>
 
         {/* 搜索和过滤器 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg p-6 mb-8"
@@ -201,25 +215,26 @@ export default function History() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Filter className="w-5 h-5 text-gray-500" />
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as any)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="all">全部类型</option>
-                  <option value="image">图片</option>
-                  <option value="video">视频</option>
-                </select>
+                <div className="min-w-[120px]">
+                  <CustomSelect
+                    value={filterType}
+                    onChange={(value) => setFilterType(value as 'all' | 'image' | 'video')}
+                    options={filterTypeOptions}
+                    placeholder="选择类型"
+                  />
+                </div>
               </div>
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="newest">最新优先</option>
-                <option value="oldest">最早优先</option>
-              </select>
+              <div className="min-w-[120px]">
+                <CustomSelect
+                  value={sortBy}
+                  onChange={(value) => {
+                    setSortBy(value as string);
+                  }}
+                  options={sortByOptions}
+                  placeholder="选择排序"
+                />
+              </div>
             </div>
           </div>
 
@@ -239,7 +254,7 @@ export default function History() {
                   </span>
                 )}
               </div>
-              
+
               {selectedItems.length > 0 && (
                 <div className="flex items-center space-x-2">
                   <button
@@ -257,7 +272,7 @@ export default function History() {
 
         {/* 历史记录网格 */}
         {isLoadingHistory ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-16"
@@ -273,7 +288,7 @@ export default function History() {
             </p>
           </motion.div>
         ) : filteredHistory.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-16"
@@ -285,8 +300,8 @@ export default function History() {
               {searchQuery || filterType !== 'all' ? '没有找到匹配的创作' : '还没有创作历史'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {searchQuery || filterType !== 'all' 
-                ? '尝试调整搜索条件或过滤器' 
+              {searchQuery || filterType !== 'all'
+                ? '尝试调整搜索条件或过滤器'
                 : '开始您的第一次AI创作吧！'
               }
             </p>
@@ -307,9 +322,8 @@ export default function History() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer ${
-                    selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
-                  }`}
+                  className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                    }`}
                   onClick={() => handleSelectItem(item.id)}
                 >
                   {/* 图片/视频预览 */}
@@ -336,7 +350,7 @@ export default function History() {
                         }}
                       />
                     )}
-                    
+
                     {/* 类型标识 */}
                     <div className="absolute top-2 left-2">
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
@@ -353,11 +367,10 @@ export default function History() {
 
                     {/* 选择状态 */}
                     <div className="absolute top-2 right-2">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        selectedItems.includes(item.id)
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedItems.includes(item.id)
                           ? 'bg-purple-600 border-purple-600'
                           : 'bg-white/50 border-white backdrop-blur-sm'
-                      }`}>
+                        }`}>
                         {selectedItems.includes(item.id) && (
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                         )}
@@ -392,12 +405,12 @@ export default function History() {
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {item.prompt || '无描述'}
                     </p>
-                    
+
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                       <span>{item.style || '默认风格'}</span>
                       <span>{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between text-xs text-gray-400">
                       <span>{item.size || '未知尺寸'}</span>
                       <span>#{item.id ? item.id.slice(-6) : 'unknown'}</span>
@@ -411,7 +424,7 @@ export default function History() {
 
         {/* 清空历史按钮 */}
         {history.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center mt-12"

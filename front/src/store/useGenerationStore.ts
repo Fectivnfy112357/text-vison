@@ -20,7 +20,7 @@ interface GenerationState {
   history: GeneratedContent[];
   isGenerating: boolean;
   currentGeneration: GeneratedContent | null;
-  pollingInterval: NodeJS.Timeout | null;
+  pollingInterval: ReturnType<typeof setInterval> | null;
   isLoadingHistory: boolean;
   generateContent: (prompt: string, type: 'image' | 'video', options?: any) => Promise<void>;
   loadHistory: (page?: number, size?: number, type?: string) => Promise<void>;
@@ -73,8 +73,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         options.style || '默认风格',
         options // 传递所有选项参数，包括视频参数
       );
-      
-      console.log('Generation API response:', result);
       
       // 安全检查 API 响应数据
       if (!result || typeof result !== 'object') {

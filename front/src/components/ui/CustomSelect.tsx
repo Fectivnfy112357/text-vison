@@ -50,7 +50,7 @@ export default function CustomSelect({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      // 检查点击是否在容器内或下拉选项内
+      // 检查点击是否在容器内
       if (containerRef.current && !containerRef.current.contains(target)) {
         // 检查是否点击在Portal渲染的下拉框内
         const dropdownElement = document.querySelector('[data-dropdown-portal]');
@@ -61,8 +61,9 @@ export default function CustomSelect({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // 使用click事件而不是mousedown，避免与选项点击冲突
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   // 简化的键盘导航
@@ -169,6 +170,7 @@ export default function CustomSelect({
               ? 'opacity-100' 
               : 'opacity-0 pointer-events-none'
           }`}
+
           style={{
             top: dropdownPosition.top,
             left: dropdownPosition.left,
@@ -190,7 +192,10 @@ export default function CustomSelect({
                 return (
                   <div
                     key={option.value}
-                    onClick={() => handleOptionClick(option)}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleOptionClick(option);
+                    }}
                     className={`
                       px-4 py-3 cursor-pointer transition-colors duration-150
                       flex items-center justify-between

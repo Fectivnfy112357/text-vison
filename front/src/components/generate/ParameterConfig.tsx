@@ -229,7 +229,6 @@ function VideoParameters({
             onChange={(value) => onParamChange('ratio', value as string)}
             options={ratioOptions}
             placeholder="选择画面比例"
-            searchable
           />
         </div>
 
