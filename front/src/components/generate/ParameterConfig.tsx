@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Video, ChevronDown, ChevronUp } from 'lucide-react';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface ParameterConfigProps {
   type: 'image' | 'video';
@@ -77,7 +78,7 @@ export default function ParameterConfig({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 }}
-      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden"
+      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20"
     >
       <div 
         onClick={() => setShowAdvanced(!showAdvanced)}
@@ -142,29 +143,31 @@ function ImageParameters({ params, onParamChange }: ImageParametersProps) {
     <div className="grid grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-3">图片尺寸</label>
-        <select
+        <CustomSelect
           value={params.size}
-          onChange={(e) => onParamChange('size', e.target.value)}
-          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-        >
-          <option value="1024x1024">正方形 (1024x1024)</option>
-          <option value="1152x896">横屏 (1152x896)</option>
-          <option value="896x1152">竖屏 (896x1152)</option>
-          <option value="1216x832">宽屏 (1216x832)</option>
-          <option value="832x1216">长屏 (832x1216)</option>
-        </select>
+          onChange={(value) => onParamChange('size', value as string)}
+          options={[
+            { value: '1024x1024', label: '正方形 (1024x1024)' },
+            { value: '1152x896', label: '横屏 (1152x896)' },
+            { value: '896x1152', label: '竖屏 (896x1152)' },
+            { value: '1216x832', label: '宽屏 (1216x832)' },
+            { value: '832x1216', label: '长屏 (832x1216)' }
+          ]}
+          placeholder="选择图片尺寸"
+        />
       </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-3">图片质量</label>
-        <select
+        <CustomSelect
           value={params.quality}
-          onChange={(e) => onParamChange('quality', e.target.value)}
-          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-        >
-          <option value="standard">标准质量</option>
-          <option value="hd">高清质量</option>
-        </select>
+          onChange={(value) => onParamChange('quality', value as string)}
+          options={[
+            { value: 'standard', label: '标准质量' },
+            { value: 'hd', label: '高清质量' }
+          ]}
+          placeholder="选择图片质量"
+        />
       </div>
 
       <div>
@@ -201,41 +204,33 @@ function VideoParameters({
       <div className="grid grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">分辨率</label>
-          <select
+          <CustomSelect
             value={params.resolution}
-            onChange={(e) => onParamChange('resolution', e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-          >
-            {resolutionOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+            onChange={(value) => onParamChange('resolution', value as string)}
+            options={resolutionOptions}
+            placeholder="选择分辨率"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">时长</label>
-          <select
+          <CustomSelect
             value={params.duration}
-            onChange={(e) => onParamChange('duration', Number(e.target.value))}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-          >
-            {durationOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+            onChange={(value) => onParamChange('duration', Number(value))}
+            options={durationOptions}
+            placeholder="选择时长"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">画面比例</label>
-          <select
+          <CustomSelect
             value={params.ratio}
-            onChange={(e) => onParamChange('ratio', e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-          >
-            {ratioOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+            onChange={(value) => onParamChange('ratio', value as string)}
+            options={ratioOptions}
+            placeholder="选择画面比例"
+            searchable
+          />
         </div>
 
         <div>

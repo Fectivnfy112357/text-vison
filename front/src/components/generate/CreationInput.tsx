@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Wand2, Upload } from 'lucide-react';
 import { useArtStyleStore } from '@/store/useArtStyleStore';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface CreationInputProps {
   prompt: string;
@@ -190,18 +191,18 @@ export default function CreationInput({
         {/* 艺术风格 */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
-          <select
-            value={selectedStyleId || ''}
-            onChange={(e) => onStyleChange(e.target.value ? Number(e.target.value) : undefined)}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-          >
-            <option value="">选择艺术风格（可选）</option>
-            {availableStyles.map((style) => (
-              <option key={style.id} value={style.id}>
-                {style.name}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={selectedStyleId}
+            onChange={(value) => onStyleChange(value ? Number(value) : undefined)}
+            options={[
+              { value: '', label: '选择艺术风格（可选）' },
+              ...availableStyles.map((style) => ({
+                value: style.id,
+                label: style.name
+              }))
+            ]}
+            placeholder="选择艺术风格（可选）"
+          />
         </div>
       </div>
 
