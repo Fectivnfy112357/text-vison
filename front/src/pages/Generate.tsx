@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 
-import TemplateSelector from '@/components/generate/TemplateSelector';
 import ParameterConfig, { ImageGenerationParams, VideoGenerationParams } from '@/components/generate/ParameterConfig';
 import ResultsDisplay from '@/components/generate/ResultsDisplay';
 import ImageUploader from '@/components/generate/ImageUploader';
@@ -19,20 +18,19 @@ export default function Generate() {
   const [type, setType] = useState<'image' | 'video'>('image');
   const [watermark, setWatermark] = useState(false);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
-  const [showTemplates, setShowTemplates] = useState(false);
+  const [setShowTemplates] = useState(false);
   const [isGeneratingAnimation, setIsGeneratingAnimation] = useState(false);
-  const [firstFrameImage, setFirstFrameImage] = useState<string | null>(null);
-  const [lastFrameImage, setLastFrameImage] = useState<string | null>(null);
-  
+  const [firstFrameImage] = useState<string | null>(null);
+  const [lastFrameImage] = useState<string | null>(null);
+  const [selectedStyleId, setSelectedStyleId] = useState<number | undefined>(undefined);
+
   const [searchParams] = useSearchParams();
-  const templateAppliedRef = useRef(false);
 
   // 图片参数
   const [imageParams, setImageParams] = useState<ImageGenerationParams>({
     size: '1024x1024',
     quality: 'standard',
     responseFormat: 'url',
-    styleId: undefined,
     seed: undefined,
     guidanceScale: undefined
   });
@@ -45,13 +43,12 @@ export default function Generate() {
     fps: 24,
     cameraFixed: false,
     cfgScale: 7,
-    count: 1,
-    styleId: undefined
+    count: 1
   });
 
   const { generateContent, isGenerating, currentGeneration, stopPolling, history, loadHistory } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
-  const { fetchStyles } = useArtStyleStore();
+  const { fetchStyles, styles, getStylesByType } = useArtStyleStore();
   const { templates } = useTemplateStore();
 
   // 组件卸载时清理轮询
@@ -185,16 +182,20 @@ export default function Generate() {
     }
 
     setIsGeneratingAnimation(true);
-    
+
     try {
       const params: any = {
         watermark,
         referenceImage
       };
 
+      // 添加艺术风格参数
+      if (selectedStyleId) {
+        params.styleId = selectedStyleId;
+      }
+
       if (type === 'image') {
         params.size = imageParams.size;
-        params.styleId = imageParams.styleId;
         params.quality = imageParams.quality;
         params.responseFormat = imageParams.responseFormat;
         if (imageParams.seed !== undefined && imageParams.seed >= -1 && imageParams.seed <= 2147483647) {
@@ -206,7 +207,6 @@ export default function Generate() {
       }
 
       if (type === 'video') {
-        params.styleId = videoParams.styleId;
         params.resolution = videoParams.resolution;
         params.duration = videoParams.duration;
         params.ratio = videoParams.ratio;
@@ -231,19 +231,37 @@ export default function Generate() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-8 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
-        
-        {/* 模板选择区域 */}
-        <TemplateSelector
-          isOpen={showTemplates}
-          onToggle={() => setShowTemplates(!showTemplates)}
-          onTemplateSelect={handleTemplateSelect}
-        />
 
+
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4"
+          >
+            AI创作工坊
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto"
+          >
+            将您的想象力转化为令人惊艳的视觉作品，体验前所未有的创作乐趣
+          </motion.p>
+
+
+        </motion.div>
         {/* 主要创作区域 */}
         <div className="grid lg:grid-cols-2 gap-8 flex-1 items-start">
           {/* 左侧：创作输入和参数配置 */}
           <div className="flex flex-col space-y-6 w-full">
-            
+
             {/* 文本输入和基础设置 */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -256,7 +274,7 @@ export default function Generate() {
                 </div>
                 描述您的创意
               </h2>
-              
+
               <div className="relative">
                 <textarea
                   value={prompt}
@@ -280,8 +298,8 @@ export default function Generate() {
                 </div>
               </div>
 
-              {/* 类型选择 */}
-              <div className="grid grid-cols-2 gap-6 mt-6">
+              {/* 类型选择和艺术风格 */}
+              <div className="grid grid-cols-3 gap-6 mt-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     生成类型
@@ -291,11 +309,10 @@ export default function Generate() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setType('image')}
-                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${
-                        type === 'image'
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
-                          : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
-                      }`}
+                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'image'
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
+                        }`}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -306,11 +323,10 @@ export default function Generate() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setType('video')}
-                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${
-                        type === 'video'
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
-                          : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
-                      }`}
+                      className={`flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium ${type === 'video'
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-gray-50 text-gray-600 border-2 border-gray-200 hover:bg-gray-100 hover:border-purple-200'
+                        }`}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -318,6 +334,28 @@ export default function Generate() {
                       <span>视频</span>
                     </motion.button>
                   </div>
+                </div>
+
+                {/* 艺术风格选择 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    艺术风格
+                  </label>
+                  <select
+                    value={selectedStyleId || ''}
+                    onChange={(e) => {
+                      const selectedId = e.target.value ? Number(e.target.value) : undefined;
+                      setSelectedStyleId(selectedId);
+                    }}
+                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
+                  >
+                    <option value="">选择艺术风格（可选）</option>
+                    {getStylesByType(type).map((artStyle) => (
+                      <option key={artStyle.id} value={artStyle.id}>
+                        {artStyle.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* 参考图片上传 */}
@@ -379,7 +417,7 @@ export default function Generate() {
             >
               {/* 背景动画效果 */}
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
+
               {/* 生成中的动画效果 */}
               {(isGenerating || isGeneratingAnimation) && (
                 <motion.div
@@ -389,7 +427,7 @@ export default function Generate() {
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                 />
               )}
-              
+
               <div className="relative z-10 flex items-center space-x-3">
                 <motion.div
                   animate={isGenerating || isGeneratingAnimation ? { rotate: 360 } : { rotate: 0 }}

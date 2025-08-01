@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Video, ChevronDown, ChevronUp } from 'lucide-react';
-import { useArtStyleStore } from '@/store/useArtStyleStore';
 
 interface ParameterConfigProps {
   type: 'image' | 'video';
@@ -13,7 +12,6 @@ interface ParameterConfigProps {
 
 export interface ImageGenerationParams {
   size: string;
-  styleId?: number;
   quality: string;
   responseFormat: string;
   seed?: number;
@@ -28,7 +26,6 @@ export interface VideoGenerationParams {
   cameraFixed: boolean;
   cfgScale: number;
   count: number;
-  styleId?: number;
 }
 
 export default function ParameterConfig({
@@ -39,7 +36,6 @@ export default function ParameterConfig({
   onVideoParamsChange
 }: ParameterConfigProps) {
   const [showAdvanced, setShowAdvanced] = useState(true);
-  const { styles, getStylesByType } = useArtStyleStore();
 
   // 视频参数选项
   const resolutionOptions = [
@@ -118,13 +114,11 @@ export default function ParameterConfig({
                 <ImageParameters
                   params={imageParams}
                   onParamChange={handleImageParamChange}
-                  styles={getStylesByType('image')}
                 />
               ) : (
                 <VideoParameters
                   params={videoParams}
                   onParamChange={handleVideoParamChange}
-                  styles={getStylesByType('video')}
                   resolutionOptions={resolutionOptions}
                   ratioOptions={ratioOptions}
                   durationOptions={durationOptions}
@@ -141,10 +135,9 @@ export default function ParameterConfig({
 interface ImageParametersProps {
   params: ImageGenerationParams;
   onParamChange: <K extends keyof ImageGenerationParams>(key: K, value: ImageGenerationParams[K]) => void;
-  styles: any[];
 }
 
-function ImageParameters({ params, onParamChange, styles }: ImageParametersProps) {
+function ImageParameters({ params, onParamChange }: ImageParametersProps) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div>
@@ -175,25 +168,6 @@ function ImageParameters({ params, onParamChange, styles }: ImageParametersProps
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
-        <select
-          value={params.styleId || ''}
-          onChange={(e) => {
-            const selectedId = e.target.value ? Number(e.target.value) : undefined;
-            onParamChange('styleId', selectedId);
-          }}
-          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-        >
-          <option value="">选择艺术风格（可选）</option>
-          {styles.map((artStyle) => (
-            <option key={artStyle.id} value={artStyle.id}>
-              {artStyle.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
         <label className="block text-sm font-semibold text-gray-700 mb-3">随机种子</label>
         <input
           type="number"
@@ -210,7 +184,6 @@ function ImageParameters({ params, onParamChange, styles }: ImageParametersProps
 interface VideoParametersProps {
   params: VideoGenerationParams;
   onParamChange: <K extends keyof VideoGenerationParams>(key: K, value: VideoGenerationParams[K]) => void;
-  styles: any[];
   resolutionOptions: { value: string; label: string }[];
   ratioOptions: { value: string; label: string }[];
   durationOptions: { value: number; label: string }[];
@@ -219,7 +192,6 @@ interface VideoParametersProps {
 function VideoParameters({ 
   params, 
   onParamChange, 
-  styles, 
   resolutionOptions, 
   ratioOptions, 
   durationOptions 
@@ -276,25 +248,6 @@ function VideoParameters({
             max="60"
             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">艺术风格</label>
-          <select
-            value={params.styleId || ''}
-            onChange={(e) => {
-              const selectedId = e.target.value ? Number(e.target.value) : undefined;
-              onParamChange('styleId', selectedId);
-            }}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-sm bg-gray-50/50 backdrop-blur-sm transition-all duration-300"
-          >
-            <option value="">选择艺术风格（可选）</option>
-            {styles.map((artStyle) => (
-              <option key={artStyle.id} value={artStyle.id}>
-                {artStyle.name}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
