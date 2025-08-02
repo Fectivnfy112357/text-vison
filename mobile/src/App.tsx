@@ -1,28 +1,101 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Generate from './pages/Generate';
-import Templates from './pages/Templates';
-import History from './pages/History';
-import Login from './pages/Login';
-import BottomNavigation from './components/BottomNavigation';
 
-function App() {
+import * as React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { ConfigProvider } from 'react-vant'
+
+// 页面组件
+import Home from './pages/Home'
+import Generate from './pages/Generate'
+import Templates from './pages/Templates'
+import History from './pages/History'
+import Profile from './pages/Profile'
+
+// 布局组件
+import Layout from './components/common/Layout'
+
+// 全局错误边界
+import ErrorBoundary from './components/common/ErrorBoundary'
+
+// 状态管理
+import { useUserStore, useMobileStore, useNetworkStore } from './store'
+import { getDeviceInfo, getNetworkStatus } from './utils'
+
+const App = () => {
+  const { checkAuth } = useUserStore()
+  const { setDeviceInfo } = useMobileStore()
+  const { setOnline, setNetworkType } = useNetworkStore()
+
+  // 应用初始化
+  // @ts-ignore
+  React.useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // 检查用户认证状态
+        await checkAuth()
+        
+        // 设置设备信息
+        const deviceInfo = getDeviceInfo()
+        setDeviceInfo(deviceInfo)
+        
+        // 设置网络状态
+        const networkStatus = getNetworkStatus()
+        setOnline(networkStatus.isOnline)
+        if (networkStatus.effectiveType) {
+          setNetworkType(networkStatus.effectiveType)
+        }
+        
+        // 监听网络状态变化
+        const handleOnline = () => setOnline(true)
+        const handleOffline = () => setOnline(false)
+        
+        window.addEventListener('online', handleOnline)
+        window.addEventListener('offline', handleOffline)
+        
+        // 监听网络连接类型变化
+        const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+        if (connection) {
+          const handleConnectionChange = () => {
+            setNetworkType(connection.effectiveType || 'unknown')
+          }
+          connection.addEventListener('change', handleConnectionChange)
+          
+          return () => {
+            window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
+            connection.removeEventListener('change', handleConnectionChange)
+          }
+        }
+        
+        return () => {
+          window.removeEventListener('online', handleOnline)
+          window.removeEventListener('offline', handleOffline)
+        }
+      } catch (error) {
+        console.error('应用初始化失败:', error)
+      }
+    }
+
+    initializeApp()
+  }, [checkAuth, setDeviceInfo, setOnline, setNetworkType])
+
   return (
-    <Router>
-      <div className="app min-h-screen bg-gray-50 pb-16">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/generate" element={<Generate />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<Home />} />
-        </Routes>
-        <BottomNavigation />
-      </div>
-    </Router>
-  );
+    <ErrorBoundary>
+      <ConfigProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/generate" element={<Generate />} />
+              <Route path="/templates" element={<Templates />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </ConfigProvider>
+    </ErrorBoundary>
+  )
 }
 
-export default App;
+export default App

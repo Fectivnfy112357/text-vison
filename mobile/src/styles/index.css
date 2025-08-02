@@ -1,0 +1,309 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 移动端基础样式 */
+@layer base {
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f8fafc;
+    color: #1e293b;
+    overflow-x: hidden;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  #app {
+    min-height: 100vh;
+    width: 100%;
+  }
+}
+
+/* 移动端优化样式 */
+@layer components {
+  .mobile-container {
+    max-width: 24rem;
+    @apply mx-auto bg-white min-h-screen relative;
+  }
+
+  .mobile-page {
+    @apply pb-16; /* 为底部导航栏留出空间 */
+  }
+
+  .mobile-header {
+    @apply sticky top-0 z-40 bg-white border-b border-gray-200;
+  }
+
+  .mobile-content {
+    @apply px-4 py-4;
+  }
+
+  /* 触摸友好的按钮样式 */
+  .touch-button {
+    @apply min-h-[44px] px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  /* 卡片样式 */
+  .mobile-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4;
+  }
+
+  /* 列表项样式 */
+  .mobile-list-item {
+    @apply flex items-center justify-between py-3 px-4 border-b border-gray-100 last:border-b-0;
+  }
+}
+
+/* Vant组件样式覆盖 */
+@layer utilities {
+  /* 自定义Vant主题色 */
+  :root {
+    --van-primary-color: #3b82f6;
+    --van-success-color: #10b981;
+    --van-warning-color: #f59e0b;
+    --van-danger-color: #ef4444;
+    --van-text-color: #1e293b;
+    --van-text-color-2: #64748b;
+    --van-text-color-3: #94a3b8;
+    --van-border-color: #e2e8f0;
+    --van-background-color: #f8fafc;
+    --van-background-color-light: #ffffff;
+  }
+
+  /* 底部导航栏样式调整 */
+  .van-tabbar {
+    @apply border-t border-gray-200;
+  }
+
+  .van-tabbar-item {
+    @apply text-xs;
+  }
+
+  .van-tabbar-item--active {
+    @apply text-primary-500;
+  }
+
+  /* 页面安全区域适配 */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .mobile-content {
+    @apply px-3;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-container {
+    @apply max-w-sm;
+  }
+}
+
+/* 加载动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 滑动动画 */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}/* 底部导航栏
+专用样式 */
+.mobile-tabbar {
+  @apply h-16 bg-white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-tabbar-item {
+  @apply flex flex-col items-center justify-center h-full;
+  min-height: 64px;
+  transition: all 0.2s ease-in-out;
+}
+
+.mobile-tabbar-item:active {
+  @apply bg-gray-50;
+  transform: scale(0.95);
+}
+
+/* 确保底部导航栏在所有页面保持固定位置 */
+.mobile-tabbar .van-tabbar-item {
+  @apply text-xs font-medium;
+  padding: 4px 0;
+}
+
+.mobile-tabbar .van-tabbar-item__icon {
+  @apply mb-1;
+  font-size: 20px;
+}
+
+.mobile-tabbar .van-tabbar-item__text {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+/* 激活状态样式 */
+.mobile-tabbar .van-tabbar-item--active .van-tabbar-item__icon {
+  @apply text-primary-500;
+  transform: scale(1.1);
+}
+
+.mobile-tabbar .van-tabbar-item--active .van-tabbar-item__text {
+  @apply text-primary-500 font-semibold;
+}
+
+/* 触觉反馈效果 */
+.mobile-tabbar .van-tabbar-item:active {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* 适配不同屏幕尺寸 */
+@media (max-width: 320px) {
+  .mobile-tabbar .van-tabbar-item__text {
+    font-size: 10px;
+  }
+  
+  .mobile-tabbar .van-tabbar-item__icon {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 414px) {
+  .mobile-tabbar .van-tabbar-item__text {
+    font-size: 12px;
+  }
+  
+  .mobile-tabbar .van-tabbar-item__icon {
+    font-size: 22px;
+  }
+}
+/* 认
+证弹窗样式 */
+.auth-modal .van-popup {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.auth-modal .van-tabs__nav {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.auth-modal .van-tab {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.auth-modal .van-tab--active {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-modal .van-field__label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.auth-modal .van-field__control {
+  font-size: 16px;
+}
+
+/* 防止iOS Safari缩放 */
+.auth-modal .van-field__control:focus {
+  font-size: 16px;
+}
+
+/* 首页轮播样式增强 */
+.home-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+/* 功能卡片悬停效果 */
+.feature-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:active {
+  transform: scale(0.98);
+}
+
+/* 统计数据动画 */
+.stats-number {
+  background: linear-gradient(45deg, #ffffff, #f0f9ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 渐变按钮增强 */
+.gradient-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.gradient-button:active::before {
+  left: 100%;
+}
