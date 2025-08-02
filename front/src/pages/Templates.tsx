@@ -16,7 +16,8 @@ export default function Templates() {
     fetchTemplates,
     setSelectedCategory,
     setSearchQuery,
-    loadCategories
+    loadCategories,
+    useTemplate
   } = useTemplateStore();
 
   // 直接使用templates状态，后端已经处理了筛选 - 使用useMemo优化性能
@@ -43,8 +44,12 @@ export default function Templates() {
     setSelectedCategory(categoryId);
   };
 
-  const handleUseTemplate = (template: any) => {
-    // 移除toast提示，避免与Generate页面的提示重复
+  const handleUseTemplate = async (template: any) => {
+    try {
+      await useTemplate(template.id);
+    } catch (error) {
+      console.error('使用模板失败:', error);
+    }
   };
 
   const popularTemplates = useMemo(() => 
@@ -52,8 +57,163 @@ export default function Templates() {
     [templates]
   );
 
+// Memoized template card component to prevent re-renders
+const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
+  <div
+    key={template.id}
+    className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
+    style={{ contain: 'layout style' }}
+  >
+    <div className="relative aspect-video overflow-hidden">
+      <img
+        src={template.preview || '/placeholder-template.png'}
+        alt={template.title || '模板预览'}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+        loading="lazy"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/placeholder-template.png';
+        }}
+      />
+
+      {/* 类型标识 */}
+      <div className="absolute top-3 left-3 z-20">
+        <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
+          {template.type === 'video' ? (
+            <Video className="w-3 h-3 text-white" />
+          ) : (
+            <ImageIcon className="w-3 h-3 text-white" />
+          )}
+          <span className="text-xs text-white capitalize">
+            {template.type === 'video' ? '视频' : '图片'}
+          </span>
+        </div>
+      </div>
+
+      {/* 悬停操作 - 确保完全覆盖 */}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
+        <Link
+          to={`/generate?template=${template.id}`}
+          onClick={() => onUseTemplate(template)}
+          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
+        >
+          <Wand2 className="w-4 h-4" />
+          <span className="text-sm lg:text-base">使用模板</span>
+        </Link>
+      </div>
+    </div>
+
+    <div className="p-4">
+      <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
+      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
+
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+          {template.categoryId || '其他'}
+        </span>
+        <div className="flex items-center space-x-3">
+          <span className="flex items-center space-x-1">
+            <Eye className="w-3 h-3" />
+            <span>{template.views || 0}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 标签显示 */}
+      {template.tags && template.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {template.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+            <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+              {tag}
+            </span>
+          ))}
+          {template.tags.length > 3 && (
+            <span className="text-gray-400 text-xs">+{template.tags.length - 3}</span>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+));
+
+TemplateCard.displayName = 'TemplateCard';
+
+// Memoized template list item component
+const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
+  <div
+    key={template.id}
+    className="template-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
+    style={{ contain: 'layout style' }}
+  >
+    <div className="flex items-center space-x-4">
+      <div className="relative w-24 h-16 flex-shrink-0">
+        <img
+          src={template.preview || '/placeholder-template.png'}
+          alt={template.title || '模板预览'}
+          className="w-full h-full object-cover rounded-lg"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-template.png';
+          }}
+        />
+        <div className="absolute top-1 left-1">
+          <div className="bg-black/50 backdrop-blur-sm rounded px-1 py-0.5 flex items-center space-x-1">
+            {template.type === 'video' ? (
+              <Video className="w-2 h-2 text-white" />
+            ) : (
+              <ImageIcon className="w-2 h-2 text-white" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-gray-900 mb-1">{template.title || '未命名模板'}</h3>
+        <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description || '暂无描述'}</p>
+
+        <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
+          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+            {template.categoryId || '其他'}
+          </span>
+          <span className="flex items-center space-x-1">
+            <Eye className="w-3 h-3" />
+            <span>{template.views || 0}</span>
+          </span>
+        </div>
+
+        {/* 标签显示 */}
+        {template.tags && template.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {template.tags.slice(0, 4).map((tag: string, tagIndex: number) => (
+              <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                {tag}
+              </span>
+            ))}
+            {template.tags.length > 4 && (
+              <span className="text-gray-400 text-xs">+{template.tags.length - 4}</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex-shrink-0">
+        <Link
+          to={`/generate?template=${template.id}`}
+          onClick={() => onUseTemplate(template)}
+          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
+        >
+          <Wand2 className="w-4 h-4" />
+          <span className="text-sm lg:text-base">使用</span>
+        </Link>
+      </div>
+    </div>
+  </div>
+));
+
+TemplateListItem.displayName = 'TemplateListItem';
+
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
         <div className="text-center mb-6 lg:mb-8">
@@ -80,7 +240,7 @@ export default function Templates() {
               {popularTemplates.map((template, index) => (
                 <div
                   key={template.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
+                  className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
                   style={{ willChange: 'transform', contain: 'layout style' }}
                 >
                   <div className="relative aspect-video overflow-hidden">
@@ -252,17 +412,18 @@ export default function Templates() {
           </div>
         ) : (
           <div
-            className={viewMode === 'grid'
-              ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
-              : 'space-y-4'
-            }
+            className={`${
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
+                : 'space-y-4'
+            }`}
             style={{ contain: 'layout', willChange: 'contents' }}
           >
             {filteredTemplates.map((template, index) => (
               viewMode === 'grid' ? (
                 <div
                   key={template.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group"
+                  className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
                   style={{ willChange: 'transform', contain: 'layout style' }}
                 >
                     <div className="relative aspect-video overflow-hidden">
@@ -339,7 +500,7 @@ export default function Templates() {
               ) : (
                 <div
                   key={template.id}
-                  className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200"
+                  className="template-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
                   style={{ willChange: 'transform', contain: 'layout style' }}
                 >
                     <div className="flex items-center space-x-4">

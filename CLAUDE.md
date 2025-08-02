@@ -2,176 +2,188 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目概述
+## Project Overview
 
-TextVision是一个基于火山引擎大模型的图文/视频生成平台，采用前后端分离架构：
-- **前端**: React + TypeScript + Vite + Tailwind CSS + Zustand
-- **后端**: Spring Boot 2.7.x + MyBatis-Plus + MySQL 8.0 + JWT认证
+TextVision is a cloud-based AI content generation platform built on Volcano Engine's large models, supporting both image and video generation with a microservices architecture.
 
-## 快速开始
+### Architecture
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Zustand (state management)
+- **Backend**: Spring Boot 2.7.x + MyBatis-Plus + MySQL 8.0 + JWT authentication
+- **AI Models**: Doubao Seedream 3.0 (image) + Seedance 1.0 Lite (video)
+- **Deployment**: Docker-ready with health checks and monitoring
 
-### 环境要求
-- **前端**: Node.js 16+, npm
-- **后端**: JDK 8+, Maven 3.6+, MySQL 8.0+
+## Quick Start Commands
 
-### 启动命令
-
-#### 前端开发
+### Environment Setup
 ```bash
-cd front
-npm install
-npm run dev        # 开发服务器 http://localhost:5173
-npm run build      # 构建生产版本
-npm run lint       # ESLint检查
-npm run check      # TypeScript类型检查
+# Install MySQL 8.0+ and create database
+create database text_vision default character set utf8mb4 collate utf8mb4_unicode_ci;
+
+# Install dependencies (run from project root)
+cd front && npm install
+cd ../back && mvn clean install
 ```
 
-#### 后端开发
+### Development
 ```bash
-cd back
-# 创建数据库 text_vision 并执行 init.sql
-mvn clean install  # 安装依赖
-mvn spring-boot:run  # 启动服务 http://localhost:8080
-mvn test            # 运行测试
+# Terminal 1: Backend
+mvn spring-boot:run  # http://localhost:8999
+
+# Terminal 2: Frontend
+cd front && npm run dev  # http://localhost:5173
+
+# Testing
+npm run check        # TypeScript type checking
+npm run lint         # ESLint code style
+mvn test             # Backend unit tests
 ```
 
-## 项目结构
-
-### 后端架构
-```
-com.textvision/
-├── common/          # 通用类：分页、响应封装
-├── config/          # 配置类：MyBatis、Swagger、Web配置
-├── controller/      # REST API控制器
-├── dto/            # 数据传输对象
-├── entity/         # 数据库实体类
-├── exception/      # 异常处理
-├── interceptor/    # JWT认证拦截器
-├── mapper/         # MyBatis Mapper接口
-├── service/        # 业务逻辑层
-│   └── impl/       # 服务实现类
-└── util/           # 工具类：JWT、密码加密、HTTP客户端
-```
-
-### 前端架构
-```
-src/
-├── components/     # 通用组件：AuthModal, Navbar, Footer
-├── pages/         # 页面组件：Home, Generate, Templates, History
-├── store/         # 状态管理：Zustand store
-├── lib/           # 工具函数和API客户端
-├── hooks/         # 自定义Hook：useTheme
-└── types/         # TypeScript类型定义
-```
-
-## 核心功能模块
-
-### 用户认证
-- JWT Token认证，存储在localStorage
-- 拦截器自动添加Authorization头
-- 用户信息存储在useAuthStore
-
-### 内容生成
-- 支持图片生成（doubao-seedream-3-0-t2i-250415）
-- 支持视频生成（doubao-seedance-1-0-lite-t2v-250428）
-- 生成历史记录和状态管理
-
-### 模板系统
-- 模板分类管理
-- 热门模板推荐
-- 模板详情和预览
-
-### 艺术风格
-- 艺术风格分类管理
-- 风格标签和描述
-
-## API端点
-
-### 用户相关
-- POST /api/users/register - 用户注册
-- POST /api/users/login - 用户登录
-- GET /api/users/profile - 获取用户信息
-
-### 模板相关
-- GET /api/templates - 分页查询模板
-- GET /api/templates/{id} - 模板详情
-- GET /api/templates/categories - 分类列表
-- GET /api/templates/popular - 热门模板
-
-### 内容生成
-- POST /api/contents/generate - 生成内容
-- GET /api/contents - 生成历史
-- GET /api/contents/{id} - 生成详情
-
-### 艺术风格
-- GET /api/art-styles - 艺术风格列表
-- GET /api/art-styles/{id} - 风格详情
-
-## 配置文件
-
-### 后端配置 (back/src/main/resources/application.yml)
-- **数据库**: MySQL连接配置
-- **JWT**: 密钥和过期时间设置
-- **火山引擎**: API密钥和端点配置
-- **文件上传**: 大小限制和类型限制
-- **日志**: 日志级别和文件输出
-
-### 前端配置
-- **API**: 基础URL在lib/api.ts中配置
-- **主题**: 明暗主题切换在hooks/useTheme.ts
-- **路由**: React Router在App.tsx中配置
-
-## 开发规范
-
-### 代码风格
-- **前端**: ESLint + TypeScript严格模式
-- **后端**: 遵循Spring Boot最佳实践
-- **命名**: 统一使用驼峰命名法
-- **注释**: 关键业务逻辑需要中文注释
-
-### 数据库约定
-- **表名**: 使用下划线命名
-- **字段**: 使用下划线命名，自动映射到驼峰
-- **逻辑删除**: 使用deleted字段（0未删除，1已删除）
-
-## 常用命令
-
-### 数据库初始化
-```sql
--- 创建数据库
-CREATE DATABASE text_vision DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- 执行初始化脚本
-source back/src/main/resources/init/init.sql
-```
-
-### 测试运行
+### Production Build
 ```bash
-# 前端测试
-npm run check  # 类型检查
-npm run lint   # 代码风格检查
+# Frontend
+cd front && npm run build  # Outputs to dist/
 
-# 后端测试
-mvn test       # 运行单元测试
-```
-
-### 构建部署
-```bash
-# 前端构建
-npm run build  # 输出到dist目录
-
-# 后端构建
-mvn clean package -DskipTests  # 生成jar包
+# Backend
+mvn clean package -DskipTests  # Creates text-vision-backend-1.0.0.jar
 java -jar target/text-vision-backend-1.0.0.jar
 ```
 
-## 调试技巧
+## Core Architecture Patterns
 
-### 前端调试
-- 使用React DevTools检查组件状态
-- 使用Zustand DevTools检查store状态
-- 网络请求在lib/api.ts中可开启debug模式
+### Backend Layer Architecture
+```
+com.textvision/
+├── common/          # Shared utilities (pagination, response wrappers)
+├── config/          # Spring configuration (MyBatis, Swagger, Web)
+├── controller/      # REST APIs (User, Template, Content, ArtStyle)
+├── dto/            # Request/Response DTOs
+├── entity/         # JPA entities with MyBatis-Plus annotations
+├── exception/      # Global exception handling with @ControllerAdvice
+├── interceptor/    # JWT authentication via HandlerInterceptor
+├── mapper/         # MyBatis XML mappers for complex queries
+├── service/        
+│   ├── impl/       # Service implementations with @Service
+│   └── VolcanoApiService.java  # External AI service integration
+└── util/           # JWT, password encryption, HTTP utilities
+```
 
-### 后端调试
-- 日志文件在logs/text-vision.log
-- Swagger文档在http://localhost:8080/swagger-ui.html
-- 健康检查在http://localhost:8080/actuator/health
+### Frontend Component Architecture
+```
+src/
+├── components/      # Reusable UI components
+│   ├── generate/   # Content generation components
+│   ├── history/    # History management components
+│   └── ui/         # Base UI primitives
+├── pages/          # Route-based page components
+├── store/          # Zustand stores (auth, templates, content)
+├── lib/            # API client and utilities
+└── hooks/          # Custom React hooks
+```
+
+## API Design Patterns
+
+### Authentication Flow
+- JWT tokens stored in localStorage
+- Automatic token injection via request interceptor
+- 401 handling with automatic logout
+
+### Response Standardization
+- All APIs return `{code: 200, message: "", data: {}}`
+- Consistent error handling with HTTP status codes
+- Pagination via `PageResult<T>` wrapper
+
+### Key API Endpoints
+```
+# Authentication
+POST /api/users/register
+POST /api/users/login
+GET  /api/users/profile
+
+# Content Generation
+POST /api/contents/generate        # AI content creation
+GET  /api/contents                 # User history
+GET  /api/contents/{id}            # Single content details
+
+# Templates
+GET  /api/templates                # Paginated templates
+GET  /api/templates/categories     # Template categories
+GET  /api/templates/popular        # Trending templates
+
+# Art Styles
+GET  /api/art-styles               # Available styles
+```
+
+## Configuration Management
+
+### Backend (application.yml)
+- **Database**: MySQL connection with HikariCP pooling
+- **JWT**: 24-hour token expiration with configurable secret
+- **AI Service**: Volcano Engine API keys and model endpoints
+- **File Upload**: 10MB limit with type validation
+- **Logging**: Structured logs to logs/text-vision.log
+
+### Frontend Configuration
+- **API Base**: Configured in lib/api.ts (currently points to 223.72.35.202:8999)
+- **CORS**: Configured in vite.config.ts with allowed hosts
+- **State Management**: Zustand stores for auth, templates, and generation state
+
+## Database Schema
+
+### Core Tables
+- **user**: User accounts with password hashing
+- **template**: Reusable prompt templates with metadata
+- **generated_content**: Generated images/videos with status tracking
+- **user_operation_log**: Audit trail for user actions
+- **art_style**: Available artistic styles for generation
+
+### MyBatis-Plus Conventions
+- Logic delete via `deleted` field (0=active, 1=deleted)
+- Auto camelCase to snake_case mapping
+- Optimistic locking support
+- Pagination via IPage<T>
+
+## Development Workflow
+
+### Adding New Features
+1. **Backend**: Create entity → mapper → service → controller → DTOs
+2. **Frontend**: Update store → create components → add API methods
+3. **Testing**: Add unit tests → integration tests → manual testing
+
+### Code Style Guidelines
+- **Java**: Lombok for POJOs, consistent naming conventions
+- **TypeScript**: Strict mode enabled, functional components preferred
+- **Git**: Conventional commits (feat:, fix:, style:, etc.)
+
+### Debugging
+- **Backend**: Check logs/text-vision.log, use Swagger UI at /swagger-ui.html
+- **Frontend**: React DevTools for component state, Zustand DevTools for stores
+- **Network**: Browser dev tools for API debugging
+
+## Deployment Checklist
+
+### Environment Variables
+```bash
+# Backend
+export SPRING_PROFILES_ACTIVE=prod
+export DATABASE_URL=jdbc:mysql://prod-db:3306/text_vision
+export JWT_SECRET=your-production-secret
+export VOLCANO_API_KEY=your-production-key
+
+# Frontend
+export VITE_API_BASE_URL=https://api.yourdomain.com/api
+```
+
+### Docker Deployment
+```dockerfile
+# Backend
+FROM openjdk:8-jre-slim
+COPY target/text-vision-backend-1.0.0.jar app.jar
+EXPOSE 8999
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8999/actuator/health || exit 1
+```
+
+### Health Monitoring
+- Health endpoint: http://localhost:8999/actuator/health
+- Metrics endpoint: http://localhost:8999/actuator/metrics
+- Log monitoring: tail -f logs/text-vision.log

@@ -190,7 +190,7 @@ export default function History() {
           <p className="text-gray-600 mb-6">登录后即可查看您的创作历史记录</p>
           <Link
             to="/"
-            className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95 active:translate-y-0"
           >
             返回首页
           </Link>
@@ -223,7 +223,7 @@ export default function History() {
                 placeholder="搜索创作内容..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
+                className="search-input w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
               />
             </div>
 
@@ -257,7 +257,7 @@ export default function History() {
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleSelectAll}
-                  className="text-sm text-purple-600 hover:text-purple-700 min-h-[44px] flex items-center"
+                  className="button-secondary text-sm text-purple-600 min-h-[44px] flex items-center px-3 py-2 rounded-lg"
                 >
                   {selectedItems.length === filteredHistory.length ? '取消全选' : '全选'}
                 </button>
@@ -272,7 +272,7 @@ export default function History() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleDeleteSelected}
-                    className="flex items-center space-x-1 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors min-h-[44px]"
+                    className="button-danger flex items-center space-x-1 px-4 py-2 text-red-600 rounded-lg min-h-[44px]"
                   >
                     <Trash2 className="w-4 h-4" />
                     <span>删除选中</span>
@@ -312,7 +312,7 @@ export default function History() {
             </p>
             <Link
               to="/generate"
-              className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95 active:translate-y-0"
             >
               开始创作
             </Link>
@@ -322,12 +322,12 @@ export default function History() {
             {filteredHistory.map((item, index) => (
               <div
                 key={item.id}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer card-item md:shadow-lg mobile-performance ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                className={`history-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer card-item md:shadow-lg mobile-performance ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
                   }`}
                 onClick={() => handleSelectItem(item.id)}
               >
                   {/* 图片/视频预览 */}
-                  <div className="relative h-40 xs:h-48 overflow-hidden">
+                  <div className="history-card-image relative h-40 xs:h-48 overflow-hidden">
                     {item.type === 'video' ? (
                       <div
                         className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-900"
@@ -403,7 +403,7 @@ export default function History() {
                           e.stopPropagation();
                           handleDownload(item);
                         }}
-                        className="bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="下载"
                       >
                         <Download className="w-4 h-4" />
@@ -413,7 +413,7 @@ export default function History() {
                           e.stopPropagation();
                           handleShare(item);
                         }}
-                        className="bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="分享"
                       >
                         <Share2 className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function History() {
                   }
                 }
               }}
-              className="text-red-600 hover:text-red-700 text-sm font-medium"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 active:bg-red-100 active:scale-95"
             >
               清空所有历史记录
             </button>
