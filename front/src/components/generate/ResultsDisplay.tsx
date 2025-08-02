@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image as ImageIcon, Download, Share2, Play } from 'lucide-react';
+import { Image as ImageIcon, Download, Share2, Play, AlertCircle, Loader2 } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { toast } from 'sonner';
 import MediaPreviewModal from '@/components/ui/MediaPreviewModal';
@@ -8,10 +8,11 @@ interface GenerationResult {
   id: string;
   prompt: string;
   type: 'image' | 'video';
-  status: 'generating' | 'processing' | 'completed';
+  status: 'generating' | 'processing' | 'completed' | 'failed';
   urls: string[];
   thumbnails?: string[];
   url?: string;
+  errorMessage?: string;
 }
 
 interface ResultsDisplayProps {
@@ -42,6 +43,8 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
       return { text: '生成中', color: 'from-yellow-400 to-orange-500' };
     } else if (generation.status === 'processing') {
       return { text: '处理中', color: 'from-blue-400 to-blue-600' };
+    } else if (generation.status === 'failed') {
+      return { text: '生成失败', color: 'from-red-400 to-red-600' };
     } else {
       return index === 0 
         ? { text: '最新作品', color: 'from-green-400 to-emerald-500' }
@@ -75,7 +78,11 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
               {history.slice(0, 4).map((generation, genIndex) => (
                 <div
                   key={generation.id}
-                  className="border-2 border-gray-100 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-white to-gray-50 transform transition-all duration-200 will-change-transform hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 h-full flex flex-col group"
+                  className={`border-2 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br h-full flex flex-col ${
+                    generation.status === 'failed' 
+                      ? 'border-red-200 from-red-50 to-red-100 opacity-75 cursor-not-allowed'
+                      : 'border-gray-100 from-white to-gray-50 transform transition-all duration-200 will-change-transform hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 group cursor-pointer'
+                  }`}
                 >
                   {/* 生成状态指示 - 更现代的设计 */}
                   <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
@@ -157,6 +164,24 @@ function renderContent(
     );
   }
 
+  if (generation.status === 'failed') {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6 text-red-500" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-red-700">生成失败</h3>
+            <p className="text-xs text-red-600 max-w-xs mx-auto px-2">
+              {generation.errorMessage || '生成过程中出现错误，请稍后重试'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const urls = generation.urls || (generation.url ? [generation.url] : []);
   
   if (urls.length > 0) {
@@ -165,79 +190,45 @@ function renderContent(
         {urls.slice(0, 1).map((url, urlIndex) => (
           <div 
             key={urlIndex} 
-            className="relative group overflow-hidden rounded-2xl cursor-pointer transform transition-transform duration-200 will-change-transform"
-            onClick={() => openPreview(url, generation.type, generation.prompt)}
+            className={`relative overflow-hidden rounded-2xl ${
+              generation.status !== 'failed' 
+                ? 'cursor-pointer transform transition-transform duration-200 will-change-transform group'
+                : ''
+            }`}
+            onClick={generation.status !== 'failed' ? () => openPreview(url, generation.type, generation.prompt) : undefined}
             style={{ contain: 'layout style paint' }}
           >
             {generation.type === 'video' ? (
-              <div className="relative w-full h-24 sm:h-32 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900">
-                <video
-                  src={url}
-                  className="w-full h-full object-cover"
-                  preload="metadata"
-                  muted
-                  playsInline
-                  poster=""
-                  onError={(e) => {
-                    console.error('Video load error:', e);
-                    const target = e.target as HTMLVideoElement;
-                    target.style.display = 'none';
-                  }}
-                  onLoadedMetadata={(e) => {
-                    const target = e.target as HTMLVideoElement;
-                    target.currentTime = 0.1;
-                  }}
-                />
-                
-                {/* 中央播放按钮 */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-black/50 backdrop-blur-sm text-white p-3 sm:p-4 rounded-full hover:bg-black/70 transition-colors duration-150">
-                    <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />
-                  </div>
-                </div>
-                
-                {/* 视频标识 */}
-                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
-                  视频
-                </div>
-              </div>
+              <VideoWithLoading url={url} />
             ) : (
-              <img
-                src={url}
-                alt={`生成结果 ${urlIndex + 1}`}
-                className="w-full h-24 sm:h-32 lg:h-40 object-cover rounded-xl sm:rounded-2xl shadow-lg transform transition-transform duration-200 will-change-transform group-hover:scale-105"
-                loading="lazy"
-              />
+              <ImageWithLoading url={url} alt={`生成结果 ${urlIndex + 1}`} />
             )}
 
-            {/* 操作按钮 - 更现代的设计 */}
-            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-1 sm:space-x-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDownload(url, urlIndex);
-                }}
-                className="bg-white/90 backdrop-blur-sm text-gray-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
-                title="下载"
-              >
-                <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onShare(url);
-                }}
-                className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
-                title="分享"
-              >
-                <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              </button>
-            </div>
-
-            {/* 悬浮信息 */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 sm:p-3 lg:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-white text-xs font-medium hidden sm:block">{generation.type === 'image' ? '点击查看大图' : ''}</p>
-            </div>
+            {/* 操作按钮 - 只有成功生成时才显示，且需要hover */}
+            {generation.status !== 'failed' && (
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-1 sm:space-x-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownload(url, urlIndex);
+                  }}
+                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
+                  title="下载"
+                >
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShare(url);
+                  }}
+                  className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
+                  title="分享"
+                >
+                  <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
         
@@ -258,6 +249,112 @@ function renderContent(
         </div>
         <p className="text-sm text-gray-500 font-medium">等待生成结果</p>
       </div>
+    </div>
+  );
+}
+
+function ImageWithLoading({ url, alt, onError }: { url: string; alt: string; onError?: (failed: boolean) => void }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="relative w-full h-24 sm:h-32 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="flex flex-col items-center space-y-2">
+            <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+            <span className="text-xs text-gray-500">加载中...</span>
+          </div>
+        </div>
+      )}
+      
+      {error ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="flex flex-col items-center space-y-2">
+            <AlertCircle className="w-6 h-6 text-red-400" />
+            <span className="text-xs text-red-500">加载失败</span>
+          </div>
+        </div>
+      ) : (
+        <img
+          src={url}
+          alt={alt}
+          className={`w-full h-full object-cover shadow-lg transform transition-all duration-200 will-change-transform group-hover:scale-105 ${
+            loading ? 'opacity-0' : 'opacity-100'
+          }`}
+          loading="lazy"
+          onLoad={() => setLoading(false)}
+          onError={() => {
+            setLoading(false);
+            setError(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function VideoWithLoading({ url }: { url: string }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="relative w-full h-24 sm:h-32 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+          <div className="flex flex-col items-center space-y-2">
+            <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+            <span className="text-xs text-gray-500">加载中...</span>
+          </div>
+        </div>
+      )}
+      
+      {error ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="flex flex-col items-center space-y-2">
+            <AlertCircle className="w-6 h-6 text-red-400" />
+            <span className="text-xs text-red-500">视频加载失败</span>
+          </div>
+        </div>
+      ) : (
+        <>
+          <video
+            src={url}
+            className={`w-full h-full object-cover transition-opacity duration-200 ${
+              loading ? 'opacity-0' : 'opacity-100'
+            }`}
+            preload="metadata"
+            muted
+            playsInline
+            poster=""
+            onLoadedMetadata={(e) => {
+              const target = e.target as HTMLVideoElement;
+              target.currentTime = 0.1;
+              setLoading(false);
+            }}
+            onError={() => {
+              setLoading(false);
+              setError(true);
+            }}
+          />
+          
+          {!loading && !error && (
+            <>
+              {/* 中央播放按钮 */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black/50 backdrop-blur-sm text-white p-3 sm:p-4 rounded-full hover:bg-black/70 transition-colors duration-150">
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />
+                </div>
+              </div>
+              
+              {/* 视频标识 */}
+              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
+                视频
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

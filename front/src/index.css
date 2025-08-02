@@ -1,5 +1,7 @@
 @import './styles/scroll-optimization.css';
 @import './styles/hover-optimization.css';
+@import './styles/mobile-button-fixes.css';
+@import './styles/template-layout-fix.css';
 
 @tailwind base;
 @tailwind components;

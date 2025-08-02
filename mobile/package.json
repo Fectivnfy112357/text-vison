@@ -11,14 +11,14 @@
     "check": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@vant/touch-emulator": "^1.4.0",
+    "@ant-design/icons": "^6.0.0",
+    "antd-mobile": "^5.39.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.7.1",
     "tailwind-merge": "^3.0.2",
-    "vant": "^4.9.21",
     "zustand": "^5.0.7"
   },
   "devDependencies": {

@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import { Uploader, Toast } from 'vant';
-import { UploaderFileListItem } from 'vant';
+import React, { useState, useRef } from 'react';
 
 interface ImageUploaderProps {
   value?: string;
@@ -17,60 +15,94 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   accept = 'image/*',
   placeholder = '点击上传图片'
 }) => {
-  const [fileList, setFileList] = useState<UploaderFileListItem[]>(
-    value ? [{ url: value, isImage: true }] : []
-  );
+  const [previewUrl, setPreviewUrl] = useState<string>(value || '');
+  const [error, setError] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAfterRead = (file: UploaderFileListItem | UploaderFileListItem[]) => {
-    const fileItem = Array.isArray(file) ? file[0] : file;
-    
-    if (fileItem.file) {
-      // 检查文件大小
-      if (fileItem.file.size > maxSize * 1024 * 1024) {
-        Toast.fail(`图片大小不能超过${maxSize}MB`);
-        return;
-      }
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      // 创建预览URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const url = e.target?.result as string;
-        const newFileList = [{ ...fileItem, url, isImage: true }];
-        setFileList(newFileList);
-        onChange?.(url);
-      };
-      reader.readAsDataURL(fileItem.file);
+    setError('');
+
+    // 检查文件类型
+    if (!file.type.startsWith('image/')) {
+      setError('请选择图片文件');
+      return;
     }
+
+    // 检查文件大小
+    if (file.size > maxSize * 1024 * 1024) {
+      setError(`图片大小不能超过${maxSize}MB`);
+      return;
+    }
+
+    // 创建预览URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const url = e.target?.result as string;
+      setPreviewUrl(url);
+      onChange?.(url);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleDelete = () => {
-    setFileList([]);
+    setPreviewUrl('');
+    setError('');
     onChange?.('');
-  };
-
-  const handleBeforeRead = (file: File) => {
-    // 检查文件类型
-    if (!file.type.startsWith('image/')) {
-      Toast.fail('请选择图片文件');
-      return false;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-    return true;
   };
 
   return (
     <div className="image-uploader">
-      <Uploader
-        fileList={fileList}
-        onAfterRead={handleAfterRead}
-        onDelete={handleDelete}
-        beforeRead={handleBeforeRead}
+      <input
+        ref={fileInputRef}
+        type="file"
         accept={accept}
-        maxCount={1}
-        previewSize={80}
-        uploadText={placeholder}
-        className="touch-target"
+        onChange={handleFileSelect}
+        className="hidden"
       />
-      {fileList.length === 0 && (
+      
+      {previewUrl ? (
+        <div className="relative inline-block">
+          <img
+            src={previewUrl}
+            alt="Preview"
+            className="w-20 h-20 object-cover rounded-lg border border-gray-300"
+          />
+          <button
+            onClick={handleDelete}
+            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={handleClick}
+          className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <div className="text-2xl mb-1">📷</div>
+          <div className="text-xs text-center leading-tight">
+            {placeholder}
+          </div>
+        </button>
+      )}
+      
+      {error && (
+        <div className="text-xs text-red-500 mt-1">
+          {error}
+        </div>
+      )}
+      
+      {!previewUrl && !error && (
         <div className="text-xs text-gray-500 mt-2">
           支持 JPG、PNG 格式，大小不超过 {maxSize}MB
         </div>

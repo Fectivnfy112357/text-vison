@@ -9,6 +9,7 @@ export default defineConfig({
     tsconfigPaths()
   ],
   server: {
+    port: 5174,
     host: '0.0.0.0',
     allowedHosts: ['frp-oil.com', 'localhost', '127.0.0.1','frp-off.com']
   }

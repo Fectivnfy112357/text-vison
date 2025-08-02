@@ -1,323 +1,122 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  NavBar,
-  Search,
-  Tabs,
-  Tab,
-  Card,
-  Button,
-  Image as VantImage,
-  Tag,
-  Loading,
-  Empty,
-  PullRefresh,
-  List,
-  Cell,
-  Toast,
-  ActionSheet,
-  ActionSheetAction
-} from 'vant';
-import { useNavigate } from 'react-router-dom';
-import { useTemplateStore } from '../store/useTemplateStore';
+import React, { useState } from 'react';
 
-export default function Templates() {
-  const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-  const [refreshing, setRefreshing] = useState(false);
-  const [showActionSheet, setShowActionSheet] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+interface Template {
+  id: number;
+  title: string;
+  description: string;
+  prompt: string;
+  category: string;
+  imageUrl: string;
+}
 
-  const {
-    templates,
-    categories,
-    searchQuery,
-    selectedCategory,
-    isLoading,
-    fetchTemplates,
-    setSelectedCategory,
-    setSearchQuery,
-    loadCategories,
-    useTemplate
-  } = useTemplateStore();
+const Templates: React.FC = () => {
+  const [selectedCategory, setSelectedCategory] = useState('全部');
 
-  // 过滤模板
-  const filteredTemplates = useMemo(() => {
-    return templates.filter(template => {
-      if (!template || typeof template !== 'object') return false;
-      
-      const matchesSearch = !searchValue || 
-        template.title?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        template.description?.toLowerCase().includes(searchValue.toLowerCase());
-      
-      const matchesCategory = activeTab === 'all' || template.categoryId === activeTab;
-      
-      return matchesSearch && matchesCategory;
-    });
-  }, [templates, searchValue, activeTab]);
+  const categories = ['全部', '动物', '风景', '人物', '科幻', '艺术'];
 
-  // 热门模板
-  const popularTemplates = useMemo(() => 
-    templates.filter(t => t && t.isPopular).slice(0, 6),
-    [templates]
-  );
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      await loadCategories();
-      await fetchTemplates();
-    } catch (error) {
-      Toast.fail('加载数据失败，请重试');
-    }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await loadData();
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const handleSearch = (value: string) => {
-    setSearchValue(value);
-    setSearchQuery(value);
-  };
-
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveTab(categoryId);
-    setSelectedCategory(categoryId === 'all' ? '' : categoryId);
-  };
-
-  const handleTemplateClick = (template: any) => {
-    setSelectedTemplate(template);
-    setShowActionSheet(true);
-  };
-
-  const handleUseTemplate = async (template: any) => {
-    try {
-      await useTemplate(template.id);
-      Toast.success(`已应用模板：${template.title}`);
-      navigate(`/generate?template=${template.id}`);
-    } catch (error) {
-      Toast.fail('使用模板失败');
-    }
-  };
-
-  const handlePreviewTemplate = (template: any) => {
-    // 这里可以实现模板预览功能
-    Toast('预览功能开发中');
-  };
-
-  const actionSheetActions: ActionSheetAction[] = [
+  const templates: Template[] = [
     {
-      name: '使用模板',
-      callback: () => selectedTemplate && handleUseTemplate(selectedTemplate)
+      id: 1,
+      title: '可爱小猫',
+      description: '萌萌的小猫咪',
+      prompt: '一只可爱的橘色小猫，大眼睛，毛茸茸，卡通风格',
+      category: '动物',
+      imageUrl: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20orange%20cat%20cartoon&image_size=square'
     },
     {
-      name: '预览模板',
-      callback: () => selectedTemplate && handlePreviewTemplate(selectedTemplate)
+      id: 2,
+      title: '梦幻森林',
+      description: '神秘的魔法森林',
+      prompt: '梦幻森林，紫色光芒，神秘氛围，高质量渲染',
+      category: '风景',
+      imageUrl: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=fantasy%20forest%20purple%20light&image_size=square'
+    },
+    {
+      id: 3,
+      title: '未来城市',
+      description: '科幻未来都市',
+      prompt: '未来科幻城市，霓虹灯，高楼大厦，赛博朋克风格',
+      category: '科幻',
+      imageUrl: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cyberpunk%20future%20city%20neon&image_size=square'
     }
   ];
 
-  const renderTemplateCard = (template: any) => (
-    <Card
-      key={template.id}
-      className="mb-3"
-      onClick={() => handleTemplateClick(template)}
-    >
-      <div className="relative">
-        <VantImage
-          src={template.preview || '/placeholder-template.png'}
-          width="100%"
-          height={120}
-          fit="cover"
-          className="rounded-lg"
-          errorIcon="photo-fail"
-        />
-        
-        {/* 类型标识 */}
-        <div className="absolute top-2 left-2">
-          <Tag
-            type={template.type === 'video' ? 'danger' : 'primary'}
-            size="mini"
-          >
-            {template.type === 'video' ? '视频' : '图片'}
-          </Tag>
-        </div>
-        
-        {/* 热门标识 */}
-        {template.isPopular && (
-          <div className="absolute top-2 right-2">
-            <Tag type="warning" size="mini">热门</Tag>
-          </div>
-        )}
-      </div>
-      
-      <div className="p-3">
-        <div className="font-semibold text-gray-900 mb-1 line-clamp-1">
-          {template.title || '未命名模板'}
-        </div>
-        <div className="text-sm text-gray-600 mb-2 line-clamp-2">
-          {template.description || '暂无描述'}
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Tag size="mini" plain>
-              {template.categoryId || '其他'}
-            </Tag>
-            <span className="text-xs text-gray-500">
-              {template.views || 0} 次使用
-            </span>
-          </div>
-          
-          <Button
-            size="mini"
-            type="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUseTemplate(template);
-            }}
-          >
-            使用
-          </Button>
-        </div>
-        
-        {/* 标签 */}
-        {template.tags && template.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {template.tags.slice(0, 3).map((tag: string, index: number) => (
-              <Tag key={index} size="mini" plain>
-                {tag}
-              </Tag>
-            ))}
-            {template.tags.length > 3 && (
-              <span className="text-xs text-gray-400">
-                +{template.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </Card>
-  );
+  const filteredTemplates = selectedCategory === '全部' 
+    ? templates 
+    : templates.filter(template => template.category === selectedCategory);
+
+  const handleUseTemplate = (template: Template) => {
+    // 这里可以导航到生成页面并填入模板的prompt
+    console.log('使用模板:', template.prompt);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <NavBar
-        title="模板库"
-        leftText="返回"
-        onClickLeft={() => navigate('/')}
-        className="bg-white"
-      />
+    <div className="templates-page min-h-screen bg-gray-50">
+      {/* 顶部导航 */}
+      <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4">
+        <h1 className="text-lg font-bold text-center">精选模板</h1>
+      </div>
 
-      <PullRefresh
-        value={refreshing}
-        onRefresh={handleRefresh}
-      >
-        <div className="p-4">
-          {/* 搜索框 */}
-          <div className="mb-4">
-            <Search
-              value={searchValue}
-              onChange={handleSearch}
-              placeholder="搜索模板..."
-              shape="round"
-            />
+      <div className="p-4 space-y-4">
+        {/* 分类筛选 */}
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">分类</h3>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* 热门模板 */}
-          {popularTemplates.length > 0 && !searchValue && (
-            <div className="mb-6">
-              <div className="text-lg font-semibold mb-3">🔥 热门模板</div>
-              <div className="grid grid-cols-2 gap-3">
-                {popularTemplates.map(template => (
-                  <div key={template.id} className="relative">
-                    <VantImage
-                      src={template.preview || '/placeholder-template.png'}
-                      width="100%"
-                      height={100}
-                      fit="cover"
-                      className="rounded-lg"
-                      onClick={() => handleTemplateClick(template)}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-lg">
-                      <div className="text-white text-sm font-medium line-clamp-1">
-                        {template.title}
-                      </div>
-                    </div>
-                    <div className="absolute top-2 left-2">
-                      <Tag
-                        type={template.type === 'video' ? 'danger' : 'primary'}
-                        size="mini"
-                      >
-                        {template.type === 'video' ? '视频' : '图片'}
-                      </Tag>
-                    </div>
-                  </div>
-                ))}
+        {/* 模板列表 */}
+        <div className="space-y-4">
+          {filteredTemplates.map((template) => (
+            <div key={template.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <img
+                src={template.imageUrl}
+                alt={template.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-lg font-semibold text-gray-800">{template.title}</h4>
+                  <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                    {template.category}
+                  </span>
+                </div>
+                <p className="text-gray-600 text-sm mb-3">{template.description}</p>
+                <div className="bg-gray-50 p-2 rounded text-xs text-gray-700 mb-3">
+                  <strong>提示词：</strong>{template.prompt}
+                </div>
+                <button
+                  onClick={() => handleUseTemplate(template)}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-2 px-4 rounded-lg font-medium"
+                >
+                  使用此模板
+                </button>
               </div>
             </div>
-          )}
-
-          {/* 分类标签 */}
-          <div className="mb-4">
-            <Tabs
-              active={activeTab}
-              onChange={handleCategoryChange}
-              scrollable
-              className="bg-white rounded-lg"
-            >
-              <Tab title="全部" name="all" />
-              {categories.map(category => (
-                <Tab
-                  key={category.id}
-                  title={category.name}
-                  name={category.id}
-                />
-              ))}
-            </Tabs>
-          </div>
-
-          {/* 模板列表 */}
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <Loading size="24px">加载中...</Loading>
-            </div>
-          ) : filteredTemplates.length === 0 ? (
-            <Empty
-              description={searchValue ? '未找到相关模板' : '暂无模板'}
-              className="py-8"
-            />
-          ) : (
-            <div className="space-y-3">
-              {filteredTemplates.map(renderTemplateCard)}
-            </div>
-          )}
-
-          {/* 加载更多提示 */}
-          {filteredTemplates.length > 0 && (
-            <div className="text-center py-4 text-gray-500 text-sm">
-              已显示全部模板
-            </div>
-          )}
+          ))}
         </div>
-      </PullRefresh>
 
-      {/* 操作面板 */}
-      <ActionSheet
-        show={showActionSheet}
-        actions={actionSheetActions}
-        onCancel={() => setShowActionSheet(false)}
-        title={selectedTemplate?.title || '模板操作'}
-        description={selectedTemplate?.description}
-      />
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">该分类下暂无模板</p>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default Templates;

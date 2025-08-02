@@ -3,8 +3,8 @@ import { Heart, Github, Mail, Phone } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100 pb-32 lg:pb-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100 pb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 品牌信息 */}
           <div className="col-span-1 md:col-span-2">
@@ -97,7 +97,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* 分割线 */}
-        <div className="border-t border-purple-100 mt-8 pt-8">
+        <div className="border-t border-purple-100 mt-6 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-500 text-sm mb-4 md:mb-0">
               © 2024 文生视界. 保留所有权利.

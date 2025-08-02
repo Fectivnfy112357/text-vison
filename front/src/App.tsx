@@ -39,7 +39,7 @@ export default function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 flex flex-col">
         {/* 移动端建议提示 */}
         {showMobileSuggestion && (
           <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white p-4 shadow-lg">
@@ -81,7 +81,7 @@ export default function App() {
           </div>
         )}
         <Navbar />
-        <main>
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/generate" element={<Generate />} />
@@ -93,7 +93,6 @@ export default function App() {
         <Toaster 
           position="top-center" 
           richColors 
-          closeButton
           toastOptions={{
             style: {
               pointerEvents: 'auto',

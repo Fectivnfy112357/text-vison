@@ -273,8 +273,14 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getSeed(),
                         request.getGuidanceScale()
                 );
-                resultUrl = result.getUrl();
-                thumbnail = result.getUrl(); // 图片没有缩略图，使用原图
+                
+                if (result.isSuccess()) {
+                    resultUrl = result.getUrl();
+                    thumbnail = result.getUrl(); // 图片没有缩略图，使用原图
+                } else {
+                    // 图片生成失败
+                    throw new RuntimeException(result.getErrorMessage());
+                }
             } else {
                 // 调用视频生成API
                 VolcanoApiService.VideoGenerationResult result = volcanoApiService.generateVideo(

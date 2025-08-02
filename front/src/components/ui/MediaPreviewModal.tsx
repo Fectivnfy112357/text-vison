@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Share2, Play, Pause } from 'lucide-react';
+import { X, Download, Share2, Play, Pause, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaPreviewModalProps {
@@ -26,6 +26,10 @@ export default function MediaPreviewModal({
 }: MediaPreviewModalProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [videoLoading, setVideoLoading] = useState(true);
 
   // 处理ESC键关闭
   useEffect(() => {
@@ -90,6 +94,11 @@ export default function MediaPreviewModal({
   };
 
   const handleDownloadClick = useCallback(() => {
+    if (imageError || videoError) {
+      toast.error('下载失败：媒体加载失败');
+      return;
+    }
+    
     if (onDownload) {
       onDownload();
     } else {
@@ -102,9 +111,14 @@ export default function MediaPreviewModal({
       document.body.removeChild(link);
       toast.success('下载开始');
     }
-  }, [onDownload, mediaUrl, mediaType]);
+  }, [onDownload, mediaUrl, mediaType, imageError, videoError]);
 
   const handleShareClick = useCallback(async () => {
+    if (imageError || videoError) {
+      toast.error('分享失败：媒体加载失败');
+      return;
+    }
+    
     if (onShare) {
       onShare();
     } else {
@@ -128,7 +142,7 @@ export default function MediaPreviewModal({
         }
       }
     }
-  }, [onShare, title, mediaUrl]);
+  }, [onShare, title, mediaUrl, imageError, videoError]);
 
   if (!isOpen) return null;
 
@@ -154,24 +168,23 @@ export default function MediaPreviewModal({
               <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button
                   onClick={handleDownloadClick}
-                  className="bg-white/20 backdrop-blur-sm text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-white/30 transition-colors duration-150"
+                  disabled={imageError || videoError}
+                  className={`bg-white/20 backdrop-blur-sm text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-white/30 transition-colors duration-150 ${
+                    (imageError || videoError) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   title="下载"
                 >
                   <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={handleShareClick}
-                  className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-colors duration-150"
+                  disabled={imageError || videoError}
+                  className={`bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-colors duration-150 ${
+                    (imageError || videoError) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   title="分享"
                 >
                   <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-xl hover:bg-white/30 transition-colors duration-150"
-                  title="关闭"
-                >
-                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -181,12 +194,39 @@ export default function MediaPreviewModal({
           <div className="relative w-full h-full flex items-center justify-center bg-black" style={{ contain: 'layout' }}>
             {mediaType === 'video' ? (
               <div className="relative w-full h-full">
+                {/* 视频加载状态 */}
+                {videoLoading && !videoError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span className="text-white text-sm">视频加载中...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 视频加载失败状态 */}
+                {videoError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    <div className="flex flex-col items-center space-y-4 text-center">
+                      <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8 text-red-400" />
+                      </div>
+                      <div className="text-white space-y-2">
+                        <h3 className="text-lg font-semibold">视频加载失败</h3>
+                        <p className="text-sm text-gray-300 max-w-xs">请检查网络连接或稍后重试</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <video
                   ref={handleVideoRef}
                   src={mediaUrl}
-                  className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
+                  className={`w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh] ${
+                    videoError ? 'hidden' : ''
+                  }`}
                   onClick={handleVideoToggle}
-                  controls
+                  controls={!videoError}
                   preload="metadata"
                   playsInline
                   webkit-playsinline="true"
@@ -198,43 +238,41 @@ export default function MediaPreviewModal({
                   style={{ willChange: 'transform', contain: 'layout style' }}
                   poster={`${mediaUrl}#t=0.1`}
                   onLoadedMetadata={(e) => {
+                    setVideoLoading(false);
                     // 移动端兼容处理
                     const video = e.target as HTMLVideoElement;
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     
                     if (isMobile) {
-                      // 移动端延迟设置时间，确保视频准备就绪
                       setTimeout(() => {
                         try {
                           video.currentTime = 0.1;
-                          // 强制刷新视频帧
                           video.load();
                         } catch (error) {
                           console.warn('移动端视频时间设置失败:', error);
                         }
                       }, 100);
                     } else {
-                      // PC端直接设置
                       video.currentTime = 0.1;
                     }
                   }}
                   onCanPlay={(e) => {
-                    // 当视频可以播放时，再次尝试设置时间
+                    setVideoLoading(false);
                     const video = e.target as HTMLVideoElement;
                     if (video.currentTime === 0) {
                       video.currentTime = 0.1;
                     }
                   }}
+                  onLoadStart={() => setVideoLoading(true)}
                   onError={(e) => {
-                    console.warn('视频播放失败:', mediaUrl);
-                    const video = e.target as HTMLVideoElement;
-                    // 显示错误提示
+                    setVideoLoading(false);
+                    setVideoError(true);
                     toast.error('视频加载失败，请检查网络连接');
                   }}
                 />
 
-                {/* 自定义播放控制 - 只在未播放时显示 */}
-                {!isPlaying && (
+                {/* 自定义播放控制 - 只在未播放且没有错误时显示 */}
+                {!isPlaying && !videoError && !videoLoading && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       onClick={handleVideoToggle}
@@ -247,13 +285,50 @@ export default function MediaPreviewModal({
                 )}
               </div>
             ) : (
-              <img
-                src={mediaUrl}
-                alt={title || '预览图片'}
-                className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
-                style={{ willChange: 'transform' }}
-                loading="eager"
-              />
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* 图片加载状态 */}
+                {imageLoading && !imageError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span className="text-white text-sm">图片加载中...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 图片加载失败状态 */}
+                {imageError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    <div className="flex flex-col items-center space-y-4 text-center">
+                      <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-red-400" />
+                      </div>
+                      <div className="text-white space-y-2">
+                        <h3 className="text-lg font-semibold">加载失败</h3>
+                        <p className="text-sm text-gray-300 max-w-xs">请检查网络连接或稍后重试</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <img
+                  src={mediaUrl}
+                  alt={title || '预览图片'}
+                  className={`w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh] ${
+                    imageError ? 'hidden' : ''
+                  }`}
+                  style={{ willChange: 'transform' }}
+                  loading="eager"
+                  onLoad={() => {
+                    setImageLoading(false);
+                  }}
+                  onError={() => {
+                    setImageLoading(false);
+                    setImageError(true);
+                    toast.error('图片加载失败，请检查网络连接');
+                  }}
+                />
+              </div>
             )}
           </div>
       </div>

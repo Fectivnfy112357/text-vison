@@ -89,6 +89,29 @@ public class VolcanoApiService {
             log.info("调用火山引擎图片生成API: {}", JSON.toJSONString(request));
             
             String responseJson = HttpUtil.doPostJson(url, headers, request);
+            
+            // 检查是否为错误响应
+            if (responseJson.contains("\"error\"")) {
+                try {
+                    Map<String, Object> errorResponse = JSON.parseObject(responseJson, Map.class);
+                    Map<String, Object> error = (Map<String, Object>) errorResponse.get("error");
+                    String errorCode = error != null ? (String) error.get("code") : "UnknownError";
+                    String errorMessage = error != null ? (String) error.get("message") : "图片生成失败";
+                    
+                    log.error("火山引擎图片生成失败: errorCode={}, errorMessage={}", errorCode, errorMessage);
+                    
+                    // 将敏感内容错误转换为中文提示
+                    if ("OutputImageSensitiveContentDetected".equals(errorCode)) {
+                        errorMessage = "生成内容包含敏感信息，请修改提示词后重试";
+                    }
+                    
+                    return createErrorResult(errorMessage);
+                } catch (Exception e) {
+                    log.error("解析错误响应失败: {}", responseJson, e);
+                    return createErrorResult("图片生成失败: " + responseJson);
+                }
+            }
+            
             ImageGenerationResponse response = JSON.parseObject(responseJson, ImageGenerationResponse.class);
             
             if (response != null && response.getData() != null && !response.getData().isEmpty()) {
@@ -216,6 +239,28 @@ public class VolcanoApiService {
             
             String responseJson = HttpUtil.doPostJson(url, headers, request);
             log.debug("火山引擎视频生成API响应: {}", responseJson);
+            
+            // 检查是否为错误响应
+            if (responseJson.contains("\"error\"")) {
+                try {
+                    Map<String, Object> errorResponse = JSON.parseObject(responseJson, Map.class);
+                    Map<String, Object> error = (Map<String, Object>) errorResponse.get("error");
+                    String errorCode = error != null ? (String) error.get("code") : "UnknownError";
+                    String errorMessage = error != null ? (String) error.get("message") : "视频生成失败";
+                    
+                    log.error("火山引擎视频生成失败: errorCode={}, errorMessage={}", errorCode, errorMessage);
+                    
+                    // 将敏感内容错误转换为中文提示
+                    if ("OutputVideoSensitiveContentDetected".equals(errorCode)) {
+                        errorMessage = "生成内容包含敏感信息，请修改提示词后重试";
+                    }
+                    
+                    return createVideoErrorResult(errorMessage);
+                } catch (Exception e) {
+                    log.error("解析错误响应失败: {}", responseJson, e);
+                    return createVideoErrorResult("视频生成失败: " + responseJson);
+                }
+            }
             
             // 火山引擎视频生成API返回任务ID，需要后续查询任务状态
             VideoGenerationTaskResponse response = JSON.parseObject(responseJson, VideoGenerationTaskResponse.class);

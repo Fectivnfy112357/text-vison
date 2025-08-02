@@ -85,13 +85,13 @@ export default function Generate() {
     const templateId = searchParams.get('template');
     if (templateId && templates.length > 0) {
       const template = templates.find(t => t && t.id === templateId);
-      if (template) {
+      if (template && !prompt) { // 只有当prompt为空时才应用模板，避免重复应用
         setPrompt(template.prompt || '');
         setType(template.type || 'image');
-        toast.success(`已应用模板：${template.title}`);
+        toast.success('模板已应用');
       }
     }
-  }, [searchParams, templates]);
+  }, [searchParams, templates, prompt]);
 
 
   const handleDownload = (specificUrl?: string, index?: number) => {

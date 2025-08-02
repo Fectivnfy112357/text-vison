@@ -211,8 +211,8 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
 TemplateListItem.displayName = 'TemplateListItem';
 
   return (
-    <div className="min-h-screen pt-8">
-      <div className="max-w-7xl mx-auto px-8">
+    <div className="template-page min-h-screen pt-8 pb-8 flex flex-col">
+      <div className="max-w-7xl mx-auto px-8 flex-1 flex flex-col">
         {/* 页面标题 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -343,11 +343,11 @@ TemplateListItem.displayName = 'TemplateListItem';
             </button>
           </div>
         ) : (
-          <div className="template-container">
+          <div className="template-container min-h-[400px]">
             {/* 网格视图 */}
             <div
               className={`grid grid-cols-3 gap-6 ${
-                viewMode === 'grid' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+                viewMode === 'grid' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none h-0'
               } transition-opacity duration-200`}
             >
               {filteredTemplates.map((template) => (
@@ -362,7 +362,7 @@ TemplateListItem.displayName = 'TemplateListItem';
             {/* 列表视图 */}
             <div
               className={`space-y-6 ${
-                viewMode === 'list' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+                viewMode === 'list' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none h-0'
               } transition-opacity duration-200`}
             >
               {filteredTemplates.map((template) => (

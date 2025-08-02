@@ -1,36 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   NavBar,
-  Field,
   Button,
+  Card,
+  TextArea,
   Radio,
-  RadioGroup,
   Switch,
-  Cell,
-  CellGroup,
-  Uploader,
+  Picker,
   Popup,
-  Slider,
-  Stepper,
+  Image,
   Toast,
   Loading,
-  Image as VantImage,
-  ActionSheet,
-  ActionSheetAction
-} from 'vant';
-import { useNavigate } from 'react-router-dom';
-import { useGenerationStore } from '../store/useGenerationStore';
+  Tag,
+  Stepper,
+  Space,
+  Grid,
+  List,
+  Divider
+} from 'antd-mobile';
 import { useAuthStore } from '../store/useAuthStore';
+import { useGenerationStore } from '../store/useGenerationStore';
+import { useTemplateStore } from '../store/useTemplateStore';
 import { useArtStyleStore } from '../store/useArtStyleStore';
 
-interface ImageParams {
+// 参数接口定义
+interface ImageGenerationParams {
   size: string;
   quality: string;
+  responseFormat: string;
   seed?: number;
   guidanceScale?: number;
 }
 
-interface VideoParams {
+interface VideoGenerationParams {
   resolution: string;
   duration: number;
   ratio: string;
@@ -40,25 +43,31 @@ interface VideoParams {
   count: number;
 }
 
-export default function Generate() {
+const Generate: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthStore();
+  const { generateContent, isGenerating, history, currentGeneration } = useGenerationStore();
+  const { templates } = useTemplateStore();
+  const { styles: artStyles } = useArtStyleStore();
+
+  // 基础状态
   const [prompt, setPrompt] = useState('');
   const [type, setType] = useState<'image' | 'video'>('image');
   const [watermark, setWatermark] = useState(false);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [selectedStyleId, setSelectedStyleId] = useState<number | undefined>(undefined);
-  const [showParams, setShowParams] = useState(false);
-  const [showStyleSheet, setShowStyleSheet] = useState(false);
 
-  // 参数配置
-  const [imageParams, setImageParams] = useState<ImageParams>({
+  // 图片参数
+  const [imageParams, setImageParams] = useState<ImageGenerationParams>({
     size: '1024x1024',
     quality: 'standard',
+    responseFormat: 'url',
     seed: undefined,
     guidanceScale: undefined
   });
 
-  const [videoParams, setVideoParams] = useState<VideoParams>({
+  // 视频参数
+  const [videoParams, setVideoParams] = useState<VideoGenerationParams>({
     resolution: '720p',
     duration: 5,
     ratio: '16:9',
@@ -68,50 +77,82 @@ export default function Generate() {
     count: 1
   });
 
-  const { generateContent, isGenerating, currentGeneration, history, loadHistory } = useGenerationStore();
-  const { isAuthenticated, user } = useAuthStore();
-  const { styles, fetchStyles, getStylesByType } = useArtStyleStore();
+  // UI状态
+  const [showAdvancedParams, setShowAdvancedParams] = useState(false);
+  const [showStylePicker, setShowStylePicker] = useState(false);
+  const [showSizePicker, setShowSizePicker] = useState(false);
+  const [showQualityPicker, setShowQualityPicker] = useState(false);
+  const [showResolutionPicker, setShowResolutionPicker] = useState(false);
+  const [showRatioPicker, setShowRatioPicker] = useState(false);
+  const [showDurationPicker, setShowDurationPicker] = useState(false);
 
+  // 选项数据
+  const imageSizeOptions = [
+    [{ label: '正方形 (1024x1024)', value: '1024x1024' }],
+    [{ label: '横屏 (1152x896)', value: '1152x896' }],
+    [{ label: '竖屏 (896x1152)', value: '896x1152' }],
+    [{ label: '宽屏 (1216x832)', value: '1216x832' }],
+    [{ label: '长屏 (832x1216)', value: '832x1216' }]
+  ];
+
+  const qualityOptions = [
+    [{ label: '标准质量', value: 'standard' }],
+    [{ label: '高清质量', value: 'hd' }]
+  ];
+
+  const resolutionOptions = [
+    [{ label: '480p (标清)', value: '480p' }],
+    [{ label: '720p (高清)', value: '720p' }],
+    [{ label: '1080p (全高清)', value: '1080p' }]
+  ];
+
+  const ratioOptions = [
+    [{ label: '正方形 (1:1)', value: '1:1' }],
+    [{ label: '竖屏 (3:4)', value: '3:4' }],
+    [{ label: '横屏 (4:3)', value: '4:3' }],
+    [{ label: '宽屏 (16:9)', value: '16:9' }],
+    [{ label: '竖屏 (9:16)', value: '9:16' }],
+    [{ label: '超宽屏 (21:9)', value: '21:9' }]
+  ];
+
+  const durationOptions = [
+    [{ label: '5秒', value: 5 }],
+    [{ label: '10秒', value: 10 }]
+  ];
+
+  // 检查认证状态
   useEffect(() => {
-    if (isAuthenticated) {
-      loadHistory();
+    if (!isAuthenticated) {
+      Toast.show('请先登录后再使用创作功能');
+      navigate('/');
     }
-    fetchStyles();
-  }, [isAuthenticated, loadHistory, fetchStyles]);
+  }, [isAuthenticated, navigate]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      Toast.fail('请输入描述文本');
+      Toast.show('请输入描述文本');
       return;
     }
 
     if (!isAuthenticated) {
-      Toast.fail('请先登录后再进行创作');
+      Toast.show('请先登录');
       return;
     }
 
     try {
       const params: any = {
         watermark,
-        referenceImage
+        referenceImage,
+        styleId: selectedStyleId
       };
-
-      if (selectedStyleId) {
-        params.styleId = selectedStyleId;
-      }
 
       if (type === 'image') {
         params.size = imageParams.size;
         params.quality = imageParams.quality;
-        if (imageParams.seed !== undefined && imageParams.seed >= -1 && imageParams.seed <= 2147483647) {
-          params.seed = imageParams.seed;
-        }
-        if (imageParams.guidanceScale !== undefined && imageParams.guidanceScale >= 1 && imageParams.guidanceScale <= 10) {
-          params.guidanceScale = imageParams.guidanceScale;
-        }
-      }
-
-      if (type === 'video') {
+        params.responseFormat = imageParams.responseFormat;
+        if (imageParams.seed) params.seed = imageParams.seed;
+        if (imageParams.guidanceScale) params.guidanceScale = imageParams.guidanceScale;
+      } else {
         params.resolution = videoParams.resolution;
         params.duration = videoParams.duration;
         params.ratio = videoParams.ratio;
@@ -122,154 +163,310 @@ export default function Generate() {
       }
 
       await generateContent(prompt, type, params);
-      Toast.success('生成成功！');
+      Toast.show('生成成功！');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '生成失败，请重试';
-      Toast.fail(errorMessage);
+      console.error('生成失败:', error);
+      Toast.show('生成失败，请重试');
     }
   };
 
-  const handleImageUpload = (file: any) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setReferenceImage(e.target?.result as string);
-    };
-    reader.readAsDataURL(file.file);
-  };
-
   const handleDownload = (url: string) => {
+    // 移动端下载逻辑
     const link = document.createElement('a');
     link.href = url;
     link.download = `textvision-${Date.now()}.${type === 'video' ? 'mp4' : 'jpg'}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    Toast.success('下载开始');
   };
 
   const handleShare = async (url: string) => {
-    try {
-      if (navigator.share) {
+    if (navigator.share) {
+      try {
         await navigator.share({
-          title: '文生视界 - 我的创作',
-          text: prompt || '精彩创作内容',
+          title: '文生视界创作分享',
+          text: prompt,
           url: url
         });
-      } else {
-        await navigator.clipboard.writeText(url);
-        Toast.success('链接已复制到剪贴板');
+      } catch (error) {
+        console.log('分享取消或失败');
       }
-    } catch (error) {
-      try {
-        await navigator.clipboard.writeText(url);
-        Toast.success('链接已复制到剪贴板');
-      } catch (clipboardError) {
-        Toast.fail('分享失败');
-      }
+    } else {
+      // 复制到剪贴板
+      navigator.clipboard.writeText(url);
+      Toast.show('链接已复制到剪贴板');
     }
   };
 
-  const availableStyles = getStylesByType(type);
-  const styleActions: ActionSheetAction[] = [
-    { name: '默认风格', value: undefined },
-    ...availableStyles.map(style => ({
-      name: style.name,
-      value: style.id
-    }))
-  ];
+  const getSelectedText = (options: any[][], value: any) => {
+    for (const optionGroup of options) {
+      const option = optionGroup.find((opt: any) => opt.value === value);
+      if (option) return option.label;
+    }
+    return value;
+  };
 
-  const selectedStyleName = selectedStyleId 
-    ? availableStyles.find(s => s.id === selectedStyleId)?.name || '默认风格'
-    : '默认风格';
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loading />
+        <span className="ml-2">加载中...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="generate-page min-h-screen bg-gray-50 pb-16">
       <NavBar
-        title="AI创作工坊"
-        leftText="返回"
-        onClickLeft={() => navigate('/')}
-        className="bg-white"
-      />
+        onBack={() => navigate('/')}
+        className="bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+      >
+        AI创作工坊
+      </NavBar>
 
       <div className="p-4 space-y-4">
-        {/* 文本输入 */}
-        <CellGroup>
-          <Field
+        {/* 创作输入区域 */}
+        <Card title="创作描述" className="mb-4">
+          <TextArea
             value={prompt}
             onChange={setPrompt}
-            label="创作描述"
-            type="textarea"
-            placeholder="请描述您想要创作的内容..."
+            placeholder="描述您想要创作的内容，例如：一只可爱的小猫坐在花园里，阳光明媚，卡通风格"
             rows={4}
-            maxlength={500}
-            showWordLimit
+            maxLength={500}
+            showCount
           />
-        </CellGroup>
+        </Card>
 
-        {/* 类型选择 */}
-        <CellGroup title="创作类型">
-          <RadioGroup value={type} onChange={setType}>
-            <Cell title="图片" clickable>
-              <Radio name="image" />
-            </Cell>
-            <Cell title="视频" clickable>
-              <Radio name="video" />
-            </Cell>
-          </RadioGroup>
-        </CellGroup>
+        {/* 内容类型选择 */}
+        <Card title="内容类型">
+          <Radio.Group value={type} onChange={(val) => setType(val as 'image' | 'video')}>
+            <Space direction="vertical">
+              <Radio value="image">
+                <div className="flex items-center">
+                  <span className="mr-2">🖼️</span>
+                  <span>图片生成</span>
+                </div>
+              </Radio>
+              <Radio value="video">
+                <div className="flex items-center">
+                  <span className="mr-2">🎬</span>
+                  <span>视频生成</span>
+                </div>
+              </Radio>
+            </Space>
+          </Radio.Group>
+        </Card>
 
         {/* 艺术风格选择 */}
-        <CellGroup title="艺术风格">
-          <Cell
-            title="选择风格"
-            value={selectedStyleName}
-            isLink
-            onClick={() => setShowStyleSheet(true)}
-          />
-        </CellGroup>
+        <Card title="艺术风格">
+          <List.Item 
+            onClick={() => setShowStylePicker(true)}
+            arrow
+          >
+            {selectedStyleId 
+              ? artStyles.find(s => s.id === selectedStyleId)?.name || '选择风格'
+              : '选择风格（可选）'
+            }
+          </List.Item>
+        </Card>
 
-        {/* 参考图片上传 */}
-        <CellGroup title="参考图片（可选）">
-          <Cell>
-            <Uploader
-              accept="image/*"
-              maxCount={1}
-              afterRead={handleImageUpload}
-              onDelete={() => setReferenceImage(null)}
-            >
-              {referenceImage ? (
-                <VantImage src={referenceImage} width={80} height={80} fit="cover" />
-              ) : (
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                  上传图片
-                </div>
+        {/* 参数配置 */}
+        <Card title={type === 'image' ? '图片参数' : '视频参数'}>
+          {type === 'image' ? (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {/* 图片尺寸 */}
+              <List.Item 
+                onClick={() => setShowSizePicker(true)}
+                arrow
+                extra={getSelectedText(imageSizeOptions, imageParams.size)}
+              >
+                图片尺寸
+              </List.Item>
+
+              {/* 图片质量 */}
+              <List.Item 
+                onClick={() => setShowQualityPicker(true)}
+                arrow
+                extra={getSelectedText(qualityOptions, imageParams.quality)}
+              >
+                图片质量
+              </List.Item>
+
+              {/* 高级参数 */}
+              <List.Item 
+                extra={
+                  <Switch 
+                    checked={showAdvancedParams} 
+                    onChange={setShowAdvancedParams}
+                  />
+                }
+              >
+                显示高级参数
+              </List.Item>
+
+              {showAdvancedParams && (
+                <Space direction="vertical" style={{ width: '100%', padding: '16px 0' }}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">随机种子</label>
+                      <input
+                        type="number"
+                        value={imageParams.seed || ''}
+                        onChange={(e) => setImageParams(prev => ({ 
+                          ...prev, 
+                          seed: e.target.value ? Number(e.target.value) : undefined 
+                        }))}
+                        placeholder="可选，用于复现结果"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">引导强度</label>
+                      <input
+                        type="number"
+                        value={imageParams.guidanceScale || ''}
+                        onChange={(e) => setImageParams(prev => ({ 
+                          ...prev, 
+                          guidanceScale: e.target.value ? Number(e.target.value) : undefined 
+                        }))}
+                        placeholder="1-20，默认7.5"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </Space>
               )}
-            </Uploader>
-          </Cell>
-        </CellGroup>
+            </Space>
+          ) : (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {/* 分辨率 */}
+              <List.Item 
+                onClick={() => setShowResolutionPicker(true)}
+                arrow
+                extra={getSelectedText(resolutionOptions, videoParams.resolution)}
+              >
+                分辨率
+              </List.Item>
 
-        {/* 其他设置 */}
-        <CellGroup title="其他设置">
-          <Cell title="添加水印">
-            <Switch checked={watermark} onChange={setWatermark} />
-          </Cell>
-          <Cell
-            title="高级参数"
-            isLink
-            onClick={() => setShowParams(true)}
-          />
-        </CellGroup>
+              {/* 时长 */}
+              <List.Item 
+                onClick={() => setShowDurationPicker(true)}
+                arrow
+                extra={getSelectedText(durationOptions, videoParams.duration)}
+              >
+                时长
+              </List.Item>
+
+              {/* 画面比例 */}
+              <List.Item 
+                onClick={() => setShowRatioPicker(true)}
+                arrow
+                extra={getSelectedText(ratioOptions, videoParams.ratio)}
+              >
+                画面比例
+              </List.Item>
+
+              {/* 帧率 */}
+              <List.Item 
+                extra={
+                  <Stepper
+                    value={videoParams.fps}
+                    onChange={(value) => setVideoParams(prev => ({ ...prev, fps: Number(value) }))}
+                    min={12}
+                    max={60}
+                    step={1}
+                  />
+                }
+              >
+                帧率 (FPS)
+              </List.Item>
+
+              {/* 固定摄像头 */}
+              <List.Item 
+                extra={
+                  <Switch 
+                    checked={videoParams.cameraFixed} 
+                    onChange={(checked) => setVideoParams(prev => ({ ...prev, cameraFixed: checked }))}
+                  />
+                }
+                description="减少镜头运动，画面更稳定"
+              >
+                固定摄像头
+              </List.Item>
+
+              {/* 高级参数 */}
+              <List.Item 
+                extra={
+                  <Switch 
+                    checked={showAdvancedParams} 
+                    onChange={setShowAdvancedParams}
+                  />
+                }
+              >
+                显示高级参数
+              </List.Item>
+
+              {showAdvancedParams && (
+                <Space direction="vertical" style={{ width: '100%', padding: '16px 0' }}>
+                  <List.Item 
+                    extra={
+                      <Stepper
+                        value={videoParams.cfgScale}
+                        onChange={(value) => setVideoParams(prev => ({ ...prev, cfgScale: Number(value) }))}
+                        min={1}
+                        max={20}
+                        step={0.5}
+                      />
+                    }
+                  >
+                    CFG Scale
+                  </List.Item>
+                  <List.Item 
+                    extra={
+                      <Stepper
+                        value={videoParams.count}
+                        onChange={(value) => setVideoParams(prev => ({ ...prev, count: Number(value) }))}
+                        min={1}
+                        max={4}
+                        step={1}
+                      />
+                    }
+                  >
+                    生成数量
+                  </List.Item>
+                </Space>
+              )}
+            </Space>
+          )}
+        </Card>
+
+        {/* 其他选项 */}
+        <Card title="其他选项">
+          <List.Item 
+            extra={
+              <Switch 
+                checked={watermark} 
+                onChange={setWatermark}
+              />
+            }
+          >
+            添加水印
+          </List.Item>
+        </Card>
 
         {/* 生成按钮 */}
-        <div className="px-4 py-6">
+        <div className="sticky bottom-20 z-10">
           <Button
-            type="primary"
+            color="primary"
             size="large"
             block
             loading={isGenerating}
             disabled={!prompt.trim()}
             onClick={handleGenerate}
-            className="bg-gradient-to-r from-purple-500 to-blue-500 border-none"
+            style={{
+              background: 'linear-gradient(to right, #8b5cf6, #3b82f6)',
+              border: 'none'
+            }}
           >
             {isGenerating ? '生成中...' : '开始生成'}
           </Button>
@@ -277,215 +474,204 @@ export default function Generate() {
 
         {/* 生成结果 */}
         {currentGeneration && (
-          <CellGroup title="生成结果">
-            <div className="p-4">
-              {currentGeneration.type === 'video' ? (
-                <video
-                  src={currentGeneration.url}
-                  controls
-                  className="w-full rounded-lg"
-                  poster={currentGeneration.thumbnail}
-                />
-              ) : (
-                <VantImage
-                  src={currentGeneration.url}
-                  width="100%"
-                  fit="contain"
-                  className="rounded-lg"
-                />
-              )}
-              
-              <div className="flex space-x-2 mt-4">
-                <Button
-                  size="small"
-                  type="primary"
-                  onClick={() => handleDownload(currentGeneration.url!)}
-                >
-                  下载
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() => handleShare(currentGeneration.url!)}
-                >
-                  分享
-                </Button>
-              </div>
-            </div>
-          </CellGroup>
+          <Card title="生成结果" className="mt-4">
+            {currentGeneration.type === 'image' ? (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                {currentGeneration.type === 'image' && currentGeneration.url && (
+                  <div className="relative">
+                    <Image
+                      src={currentGeneration.url}
+                      alt="Generated image"
+                      style={{ width: '100%', borderRadius: '8px' }}
+                      fit="cover"
+                    />
+                    <Space style={{ marginTop: '8px' }}>
+                      <Button 
+                        size="small" 
+                        color="primary"
+                        onClick={() => handleDownload(currentGeneration.url!)}
+                      >
+                        下载
+                      </Button>
+                      <Button 
+                        size="small" 
+                        onClick={() => handleShare(currentGeneration.url!)}
+                      >
+                        分享
+                      </Button>
+                    </Space>
+                  </div>
+                )}
+              </Space>
+            ) : (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                {currentGeneration.type === 'video' && currentGeneration.url && (
+                  <div className="relative">
+                    <video
+                      src={currentGeneration.url}
+                      controls
+                      style={{ width: '100%', borderRadius: '8px' }}
+                      poster={currentGeneration.thumbnails?.[0]}
+                    />
+                    <Space style={{ marginTop: '8px' }}>
+                      <Button 
+                        size="small" 
+                        color="primary"
+                        onClick={() => handleDownload(currentGeneration.url!)}
+                      >
+                        下载
+                      </Button>
+                      <Button 
+                        size="small" 
+                        onClick={() => handleShare(currentGeneration.url!)}
+                      >
+                        分享
+                      </Button>
+                    </Space>
+                  </div>
+                )}
+              </Space>
+            )}
+          </Card>
         )}
 
         {/* 最近生成 */}
         {history.length > 0 && (
-          <CellGroup title="最近生成">
-            <div className="grid grid-cols-2 gap-2 p-4">
-              {history.slice(0, 6).map((item, index) => (
-                <div key={index} className="relative">
-                  {item.type === 'video' ? (
-                    <video
-                      src={item.url}
-                      className="w-full aspect-square object-cover rounded-lg"
-                      poster={item.thumbnail}
-                    />
-                  ) : (
-                    <VantImage
-                      src={item.url}
-                      width="100%"
-                      height={120}
+          <Card title="最近生成" className="mt-4">
+            <Grid columns={2} gap={12}>
+              {history.slice(0, 4).map((item) => (
+                <Grid.Item key={item.id}>
+                  <div className="relative">
+                    <Image
+                      src={item.type === 'image' ? item.url : item.thumbnails?.[0]}
+                      alt={item.prompt}
+                      style={{ width: '100%', height: '96px', borderRadius: '8px' }}
                       fit="cover"
-                      className="rounded-lg"
                     />
-                  )}
-                </div>
+                    <Tag 
+                      color={item.type === 'video' ? 'primary' : 'success'}
+                      style={{ position: 'absolute', top: '4px', left: '4px' }}
+                    >
+                      {item.type === 'video' ? '视频' : '图片'}
+                    </Tag>
+                  </div>
+                </Grid.Item>
               ))}
-            </div>
-          </CellGroup>
+            </Grid>
+          </Card>
         )}
       </div>
 
-      {/* 艺术风格选择弹窗 */}
-      <ActionSheet
-        show={showStyleSheet}
-        actions={styleActions}
-        onSelect={(action) => {
-          setSelectedStyleId(action.value);
-          setShowStyleSheet(false);
-        }}
-        onCancel={() => setShowStyleSheet(false)}
-        title="选择艺术风格"
-      />
-
-      {/* 高级参数弹窗 */}
+      {/* 选择器弹窗 */}
       <Popup
-        show={showParams}
+        visible={showStylePicker}
+        onMaskClick={() => setShowStylePicker(false)}
         position="bottom"
-        round
-        onClose={() => setShowParams(false)}
-        style={{ height: '60%' }}
+        bodyStyle={{ borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
       >
         <div className="p-4">
-          <div className="text-lg font-semibold mb-4">高级参数</div>
-          
-          {type === 'image' ? (
-            <div className="space-y-4">
-              <CellGroup>
-                <Cell title="图片尺寸">
-                  <RadioGroup
-                    value={imageParams.size}
-                    onChange={(value) => setImageParams(prev => ({ ...prev, size: value }))}
-                  >
-                    <div className="space-y-2">
-                      <Radio name="1024x1024">1024x1024</Radio>
-                      <Radio name="1024x1792">1024x1792</Radio>
-                      <Radio name="1792x1024">1792x1024</Radio>
-                    </div>
-                  </RadioGroup>
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title="图片质量">
-                  <RadioGroup
-                    value={imageParams.quality}
-                    onChange={(value) => setImageParams(prev => ({ ...prev, quality: value }))}
-                  >
-                    <div className="space-y-2">
-                      <Radio name="standard">标准</Radio>
-                      <Radio name="hd">高清</Radio>
-                    </div>
-                  </RadioGroup>
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title="随机种子">
-                  <Stepper
-                    value={imageParams.seed || 0}
-                    min={-1}
-                    max={2147483647}
-                    onChange={(value) => setImageParams(prev => ({ ...prev, seed: value }))}
-                  />
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title={`引导强度: ${imageParams.guidanceScale || 7}`}>
-                  <Slider
-                    value={imageParams.guidanceScale || 7}
-                    min={1}
-                    max={10}
-                    step={0.5}
-                    onChange={(value) => setImageParams(prev => ({ ...prev, guidanceScale: value }))}
-                  />
-                </Cell>
-              </CellGroup>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <CellGroup>
-                <Cell title="视频分辨率">
-                  <RadioGroup
-                    value={videoParams.resolution}
-                    onChange={(value) => setVideoParams(prev => ({ ...prev, resolution: value }))}
-                  >
-                    <div className="space-y-2">
-                      <Radio name="480p">480p</Radio>
-                      <Radio name="720p">720p</Radio>
-                      <Radio name="1080p">1080p</Radio>
-                    </div>
-                  </RadioGroup>
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title={`时长: ${videoParams.duration}秒`}>
-                  <Slider
-                    value={videoParams.duration}
-                    min={3}
-                    max={10}
-                    step={1}
-                    onChange={(value) => setVideoParams(prev => ({ ...prev, duration: value }))}
-                  />
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title="宽高比">
-                  <RadioGroup
-                    value={videoParams.ratio}
-                    onChange={(value) => setVideoParams(prev => ({ ...prev, ratio: value }))}
-                  >
-                    <div className="space-y-2">
-                      <Radio name="16:9">16:9</Radio>
-                      <Radio name="9:16">9:16</Radio>
-                      <Radio name="1:1">1:1</Radio>
-                    </div>
-                  </RadioGroup>
-                </Cell>
-              </CellGroup>
-              
-              <CellGroup>
-                <Cell title="固定镜头">
-                  <Switch
-                    checked={videoParams.cameraFixed}
-                    onChange={(value) => setVideoParams(prev => ({ ...prev, cameraFixed: value }))}
-                  />
-                </Cell>
-              </CellGroup>
-            </div>
-          )}
-          
-          <div className="mt-6">
-            <Button
-              type="primary"
-              size="large"
-              block
-              onClick={() => setShowParams(false)}
-            >
-              确定
-            </Button>
-          </div>
+          <h3 className="text-lg font-semibold mb-4">选择艺术风格</h3>
+          <Grid columns={2} gap={12} style={{ maxHeight: '320px', overflowY: 'auto' }}>
+            <Grid.Item>
+              <div 
+                className={`p-3 border rounded-lg cursor-pointer ${
+                  !selectedStyleId ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                }`}
+                onClick={() => {
+                  setSelectedStyleId(undefined);
+                  setShowStylePicker(false);
+                }}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">🎨</div>
+                  <span className="text-sm">默认风格</span>
+                </div>
+              </div>
+            </Grid.Item>
+            {artStyles.map((style) => (
+              <Grid.Item key={style.id}>
+                <div
+                  className={`p-3 border rounded-lg cursor-pointer ${
+                    selectedStyleId === style.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
+                  onClick={() => {
+                    setSelectedStyleId(style.id);
+                    setShowStylePicker(false);
+                  }}
+                >
+                  <div className="w-full h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded flex items-center justify-center text-2xl mb-2">
+                    🎨
+                  </div>
+                  <div className="text-xs font-medium text-center">{style.name}</div>
+                   <div className="text-xs text-gray-500 text-center mt-1">{style.description}</div>
+                </div>
+              </Grid.Item>
+            ))}
+          </Grid>
         </div>
       </Popup>
+
+      {/* 图片尺寸选择器 */}
+      <Picker
+        columns={imageSizeOptions}
+        visible={showSizePicker}
+        onClose={() => setShowSizePicker(false)}
+        onConfirm={(values) => {
+          setImageParams(prev => ({ ...prev, size: values[0] as string }));
+          setShowSizePicker(false);
+        }}
+        title="选择图片尺寸"
+      />
+
+      {/* 图片质量选择器 */}
+      <Picker
+        columns={qualityOptions}
+        visible={showQualityPicker}
+        onClose={() => setShowQualityPicker(false)}
+        onConfirm={(values) => {
+          setImageParams(prev => ({ ...prev, quality: values[0] as string }));
+          setShowQualityPicker(false);
+        }}
+        title="选择图片质量"
+      />
+
+      {/* 视频分辨率选择器 */}
+      <Picker
+        columns={resolutionOptions}
+        visible={showResolutionPicker}
+        onClose={() => setShowResolutionPicker(false)}
+        onConfirm={(values) => {
+          setVideoParams(prev => ({ ...prev, resolution: values[0] as string }));
+          setShowResolutionPicker(false);
+        }}
+        title="选择分辨率"
+      />
+
+      {/* 画面比例选择器 */}
+      <Picker
+        columns={ratioOptions}
+        visible={showRatioPicker}
+        onClose={() => setShowRatioPicker(false)}
+        onConfirm={(values) => {
+          setVideoParams(prev => ({ ...prev, ratio: values[0] as string }));
+          setShowRatioPicker(false);
+        }}
+        title="选择画面比例"
+      />
+
+      {/* 时长选择器 */}
+      <Picker
+        columns={durationOptions}
+        visible={showDurationPicker}
+        onClose={() => setShowDurationPicker(false)}
+        onConfirm={(values) => {
+          setVideoParams(prev => ({ ...prev, duration: values[0] as number }));
+          setShowDurationPicker(false);
+        }}
+        title="选择时长"
+      />
     </div>
   );
-}
+};
+
+export default Generate;
