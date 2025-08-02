@@ -140,11 +140,11 @@ TemplateCard.displayName = 'TemplateCard';
 // 优化的模板列表项组件，避免视图切换时的闪烁
 const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
   <div
-    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
+    className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl w-full"
     style={{ contain: 'layout style paint' }}
   >
-    <div className="flex items-center space-x-4">
-      <div className="relative w-24 h-16 flex-shrink-0">
+    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+      <div className="relative w-full sm:w-32 h-20 sm:h-20 flex-shrink-0">
         <img
           src={template.preview || '/placeholder-template.png'}
           alt={template.title || '模板预览'}
@@ -154,23 +154,26 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
             target.src = '/placeholder-template.png';
           }}
         />
-        <div className="absolute top-1 left-1">
-          <div className="bg-black/50 backdrop-blur-sm rounded px-1 py-0.5 flex items-center space-x-1">
+        <div className="absolute top-2 left-2">
+          <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1 flex items-center space-x-1">
             {template.type === 'video' ? (
-              <Video className="w-2 h-2 text-white" />
+              <Video className="w-3 h-3 text-white" />
             ) : (
-              <ImageIcon className="w-2 h-2 text-white" />
+              <ImageIcon className="w-3 h-3 text-white" />
             )}
+            <span className="text-xs text-white">
+              {template.type === 'video' ? '视频' : '图片'}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-gray-900 mb-1">{template.title || '未命名模板'}</h3>
-        <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description || '暂无描述'}</p>
+        <h3 className="font-semibold text-gray-900 mb-2 text-lg">{template.title || '未命名模板'}</h3>
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
 
-        <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
-          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-3">
+          <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
             {template.categoryId || '其他'}
           </span>
           <span className="flex items-center space-x-1">
@@ -181,27 +184,27 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
 
         {/* 标签显示 */}
         {template.tags && template.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {template.tags.slice(0, 4).map((tag: string, tagIndex: number) => (
+          <div className="flex flex-wrap gap-2">
+            {template.tags.slice(0, 5).map((tag: string, tagIndex: number) => (
               <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
                 {tag}
               </span>
             ))}
-            {template.tags.length > 4 && (
-              <span className="text-gray-400 text-xs">+{template.tags.length - 4}</span>
+            {template.tags.length > 5 && (
+              <span className="text-gray-400 text-xs">+{template.tags.length - 5}</span>
             )}
           </div>
         )}
       </div>
 
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 w-full sm:w-auto">
         <Link
           to={`/generate?template=${template.id}`}
           onClick={() => onUseTemplate(template)}
-          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
+          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center justify-center space-x-2 min-h-[48px] w-full sm:w-auto"
         >
           <Wand2 className="w-4 h-4" />
-          <span className="text-base">使用</span>
+          <span className="text-base font-medium">使用模板</span>
         </Link>
       </div>
     </div>
@@ -212,7 +215,7 @@ TemplateListItem.displayName = 'TemplateListItem';
 
   return (
     <div className="template-page min-h-screen pt-8 pb-8 flex flex-col">
-      <div className="max-w-7xl mx-auto px-8 flex-1 flex flex-col">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
         {/* 页面标题 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -315,40 +318,42 @@ TemplateListItem.displayName = 'TemplateListItem';
 
         {/* 模板网格/列表 */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex items-center justify-center min-h-[600px] w-full">
             <div className="text-center">
               <div className="w-16 h-16 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">加载模板中...</p>
             </div>
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-12 h-12 text-gray-400" />
+          <div className="text-center min-h-[600px] w-full flex items-center justify-center">
+            <div>
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                没有找到匹配的模板
+              </h3>
+              <p className="text-gray-600 mb-6">
+                尝试调整搜索关键词或选择其他分类
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('全部');
+                }}
+                className="text-purple-600 hover:text-purple-700 font-medium"
+              >
+                重置筛选条件
+              </button>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              没有找到匹配的模板
-            </h3>
-            <p className="text-gray-600 mb-6">
-              尝试调整搜索关键词或选择其他分类
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('全部');
-              }}
-              className="text-purple-600 hover:text-purple-700 font-medium"
-            >
-              重置筛选条件
-            </button>
           </div>
         ) : (
-          <div className="template-container min-h-[400px]">
+          <div className="template-container min-h-[600px] w-full">
             {/* 网格视图 */}
             <div
-              className={`grid grid-cols-3 gap-6 ${
-                viewMode === 'grid' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none h-0'
-              } transition-opacity duration-200`}
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full ${
+                viewMode === 'grid' ? 'block' : 'hidden'
+              }`}
             >
               {filteredTemplates.map((template) => (
                 <TemplateCard
@@ -361,9 +366,9 @@ TemplateListItem.displayName = 'TemplateListItem';
 
             {/* 列表视图 */}
             <div
-              className={`space-y-6 ${
-                viewMode === 'list' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none h-0'
-              } transition-opacity duration-200`}
+              className={`space-y-6 w-full ${
+                viewMode === 'list' ? 'block' : 'hidden'
+              }`}
             >
               {filteredTemplates.map((template) => (
                 <TemplateListItem
