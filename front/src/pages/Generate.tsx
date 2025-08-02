@@ -18,7 +18,7 @@ export default function Generate() {
   const [type, setType] = useState<'image' | 'video'>('image');
   const [watermark, setWatermark] = useState(false);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
-  const [setShowTemplates] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [isGeneratingAnimation, setIsGeneratingAnimation] = useState(false);
   const [firstFrameImage] = useState<string | null>(null);
   const [lastFrameImage] = useState<string | null>(null);
@@ -48,18 +48,8 @@ export default function Generate() {
 
   const { generateContent, isGenerating, currentGeneration, stopPolling, history, loadHistory } = useGenerationStore();
   const { isAuthenticated, user } = useAuthStore();
-  const { fetchStyles, styles, getStylesByType } = useArtStyleStore();
+  const { fetchStyles  } = useArtStyleStore();
   const { templates } = useTemplateStore();
-
-  // 调试信息 - 临时添加
-  // useEffect(() => {
-  //   console.log('认证状态调试信息:', {
-  //     isAuthenticated,
-  //     user,
-  //     token: localStorage.getItem('auth_token'),
-  //     tokenExists: !!localStorage.getItem('auth_token')
-  //   });
-  // }, [isAuthenticated, user]);
 
   // 组件卸载时清理轮询
   useEffect(() => {
@@ -95,16 +85,58 @@ export default function Generate() {
   }, [searchParams, templates, prompt]);
 
 
-  const handleDownload = (specificUrl?: string, index?: number) => {
-    if (!currentGeneration) {
-      toast.error('下载失败：无效的内容');
+  const handleDownload = (url?: string, index?: number) => {
+    // 如果传入了具体的url，直接下载该url
+    if (url) {
+      try {
+        // 从history中找到包含该url的内容
+        const targetContent = history.find(item => 
+          item.url === url || (item.urls && item.urls.includes(url))
+        );
+        
+        if (targetContent) {
+          downloadContent({
+            id: targetContent.id,
+            url: targetContent.url,
+            urls: targetContent.urls,
+            type: targetContent.type
+          }, url, index);
+        } else {
+          // 如果找不到对应内容，创建一个临时对象
+          downloadContent({
+            id: 'temp-download',
+            url: url,
+            urls: [url],
+            type: 'image' // 默认类型
+          }, url, index);
+        }
+        toast.success('下载开始');
+      } catch (error) {
+        toast.error(handleApiError(error));
+      }
+      return;
+    }
+
+    // 如果没有传入url，使用currentGeneration或history中的最新内容
+    const contentToDownload = currentGeneration || history.find(item => 
+      item.status === 'completed' || item.status === 'success' || (!item.status && item.url)
+    );
+    
+    if (!contentToDownload) {
+      toast.error('下载失败：无可用的内容');
       return;
     }
 
     try {
-      downloadContent(currentGeneration, specificUrl, index);
-      const urls = currentGeneration.urls || (currentGeneration.url ? [currentGeneration.url] : []);
-      if (specificUrl || urls.length === 1) {
+      downloadContent({
+        id: contentToDownload.id,
+        url: contentToDownload.url,
+        urls: contentToDownload.urls,
+        type: contentToDownload.type
+      }, url, index);
+      
+      const urls = contentToDownload.urls || (contentToDownload.url ? [contentToDownload.url] : []);
+      if (urls.length === 1) {
         toast.success('下载开始');
       } else {
         toast.success(`开始下载${urls.length}个文件`);
@@ -114,14 +146,42 @@ export default function Generate() {
     }
   };
 
-  const handleShare = async (specificUrl?: string) => {
-    if (!currentGeneration) {
-      toast.error('分享失败：无效的内容');
+  const handleShare = async (url?: string) => {
+    // 如果传入了具体的url，从history中找到对应的内容
+    if (url) {
+      const targetContent = history.find(item => 
+        item.url === url || (item.urls && item.urls.includes(url))
+      );
+      
+      try {
+        await shareContent({
+          url: url,
+          prompt: targetContent?.prompt || '用户生成的内容'
+        }, url);
+        toast.success('分享成功');
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          toast.error(handleApiError(error));
+        }
+      }
+      return;
+    }
+
+    // 如果没有传入url，使用currentGeneration或history中的最新内容
+    const contentToShare = currentGeneration || history.find(item => 
+      item.status === 'completed' || item.status === 'success' || (!item.status && item.url)
+    );
+    
+    if (!contentToShare) {
+      toast.error('分享失败：无可用的内容');
       return;
     }
 
     try {
-      await shareContent(currentGeneration, specificUrl);
+      await shareContent({
+        url: contentToShare.url,
+        prompt: contentToShare.prompt
+      }, url);
       toast.success('分享成功');
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
