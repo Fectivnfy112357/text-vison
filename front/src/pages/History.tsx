@@ -215,7 +215,7 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16 scroll-container mobile-scroll-optimized">
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16 scroll-container">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
         <div className="text-center mb-6 lg:mb-8">
@@ -333,11 +333,11 @@ export default function History() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 grid-optimized">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {filteredHistory.map((item, index) => (
               <div
                 key={item.id}
-                className={`history-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer card-item md:shadow-lg mobile-performance ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                className={`history-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
                   }`}
                 onClick={() => handleSelectItem(item.id)}
               >
@@ -363,7 +363,7 @@ export default function History() {
                             <Video className="w-12 h-12 text-red-400 mb-2" />
                             <p className="text-sm text-red-600 font-medium">生成失败</p>
                             <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                              {item.errorMessage || '请修改提示词后重试'}
+                              {(item as any).errorMessage || '请修改提示词后重试'}
                             </p>
                           </div>
                         ) : mediaLoadStatus[item.id] === false ? (
@@ -429,7 +429,7 @@ export default function History() {
                             <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
                             <p className="text-sm text-red-600 font-medium">生成失败</p>
                             <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                              {item.errorMessage || '请修改提示词后重试'}
+                              {(item as any).errorMessage || '请修改提示词后重试'}
                             </p>
                           </div>
                         ) : mediaLoadStatus[item.id] === false ? (

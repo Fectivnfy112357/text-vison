@@ -228,33 +228,13 @@ export default function MediaPreviewModal({
                   onClick={handleVideoToggle}
                   controls={!videoError}
                   preload="metadata"
-                  playsInline
-                  webkit-playsinline="true"
-                  x5-playsinline="true"
-                  x5-video-player-type="h5"
-                  x5-video-player-fullscreen="true"
-                  x-webkit-airplay="allow"
                   muted={false}
                   style={{ willChange: 'transform', contain: 'layout style' }}
                   poster={`${mediaUrl}#t=0.1`}
                   onLoadedMetadata={(e) => {
                     setVideoLoading(false);
-                    // 移动端兼容处理
                     const video = e.target as HTMLVideoElement;
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                      setTimeout(() => {
-                        try {
-                          video.currentTime = 0.1;
-                          video.load();
-                        } catch (error) {
-                          console.warn('移动端视频时间设置失败:', error);
-                        }
-                      }, 100);
-                    } else {
-                      video.currentTime = 0.1;
-                    }
+                    video.currentTime = 0.1;
                   }}
                   onCanPlay={(e) => {
                     setVideoLoading(false);

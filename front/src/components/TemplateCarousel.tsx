@@ -63,14 +63,14 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg overflow-hidden mx-2 group cursor-pointer mobile-optimized mobile-performance"
+      className="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg overflow-hidden mx-2 group cursor-pointer"
       style={{ willChange: 'auto' }}
     >
       <div className="relative aspect-video overflow-hidden">
         <img
           src={template.imageUrl || '/placeholder-template.png'}
           alt={template.title || '模板预览'}
-          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105 mobile-no-animation"
+          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
           style={{ willChange: 'auto' }}
           loading="lazy"
           onError={(e) => {
@@ -78,7 +78,7 @@ export default function TemplateCarousel({ templates }: TemplateCarouselProps) {
             target.src = '/placeholder-template.png';
           }}
         />
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center mobile-no-animation">
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
           <div className="bg-white/90 rounded-full p-3">
             {template.type === 'video' ? (
               <Play className="w-6 h-6 text-purple-600" />

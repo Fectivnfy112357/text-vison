@@ -1,8 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { User, Sparkles, History, Image, Home, Smartphone } from 'lucide-react';
+import { User, Sparkles, History, Image, Home } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useState, useRef } from 'react';
-import { getMobileUrl } from '@/utils/deviceDetection';
 import AuthModal from './AuthModal';
 
 export default function Navbar() {
@@ -23,10 +22,6 @@ export default function Navbar() {
   const handleAuthClick = (mode: 'login' | 'register') => {
     setAuthMode(mode);
     setShowAuthModal(true);
-  };
-
-  const handleSwitchToMobile = () => {
-    window.location.href = getMobileUrl();
   };
 
 
@@ -70,15 +65,6 @@ export default function Navbar() {
 
             {/* User Actions */}
             <div className="flex items-center space-x-4">
-              {/* 切换到移动版按钮 */}
-              <button
-                onClick={handleSwitchToMobile}
-                className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200"
-                title="切换到移动版"
-              >
-                <Smartphone className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">移动版</span>
-              </button>
               
               {isAuthenticated && user ? (
                 <div className="flex items-center space-x-3">
