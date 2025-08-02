@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Image as ImageIcon, Download, Share2, Play } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { toast } from 'sonner';
@@ -51,10 +50,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.1 }}
+    <div
       className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)]"
     >
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -77,20 +73,15 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
             <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 w-full h-full">
               {/* 显示最多4个结果，2x2网格布局 */}
               {history.slice(0, 4).map((generation, genIndex) => (
-                <motion.div
+                <div
                   key={generation.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: genIndex * 0.1 }}
-                  className="border-2 border-gray-100 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group"
+                  className="border-2 border-gray-100 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-white to-gray-50 transform transition-all duration-200 will-change-transform hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 h-full flex flex-col group"
                 >
                   {/* 生成状态指示 - 更现代的设计 */}
                   <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
                     <div className="flex items-center space-x-3">
-                      <motion.div 
-                        animate={generation.status === 'generating' || generation.status === 'processing' ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ duration: 1, repeat: generation.status === 'generating' || generation.status === 'processing' ? Infinity : 0 }}
-                        className={`w-3 h-3 rounded-full bg-gradient-to-r ${getStatusDisplay(generation, genIndex).color} shadow-lg`}
+                      <div 
+                        className={`w-3 h-3 rounded-full bg-gradient-to-r ${getStatusDisplay(generation, genIndex).color} shadow-lg ${generation.status === 'generating' || generation.status === 'processing' ? 'animate-pulse' : ''}`}
                       />
                       <span className="text-xs sm:text-xs font-semibold text-gray-700">
                         {getStatusDisplay(generation, genIndex).text}
@@ -108,31 +99,25 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
                   </div>
 
                   {/* 结果展示 - 更现代的加载动画 */}
-                  {renderContent(generation, genIndex, onDownload, onShare, openPreview)}
-                </motion.div>
+                   {renderContent(generation, genIndex, onDownload, onShare, openPreview)}
+                 </div>
               ))}
 
               {/* 如果结果少于4个，显示空白占位 - 更现代的设计 */}
               {Array.from({ length: Math.max(0, 4 - history.length) }).map((_, index) => (
-                <motion.div 
+                <div 
                   key={`empty-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: (history.length + index) * 0.1 }}
-                  className="border-2 border-dashed border-gray-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:-translate-y-1 transition-all duration-300"
+                  className="border-2 border-dashed border-gray-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-gray-50 to-gray-100 h-full flex flex-col transform transition-all duration-200 will-change-transform hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:-translate-y-1"
                 >
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 3, repeat: Infinity, delay: index * 0.5 }}
-                      >
+                      <div className="transform transition-transform duration-200 will-change-transform">
                         <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300 mx-auto mb-2 sm:mb-3" />
-                      </motion.div>
+                      </div>
                       <p className="text-xs sm:text-sm text-gray-400 font-medium">等待创作</p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           ) : (
@@ -150,9 +135,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
         title={previewModal.title}
         onDownload={() => onDownload(previewModal.mediaUrl)}
         onShare={() => onShare(previewModal.mediaUrl)}
-      />
-    </motion.div>
-  );
+      />    </div>  );
 }
 
 function renderContent(
@@ -165,18 +148,10 @@ function renderContent(
   if (generation.status === 'generating' || generation.status === 'processing') {
     return (
       <div className="flex flex-col items-center justify-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full mb-4"
-        />
-        <motion.p 
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-sm text-gray-600 font-medium"
-        >
+        <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full mb-4 animate-spin" />
+        <p className="text-sm text-gray-600 font-medium animate-pulse">
           {generation.status === 'generating' ? '正在生成创作...' : '正在处理内容...'}
-        </motion.p>
+        </p>
       </div>
     );
   }
@@ -187,35 +162,44 @@ function renderContent(
     return (
       <div className="space-y-3">
         {urls.slice(0, 1).map((url, urlIndex) => (
-          <motion.div 
+          <div 
             key={urlIndex} 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="relative group overflow-hidden rounded-2xl cursor-pointer"
+            className="relative group overflow-hidden rounded-2xl cursor-pointer transform transition-transform duration-200 will-change-transform"
             onClick={() => openPreview(url, generation.type, generation.prompt)}
+            style={{ contain: 'layout style paint' }}
           >
             {generation.type === 'video' ? (
-              <div className="relative w-full h-24 sm:h-32 lg:h-40 bg-black rounded-xl sm:rounded-2xl overflow-hidden">
+              <div className="relative w-full h-24 sm:h-32 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900">
                 <video
                   src={url}
-                  className="w-full h-24 sm:h-32 lg:h-40 object-cover transition-all duration-300 group-hover:scale-110"
-                  poster={generation.thumbnails?.[urlIndex]}
-                  muted
+                  className="w-full h-full object-cover"
+                  controls
                   preload="metadata"
+                  muted
+                  playsInline
+                  poster=""
+                  onError={(e) => {
+                    console.error('Video load error:', e);
+                    const target = e.target as HTMLVideoElement;
+                    target.style.display = 'none';
+                  }}
+                  onLoadedMetadata={(e) => {
+                    const target = e.target as HTMLVideoElement;
+                    target.currentTime = 0.1;
+                  }}
                 />
-                {/* 简化的播放按钮 */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all duration-300">
-                  <div className="bg-white/90 backdrop-blur-sm text-gray-800 p-3 rounded-full shadow-lg group-hover:scale-110 transition-all duration-200">
-                    <Play className="w-6 h-6 ml-0.5" />
-                  </div>
+                
+                {/* 视频标识 */}
+                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
+                  视频
                 </div>
               </div>
             ) : (
               <img
                 src={url}
                 alt={`生成结果 ${urlIndex + 1}`}
-                className="w-full h-24 sm:h-32 lg:h-40 object-cover rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110"
+                className="w-full h-24 sm:h-32 lg:h-40 object-cover rounded-xl sm:rounded-2xl shadow-lg transform transition-transform duration-200 will-change-transform group-hover:scale-105"
+                loading="lazy"
               />
             )}
 
@@ -226,7 +210,7 @@ function renderContent(
                   e.stopPropagation();
                   onDownload(url, urlIndex);
                 }}
-                className="bg-white/90 backdrop-blur-sm text-gray-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                className="bg-white/90 backdrop-blur-sm text-gray-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
                 title="下载"
               >
                 <Download className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -236,7 +220,7 @@ function renderContent(
                   e.stopPropagation();
                   onShare(url);
                 }}
-                className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                className="bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-xl hover:bg-white transform transition-all duration-200 will-change-transform hover:scale-105 shadow-lg"
                 title="分享"
               >
                 <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -247,17 +231,13 @@ function renderContent(
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 sm:p-3 lg:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <p className="text-white text-xs font-medium hidden sm:block">点击{generation.type === 'video' ? '播放视频' : '查看大图'}</p>
             </div>
-          </motion.div>
+          </div>
         ))}
         
         {urls.length > 1 && (
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-xs text-gray-500 text-center bg-gray-100 py-2 rounded-lg font-medium"
-          >
+          <p className="text-xs text-gray-500 text-center bg-gray-100 py-2 rounded-lg font-medium">
             +{urls.length - 1} 更多作品
-          </motion.p>
+          </p>
         )}
       </div>
     );
@@ -266,12 +246,9 @@ function renderContent(
   return (
     <div className="flex items-center justify-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
       <div className="text-center">
-        <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
+        <div className="animate-bounce">
           <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-        </motion.div>
+        </div>
         <p className="text-sm text-gray-500 font-medium">等待生成结果</p>
       </div>
     </div>
@@ -281,35 +258,22 @@ function renderContent(
 function EmptyState() {
   return (
     <div className="flex items-center justify-center h-full w-full min-h-[200px]">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center flex flex-col items-center"
-      >
-        <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="mb-6 flex justify-center"
-        >
+      <div className="text-center flex flex-col items-center">
+        <div className="mb-6 flex justify-center animate-bounce">
           <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl flex items-center justify-center shadow-lg">
             <ImageIcon className="w-10 h-10 text-purple-500" />
           </div>
-        </motion.div>
+        </div>
         <h3 className="text-2xl font-bold text-gray-700 mb-3">等待您的创作</h3>
         <p className="text-gray-500 text-lg mb-6 max-w-md text-center">
           输入您的创意描述，让AI为您创造精彩的视觉作品
         </p>
-        <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="flex items-center justify-center space-x-2 text-purple-500"
-        >
+        <div className="flex items-center justify-center space-x-2 text-purple-500 animate-pulse">
           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

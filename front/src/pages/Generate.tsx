@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Sparkles, Wand2 } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -251,7 +250,7 @@ export default function Generate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-4 lg:pt-8 pb-20 lg:pb-8" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-4 lg:pt-8 pb-20 lg:pb-8" style={{ contain: 'layout style paint', overflowAnchor: 'none' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
 
         <div className="text-center mb-6 lg:mb-8">
@@ -295,19 +294,19 @@ export default function Generate() {
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-4 lg:py-6 rounded-2xl lg:rounded-3xl font-bold text-lg lg:text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group min-h-[56px] lg:min-h-auto"
-              style={{ willChange: 'transform' }}
+              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-4 lg:py-6 rounded-2xl lg:rounded-3xl font-bold text-lg lg:text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transform transition-all duration-200 will-change-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group min-h-[56px] lg:min-h-auto"
+              style={{ contain: 'layout style paint' }}
             >
               {/* 背景动画效果 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
 
               {/* 生成中的动画效果 */}
               {(isGenerating || isGeneratingAnimation) && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-75" />
               )}
 
               <div className="relative z-10 flex items-center space-x-3">
-                <div className={isGenerating || isGeneratingAnimation ? 'animate-spin' : ''}>
+                <div className={`transform transition-transform duration-200 will-change-transform ${isGenerating || isGeneratingAnimation ? 'animate-spin' : ''}`}>
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <span>{isGenerating ? '生成中...' : '开始生成'}</span>

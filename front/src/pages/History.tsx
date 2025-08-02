@@ -200,7 +200,7 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16" style={{ contain: 'layout style', willChange: 'scroll-position' }}>
+    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16 scroll-container mobile-scroll-optimized">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
         <div className="text-center mb-6 lg:mb-8">
@@ -318,47 +318,61 @@ export default function History() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6" style={{ contain: 'layout', willChange: 'contents' }}>
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 grid-optimized">
             {filteredHistory.map((item, index) => (
               <div
                 key={item.id}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer card-item md:shadow-lg mobile-performance ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
                   }`}
                 onClick={() => handleSelectItem(item.id)}
-                style={{ willChange: 'transform', contain: 'layout style' }}
               >
                   {/* 图片/视频预览 */}
-                  <div className="relative h-40 xs:h-48 overflow-hidden group/media">
+                  <div className="relative h-40 xs:h-48 overflow-hidden">
                     {item.type === 'video' ? (
                       <div
-                        className="relative w-full h-full bg-black cursor-pointer"
+                        className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-900"
                         onClick={(e) => {
                           e.stopPropagation();
                           openPreview(item.url || '', 'video', item.prompt);
                         }}
                       >
                         <video
-                          src={item.url || '/placeholder-video.mp4'}
-                          className="w-full h-full object-cover transition-all duration-300 group-hover/media:scale-110"
-                          muted
+                          src={item.url || ''}
+                          className="w-full h-full object-cover media-optimized"
                           preload="metadata"
+                          muted
+                          playsInline
+                          poster=""
                           onError={(e) => {
+                            console.error('Video load error:', e);
                             const target = e.target as HTMLVideoElement;
-                            target.poster = '/placeholder-video.jpg';
+                            target.style.display = 'none';
+                          }}
+                          onLoadedMetadata={(e) => {
+                            const target = e.target as HTMLVideoElement;
+                            target.currentTime = 0.1;
                           }}
                         />
-                        {/* 简化的播放按钮 */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/media:bg-black/10 transition-all duration-300 z-10">
-                          <div className="bg-white/90 backdrop-blur-sm text-gray-800 p-4 rounded-full shadow-lg group-hover/media:scale-110 transition-all duration-200">
-                            <Play className="w-8 h-8 ml-0.5" />
+                        
+                        {/* 播放按钮覆盖层 */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
+                            <Play className="w-6 h-6 ml-0.5" />
                           </div>
+                        </div>
+                        
+                        {/* 视频标识 */}
+                        <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                          <Video className="w-3 h-3 inline mr-1" />
+                          视频
                         </div>
                       </div>
                     ) : (
                       <img
                         src={item.url || '/placeholder-image.png'}
                         alt={item.prompt || '生成内容'}
-                        className="w-full h-full object-cover cursor-pointer transition-all duration-300 group-hover/media:scale-110"
+                        className="w-full h-full object-cover cursor-pointer media-optimized"
+                        loading="lazy"
                         onClick={(e) => {
                           e.stopPropagation();
                           openPreview(item.url || '', 'image', item.prompt);
@@ -382,14 +396,14 @@ export default function History() {
                       </div>
                     </div>
 
-                    {/* 操作按钮 - 直接显示，提高z-index确保在最上层 */}
+                    {/* 操作按钮 */}
                     <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDownload(item);
                         }}
-                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 lg:p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        className="bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="下载"
                       >
                         <Download className="w-4 h-4" />
@@ -399,17 +413,14 @@ export default function History() {
                           e.stopPropagation();
                           handleShare(item);
                         }}
-                        className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 lg:p-2 rounded-xl hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        className="bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
                         title="分享"
                       >
                         <Share2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    {/* 预览提示 - 降低z-index确保不遮挡按钮 */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pr-20 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-10">
-                      <p className="text-white text-xs font-medium">点击{item.type === 'video' ? '播放视频' : '查看大图'}</p>
-                    </div>
+
                   </div>
 
                   {/* 内容信息 */}

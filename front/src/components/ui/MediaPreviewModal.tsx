@@ -62,9 +62,15 @@ export default function MediaPreviewModal({
       ref.addEventListener('pause', () => setIsPlaying(false));
       ref.addEventListener('ended', () => setIsPlaying(false));
       
-      // 视频加载完成后立即播放
-      ref.addEventListener('loadeddata', () => {
-        ref.play().catch(console.error);
+      // 视频加载元数据后显示第一帧
+      ref.addEventListener('loadedmetadata', () => {
+        // 不自动播放，让用户手动控制
+        setIsPlaying(false);
+      });
+      
+      // 视频加载完成后准备播放
+      ref.addEventListener('canplay', () => {
+        // 视频准备就绪，但不自动播放
       });
     }
   };
@@ -169,10 +175,51 @@ export default function MediaPreviewModal({
                   src={mediaUrl}
                   className="w-full h-full object-contain max-h-[85vh] sm:max-h-[90vh]"
                   onClick={handleVideoToggle}
-                  autoPlay
                   controls
                   preload="metadata"
-                  style={{ willChange: 'transform' }}
+                  playsInline
+                  webkit-playsinline="true"
+                  x5-playsinline="true"
+                  x5-video-player-type="h5"
+                  x5-video-player-fullscreen="true"
+                  x-webkit-airplay="allow"
+                  muted={false}
+                  style={{ willChange: 'transform', contain: 'layout style' }}
+                  poster={`${mediaUrl}#t=0.1`}
+                  onLoadedMetadata={(e) => {
+                    // 移动端兼容处理
+                    const video = e.target as HTMLVideoElement;
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                      // 移动端延迟设置时间，确保视频准备就绪
+                      setTimeout(() => {
+                        try {
+                          video.currentTime = 0.1;
+                          // 强制刷新视频帧
+                          video.load();
+                        } catch (error) {
+                          console.warn('移动端视频时间设置失败:', error);
+                        }
+                      }, 100);
+                    } else {
+                      // PC端直接设置
+                      video.currentTime = 0.1;
+                    }
+                  }}
+                  onCanPlay={(e) => {
+                    // 当视频可以播放时，再次尝试设置时间
+                    const video = e.target as HTMLVideoElement;
+                    if (video.currentTime === 0) {
+                      video.currentTime = 0.1;
+                    }
+                  }}
+                  onError={(e) => {
+                    console.warn('视频播放失败:', mediaUrl);
+                    const video = e.target as HTMLVideoElement;
+                    // 显示错误提示
+                    toast.error('视频加载失败，请检查网络连接');
+                  }}
                 />
 
                 {/* 自定义播放控制 - 只在未播放时显示 */}
