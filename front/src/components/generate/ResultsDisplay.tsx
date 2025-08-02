@@ -51,7 +51,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
 
   return (
     <div
-      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start"
+      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full"
     >
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
