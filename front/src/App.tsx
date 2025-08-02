@@ -21,7 +21,7 @@ export default function App() {
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
         <Navbar />
-        <main className="pb-20 lg:pb-0">
+        <main>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/generate" element={<Generate />} />

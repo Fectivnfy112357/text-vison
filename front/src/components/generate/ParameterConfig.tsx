@@ -101,14 +101,19 @@ export default function ParameterConfig({
         </div>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showAdvanced && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ 
+              duration: 0.12,
+              ease: [0.25, 0.1, 0.25, 1],
+              opacity: { duration: 0.08 }
+            }}
             className="px-8 pb-8"
+            style={{ contain: 'layout paint style' }}
           >
             <div className="border-t border-gray-100 pt-6">
               {type === 'image' ? (

@@ -50,7 +50,7 @@ body {
   transition-delay: 0s !important;
 }
 
-/* 移动端特定优化 */
+/* 移动端特定优化 - 保持视觉一致性 */
 @media (max-width: 768px) {
   .mobile-scroll-optimized {
     -webkit-overflow-scrolling: touch;
@@ -59,10 +59,101 @@ body {
     transform: translate3d(0, 0, 0);
   }
   
-  /* 减少移动端的阴影和模糊效果 */
+  /* 移动端性能优化 - 保持视觉效果 */
   .mobile-performance {
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    filter: none !important;
+    will-change: auto !important;
+  }
+  
+  /* 移动端卡片阴影优化 - 保持可见 */
+  .history-card,
+  .template-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  /* 移动端优化阴影但不移除 */
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  /* 移动端保留模糊背景 - 仅在支持的设备 */
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+  
+  /* 移动端保留品牌渐变色彩 */
+  .bg-gradient-to-br,
+  .bg-gradient-to-r,
+  .bg-gradient-to-b {
+    /* 保留原有渐变 */
+  }
+  
+  /* 特别保留品牌色彩 */
+  .bg-gradient-to-br.from-purple-500.to-blue-500 {
+    background-image: linear-gradient(to bottom right, #8b5cf6, #3b82f6) !important;
+  }
+  
+  .bg-gradient-to-r.from-purple-600.to-blue-600 {
+    background-image: linear-gradient(to right, #7c3aed, #2563eb) !important;
+  }
+  
+  .text-transparent.bg-gradient-to-r.from-purple-600.to-blue-600 {
+    background-image: linear-gradient(to right, #7c3aed, #2563eb) !important;
+  }
+  
+  /* 移动端滚动性能优化 */
+  .mobile-scroll-optimized {
+    -webkit-overflow-scrolling: touch;
+    overflow-anchor: none;
+    contain: layout paint;
+    backface-visibility: hidden;
+    will-change: scroll-position;
+  }
+  
+  /* 移动端滚动容器优化 */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-anchor: none;
+    contain: layout paint;
+    backface-visibility: hidden;
+    will-change: auto !important;
+  }
+  
+  /* 移动端网格布局优化 */
+  .grid-optimized {
+    contain: layout paint;
+    backface-visibility: hidden;
+    will-change: auto !important;
+  }
+  
+  /* 移动端卡片项目优化 */
+  .card-item,
+  .history-card,
+  .template-card {
+    contain: layout paint;
+    backface-visibility: hidden;
+    will-change: auto !important;
+  }
+  
+  /* 移动端图片优化 */
+  .media-optimized {
+    backface-visibility: hidden;
+    image-rendering: optimizeSpeed;
+    will-change: auto !important;
+  }
+  
+  /* 移动端优化特定元素 */
+  .mobile-optimized {
+    will-change: auto !important;
+  }
+  
+  /* 保持必要动画 */
+  .animate-spin,
+  .animate-pulse {
+    /* 保持动画效果 */
   }
 }

@@ -57,12 +57,11 @@ export default function Templates() {
     [templates]
   );
 
-// Memoized template card component to prevent re-renders
+// 优化的模板卡片组件，避免视图切换时的闪烁
 const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
   <div
-    key={template.id}
-    className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
-    style={{ contain: 'layout style' }}
+    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
+    style={{ contain: 'layout style paint' }}
   >
     <div className="relative aspect-video overflow-hidden">
       <img
@@ -95,10 +94,10 @@ const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTe
         <Link
           to={`/generate?template=${template.id}`}
           onClick={() => onUseTemplate(template)}
-          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
+          className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2"
         >
           <Wand2 className="w-4 h-4" />
-          <span className="text-sm lg:text-base">使用模板</span>
+          <span className="text-base">使用模板</span>
         </Link>
       </div>
     </div>
@@ -138,12 +137,11 @@ const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTe
 
 TemplateCard.displayName = 'TemplateCard';
 
-// Memoized template list item component
+// 优化的模板列表项组件，避免视图切换时的闪烁
 const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
   <div
-    key={template.id}
-    className="template-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
-    style={{ contain: 'layout style' }}
+    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
+    style={{ contain: 'layout style paint' }}
   >
     <div className="flex items-center space-x-4">
       <div className="relative w-24 h-16 flex-shrink-0">
@@ -203,7 +201,7 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
           className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
         >
           <Wand2 className="w-4 h-4" />
-          <span className="text-sm lg:text-base">使用</span>
+          <span className="text-base">使用</span>
         </Link>
       </div>
     </div>
@@ -213,112 +211,46 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
 TemplateListItem.displayName = 'TemplateListItem';
 
   return (
-    <div className="min-h-screen pt-4 lg:pt-8 pb-20 lg:pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pt-8">
+      <div className="max-w-7xl mx-auto px-8">
         {/* 页面标题 */}
-        <div className="text-center mb-6 lg:mb-8">
-          <h1 className="text-3xl xs:text-4xl font-bold text-gray-900 mb-3 lg:mb-4">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
             模板库
           </h1>
-          <p className="text-lg xs:text-xl text-gray-600 px-2">
+          <p className="text-xl text-gray-600">
             精选优质模板，激发您的创作灵感
           </p>
         </div>
 
         {/* 热门模板轮播 */}
         {popularTemplates.length > 0 && (
-          <div className="mb-8 lg:mb-12">
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-6 lg:p-8 text-white mb-4 lg:mb-6">
-              <h2 className="text-xl lg:text-2xl font-bold mb-2 flex items-center">
-                <Star className="w-5 h-5 lg:w-6 lg:h-6 mr-2" />
+          <div className="mb-12">
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-8 text-white mb-6">
+              <h2 className="text-2xl font-bold mb-2 flex items-center">
+                <Star className="w-6 h-6 mr-2" />
                 热门推荐
               </h2>
-              <p className="text-purple-100 text-sm lg:text-base">最受欢迎的创作模板</p>
+              <p className="text-purple-100 text-base">最受欢迎的创作模板</p>
             </div>
 
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6" style={{ contain: 'layout' }}>
-              {popularTemplates.map((template, index) => (
-                <div
+            <div className="grid grid-cols-3 gap-6" style={{ contain: 'layout' }}>
+              {popularTemplates.map((template) => (
+                <TemplateCard
                   key={template.id}
-                  className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
-                  style={{ willChange: 'transform', contain: 'layout style' }}
-                >
-                  <div className="relative aspect-video overflow-hidden">
-                    <img
-                      src={template.preview || '/placeholder-template.png'}
-                      alt={template.title || '模板预览'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      style={{ willChange: 'transform' }}
-                      loading="lazy"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-template.png';
-                      }}
-                    />
-
-                    {/* 类型标识 */}
-                    <div className="absolute top-3 left-3 z-20">
-                      <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
-                        {template.type === 'video' ? (
-                          <Video className="w-3 h-3 text-white" />
-                        ) : (
-                          <ImageIcon className="w-3 h-3 text-white" />
-                        )}
-                        <span className="text-xs text-white capitalize">
-                          {template.type === 'video' ? '视频' : '图片'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 热门标识 */}
-                    <div className="absolute top-3 right-3 z-20">
-                      <div className="bg-yellow-500 rounded-lg px-2 py-1 flex items-center space-x-1">
-                        <Star className="w-3 h-3 text-white fill-current" />
-                        <span className="text-xs text-white font-medium">热门</span>
-                      </div>
-                    </div>
-
-                    {/* 悬停操作 - 确保完全覆盖 */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
-                      <Link
-                        to={`/generate?template=${template.id}`}
-                        onClick={() => handleUseTemplate(template)}
-                        className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2"
-                      >
-                        <Wand2 className="w-4 h-4" />
-                        <span>使用模板</span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
-
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        {template.categoryId || '其他'}
-                      </span>
-                      <div className="flex items-center space-x-3">
-                        <span className="flex items-center space-x-1">
-                          <Eye className="w-3 h-3" />
-                          <span>{template.views || 0}</span>
-                        </span>
-                        <span>{template.style || '默认风格'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  template={template}
+                  onUseTemplate={handleUseTemplate}
+                />
               ))}
             </div>
           </div>
         )}
 
         {/* 搜索和过滤器 */}
-        <div className="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex flex-col space-y-4">
             {/* 搜索框和视图切换 */}
-            <div className="flex flex-col xs:flex-row xs:items-center space-y-3 xs:space-y-0 xs:space-x-4">
+            <div className="flex flex-row items-center space-x-4">
               {/* 搜索框 */}
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -327,7 +259,7 @@ TemplateListItem.displayName = 'TemplateListItem';
                   placeholder="搜索模板..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[48px]"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
 
@@ -335,7 +267,7 @@ TemplateListItem.displayName = 'TemplateListItem';
               <div className="flex items-center space-x-2 flex-shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 lg:p-2 rounded-lg transition-colors min-w-[48px] min-h-[48px] lg:min-w-auto lg:min-h-auto flex items-center justify-center ${
+                  className={`p-2 rounded-lg transition-colors flex items-center justify-center ${
                     viewMode === 'grid'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
@@ -345,7 +277,7 @@ TemplateListItem.displayName = 'TemplateListItem';
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-3 lg:p-2 rounded-lg transition-colors min-w-[48px] min-h-[48px] lg:min-w-auto lg:min-h-auto flex items-center justify-center ${
+                  className={`p-2 rounded-lg transition-colors flex items-center justify-center ${
                     viewMode === 'list'
                       ? 'bg-purple-100 text-purple-600'
                       : 'text-gray-400 hover:text-gray-600'
@@ -411,163 +343,36 @@ TemplateListItem.displayName = 'TemplateListItem';
             </button>
           </div>
         ) : (
-          <div
-            className={`${
-              viewMode === 'grid'
-                ? 'grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6'
-                : 'space-y-4'
-            }`}
-            style={{ contain: 'layout', willChange: 'contents' }}
-          >
-            {filteredTemplates.map((template, index) => (
-              viewMode === 'grid' ? (
-                <div
+          <div className="template-container">
+            {/* 网格视图 */}
+            <div
+              className={`grid grid-cols-3 gap-6 ${
+                viewMode === 'grid' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+              } transition-opacity duration-200`}
+            >
+              {filteredTemplates.map((template) => (
+                <TemplateCard
                   key={template.id}
-                  className="template-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
-                  style={{ willChange: 'transform', contain: 'layout style' }}
-                >
-                    <div className="relative aspect-video overflow-hidden">
-                      <img
-                          src={template.preview || '/placeholder-template.png'}
-                          alt={template.title || '模板预览'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                          style={{ willChange: 'transform' }}
-                          loading="lazy"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-template.png';
-                          }}
-                        />
+                  template={template}
+                  onUseTemplate={handleUseTemplate}
+                />
+              ))}
+            </div>
 
-                      {/* 类型标识 */}
-                      <div className="absolute top-3 left-3 z-20">
-                        <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
-                          {template.type === 'video' ? (
-                            <Video className="w-3 h-3 text-white" />
-                          ) : (
-                            <ImageIcon className="w-3 h-3 text-white" />
-                          )}
-                          <span className="text-xs text-white capitalize">
-                            {template.type === 'video' ? '视频' : '图片'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 悬停操作 - 确保完全覆盖 */}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
-                        <Link
-                          to={`/generate?template=${template.id}`}
-                          onClick={() => handleUseTemplate(template)}
-                          className="bg-white text-gray-900 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
-                        >
-                          <Wand2 className="w-4 h-4" />
-                          <span className="text-sm lg:text-base">使用模板</span>
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
-
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                          {template.categoryId || '其他'}
-                        </span>
-                        <div className="flex items-center space-x-3">
-                          <span className="flex items-center space-x-1">
-                            <Eye className="w-3 h-3" />
-                            <span>{template.views || 0}</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 标签显示 */}
-                      {template.tags && template.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {template.tags.slice(0, 3).map((tag, tagIndex) => (
-                            <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
-                              {tag}
-                            </span>
-                          ))}
-                          {template.tags.length > 3 && (
-                            <span className="text-gray-400 text-xs">+{template.tags.length - 3}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                </div>
-              ) : (
-                <div
+            {/* 列表视图 */}
+            <div
+              className={`space-y-6 ${
+                viewMode === 'list' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+              } transition-opacity duration-200`}
+            >
+              {filteredTemplates.map((template) => (
+                <TemplateListItem
                   key={template.id}
-                  className="template-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl"
-                  style={{ willChange: 'transform', contain: 'layout style' }}
-                >
-                    <div className="flex items-center space-x-4">
-                      <div className="relative w-24 h-16 flex-shrink-0">
-                        <img
-                          src={template.preview || '/placeholder-template.png'}
-                          alt={template.title || '模板预览'}
-                          className="w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-template.png';
-                          }}
-                        />
-                        <div className="absolute top-1 left-1">
-                          <div className="bg-black/50 backdrop-blur-sm rounded px-1 py-0.5 flex items-center space-x-1">
-                            {template.type === 'video' ? (
-                              <Video className="w-2 h-2 text-white" />
-                            ) : (
-                              <ImageIcon className="w-2 h-2 text-white" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 mb-1">{template.title || '未命名模板'}</h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-1">{template.description || '暂无描述'}</p>
-
-                        <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
-                          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                            {template.categoryId || '其他'}
-                          </span>
-                          <span className="flex items-center space-x-1">
-                            <Eye className="w-3 h-3" />
-                            <span>{template.views || 0}</span>
-                          </span>
-                        </div>
-
-                        {/* 标签显示 */}
-                        {template.tags && template.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {template.tags.slice(0, 4).map((tag, tagIndex) => (
-                              <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
-                                {tag}
-                              </span>
-                            ))}
-                            {template.tags.length > 4 && (
-                              <span className="text-gray-400 text-xs">+{template.tags.length - 4}</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-shrink-0">
-                        <Link
-                          to={`/generate?template=${template.id}`}
-                          onClick={() => handleUseTemplate(template)}
-                          className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors duration-150 flex items-center space-x-2 min-h-[44px]"
-                        >
-                          <Wand2 className="w-4 h-4" />
-                          <span className="text-sm lg:text-base">使用</span>
-                        </Link>
-                      </div>
-                    </div>
-                </div>
-              )
-            ))}
+                  template={template}
+                  onUseTemplate={handleUseTemplate}
+                />
+              ))}
+            </div>
           </div>
         )}
 

@@ -250,22 +250,22 @@ export default function Generate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-4 lg:pt-8 pb-20 lg:pb-8" style={{ contain: 'layout style paint', overflowAnchor: 'none' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 flex flex-col pt-8 pb-8" style={{ contain: 'layout style paint', overflowAnchor: 'none' }}>
+      <div className="max-w-7xl mx-auto px-8 w-full flex-1 flex flex-col">
 
-        <div className="text-center mb-6 lg:mb-8">
-          <h1 className="text-3xl xs:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3 lg:mb-4">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
             AI创作工坊
           </h1>
-          <p className="text-lg xs:text-xl text-gray-600 mb-4 lg:mb-6 max-w-2xl mx-auto px-2">
+          <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
             将您的想象力转化为令人惊艳的视觉作品，体验前所未有的创作乐趣
           </p>
         </div>
 
         {/* 主要创作区域 */}
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8 flex-1">
+        <div className="grid grid-cols-2 gap-8 flex-1">
           {/* 创作输入和参数配置 */}
-          <div className="flex flex-col space-y-4 lg:space-y-6 w-full order-1 lg:order-1">
+          <div className="flex flex-col space-y-6 w-full">
 
             {/* 创意输入组件 */}
             <CreationInput
@@ -294,7 +294,7 @@ export default function Generate() {
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-4 lg:py-6 rounded-2xl lg:rounded-3xl font-bold text-lg lg:text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transform transition-all duration-200 will-change-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group min-h-[56px] lg:min-h-auto"
+              className="relative w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 text-white py-6 rounded-3xl font-bold text-xl hover:from-purple-600 hover:via-blue-600 hover:to-indigo-600 transform transition-all duration-200 will-change-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-2xl shadow-purple-500/25 overflow-hidden group"
               style={{ contain: 'layout style paint' }}
             >
               {/* 背景动画效果 */}
@@ -314,8 +314,8 @@ export default function Generate() {
             </button>
           </div>
 
-          {/* 生成结果展示 - 移动端在顶部，桌面端在右侧 */}
-          <div className="order-0 lg:order-2">
+          {/* 生成结果展示 */}
+          <div>
             <ResultsDisplay
               history={history as any[]}
               onDownload={handleDownload}
