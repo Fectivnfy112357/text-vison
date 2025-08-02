@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { contentAPI } from '@/lib/api';
+import { formatGeneratedContent } from '@/lib/utils';
 
 export interface GeneratedContent {
   id: string;
@@ -84,14 +85,9 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       }
       
       const newContent: GeneratedContent = {
-        id: result.id.toString(),
+        ...formatGeneratedContent(result),
         type: result.type || type,
         prompt: result.prompt || prompt,
-        url: result.url || '',
-        thumbnail: result.thumbnail || undefined,
-        urls: result.urls || (result.url ? [result.url] : []),
-        thumbnails: result.thumbnails || (result.thumbnail ? [result.thumbnail] : []),
-        createdAt: new Date(result.createdAt || Date.now()),
         size: result.size || options.size || 'landscape_16_9',
         style: result.style || options.style || '默认风格',
         referenceImage: result.referenceImage || options.referenceImage,
@@ -131,20 +127,9 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       const result = await contentAPI.getUserContents(page, size, type);
       const contents = result.records || result.list || result;
       
-      const formattedHistory: GeneratedContent[] = contents.map((item: any) => ({
-        id: item.id.toString(),
-        type: item.type,
-        prompt: item.prompt,
-        url: item.url || '',
-        thumbnail: item.thumbnail || undefined,
-        urls: item.urls || (item.url ? [item.url] : []),
-        thumbnails: item.thumbnails || (item.thumbnail ? [item.thumbnail] : []),
-        createdAt: new Date(item.createdAt || item.createTime),
-        size: item.size,
-        style: item.style,
-        referenceImage: item.referenceImage,
-        status: item.status
-      }));
+      const formattedHistory: GeneratedContent[] = contents.map((item: any) => 
+        formatGeneratedContent(item)
+      );
       
       set({ 
         history: page === 1 ? formattedHistory : [...get().history, ...formattedHistory],
@@ -200,20 +185,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       const { currentGeneration, history } = get();
       
       if (currentGeneration && currentGeneration.id === contentId) {
-        const updatedContent: GeneratedContent = {
-          id: result.id.toString(),
-          type: result.type,
-          prompt: result.prompt,
-          url: result.url || '',
-          thumbnail: result.thumbnail || undefined,
-          urls: result.urls || (result.url ? [result.url] : []),
-          thumbnails: result.thumbnails || (result.thumbnail ? [result.thumbnail] : []),
-          createdAt: new Date(result.createdAt || Date.now()),
-          size: result.size,
-          style: result.style,
-          referenceImage: result.referenceImage,
-          status: result.status
-        };
+        const updatedContent: GeneratedContent = formatGeneratedContent(result);
         
         // 更新历史记录中的对应项
         const updatedHistory = history.map(item => 

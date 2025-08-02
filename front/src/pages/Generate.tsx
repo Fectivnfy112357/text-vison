@@ -4,6 +4,7 @@ import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTemplateStore } from '@/store/useTemplateStore';
 import { useArtStyleStore } from '@/store/useArtStyleStore';
+import { downloadContent, shareContent, handleApiError } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -95,84 +96,36 @@ export default function Generate() {
 
 
   const handleDownload = (specificUrl?: string, index?: number) => {
-    // 如果有具体的URL，直接下载
-    if (specificUrl) {
-      const link = document.createElement('a');
-      link.href = specificUrl;
-      // 从URL推断文件类型
-      const isVideo = specificUrl.includes('.mp4') || specificUrl.includes('video');
-      const fileType = isVideo ? 'mp4' : 'jpg';
-      const fileId = currentGeneration?.id || Date.now().toString();
-      link.download = `textvision-${fileId}${index !== undefined ? `-${index + 1}` : ''}.${fileType}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('下载开始');
-      return;
-    }
-
     if (!currentGeneration) {
       toast.error('下载失败：无效的内容');
       return;
     }
 
-    const fileType = currentGeneration.type === 'video' ? 'mp4' : 'jpg';
-    const fileId = currentGeneration.id || 'unknown';
-
-    const urls = currentGeneration.urls || (currentGeneration.url ? [currentGeneration.url] : []);
-
-    if (urls.length === 0) {
-      toast.error('下载失败：无效的文件链接');
-      return;
-    }
-
-    if (urls.length === 1) {
-      const link = document.createElement('a');
-      link.href = urls[0];
-      link.download = `textvision-${fileId}.${fileType}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('下载开始');
-    } else {
-      urls.forEach((url, index) => {
-        setTimeout(() => {
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `textvision-${fileId}-${index + 1}.${fileType}`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }, index * 500);
-      });
-      toast.success(`开始下载${urls.length}个文件`);
+    try {
+      downloadContent(currentGeneration, specificUrl, index);
+      const urls = currentGeneration.urls || (currentGeneration.url ? [currentGeneration.url] : []);
+      if (specificUrl || urls.length === 1) {
+        toast.success('下载开始');
+      } else {
+        toast.success(`开始下载${urls.length}个文件`);
+      }
+    } catch (error) {
+      toast.error(handleApiError(error));
     }
   };
 
   const handleShare = async (specificUrl?: string) => {
-    const shareUrl = specificUrl || currentGeneration?.url;
-    if (!shareUrl) {
-      toast.error('分享失败：无效的内容链接');
+    if (!currentGeneration) {
+      toast.error('分享失败：无效的内容');
       return;
     }
 
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: '文生视界 - 我的创作',
-          text: currentGeneration?.prompt || '精彩创作内容',
-          url: shareUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success('链接已复制到剪贴板');
-      }
+      await shareContent(currentGeneration, specificUrl);
+      toast.success('分享成功');
     } catch (error) {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success('链接已复制到剪贴板');
-      } catch (clipboardError) {
-        toast.error('分享失败：无法访问剪贴板');
+      if (error instanceof Error && error.name !== 'AbortError') {
+        toast.error(handleApiError(error));
       }
     }
   };

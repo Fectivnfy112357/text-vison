@@ -3,6 +3,7 @@ import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Ca
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { contentAPI } from '@/lib/api';
+import { downloadContent, shareContent, handleApiError } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -134,15 +135,12 @@ export default function History() {
       return;
     }
 
-    const link = document.createElement('a');
-    link.href = item.url;
-    const fileId = item.id || 'unknown';
-    const fileType = item.type === 'video' ? 'mp4' : 'jpg';
-    link.download = `textvision-${fileId}.${fileType}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('下载开始');
+    try {
+      downloadContent(item);
+      toast.success('下载开始');
+    } catch (error) {
+      toast.error(handleApiError(error));
+    }
   };
 
   const handleShare = async (item: { id: string; url?: string; prompt?: string; type?: string }) => {
@@ -158,22 +156,11 @@ export default function History() {
     }
 
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: '文生视界 - 创作分享',
-          text: item.prompt || '精彩创作内容',
-          url: item.url
-        });
-      } else {
-        await navigator.clipboard.writeText(item.url);
-        toast.success('链接已复制到剪贴板');
-      }
+      await shareContent(item);
+      toast.success('分享成功');
     } catch (error) {
-      try {
-        await navigator.clipboard.writeText(item.url);
-        toast.success('链接已复制到剪贴板');
-      } catch (clipboardError) {
-        toast.error('分享失败：无法访问剪贴板');
+      if (error instanceof Error && error.name !== 'AbortError') {
+        toast.error(handleApiError(error));
       }
     }
   };
@@ -337,187 +324,187 @@ export default function History() {
             {filteredHistory.map((item, index) => (
               <div
                 key={item.id}
-                className={`history-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer ${selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
-                  }`}
+                className={`history-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer ${
+                  selectedItems.includes(item.id) ? 'ring-2 ring-purple-500' : ''
+                }`}
                 onClick={() => handleSelectItem(item.id)}
               >
-                  {/* 图片/视频预览 */}
-                  <div className="history-card-image relative h-40 xs:h-48 overflow-hidden">
-                    {item.type === 'video' ? (
-                      <div
-                        className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.status === 'failed') {
-                            // 生成失败，不打开预览
-                            return;
-                          }
-                          if (mediaLoadStatus[item.id] !== false) {
-                            openPreview(item.url || '', 'video', item.prompt);
-                          }
-                        }}
-                      >
-                        {item.status === 'failed' ? (
-                          // 生成失败状态
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                            <Video className="w-12 h-12 text-red-400 mb-2" />
-                            <p className="text-sm text-red-600 font-medium">生成失败</p>
-                            <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                              {(item as any).errorMessage || '请修改提示词后重试'}
-                            </p>
-                          </div>
-                        ) : mediaLoadStatus[item.id] === false ? (
-                          // 加载失败状态
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                            <Video className="w-12 h-12 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500">视频加载失败</p>
-                          </div>
-                        ) : (
-                          <video
-                            src={item.url || ''}
-                            className="w-full h-full object-cover media-optimized"
-                            preload="metadata"
-                            muted
-                            playsInline
-                            poster=""
-                            onError={(e) => {
-                              console.error('Video load error:', e);
-                              setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
-                            }}
-                            onLoadedMetadata={(e) => {
-                              const target = e.target as HTMLVideoElement;
-                              target.currentTime = 0.1;
-                              setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
-                            }}
-                          />
-                        )}
-                        
-                        {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                          <>
-                            {/* 播放按钮覆盖层 */}
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                              <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
-                                <Play className="w-6 h-6 ml-0.5" />
-                              </div>
+                {/* 图片/视频预览 */}
+                <div className="history-card-image relative h-40 xs:h-48 overflow-hidden">
+                  {item.type === 'video' ? (
+                    <div
+                      className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-900"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item.status === 'failed') {
+                          // 生成失败，不打开预览
+                          return;
+                        }
+                        if (mediaLoadStatus[item.id] !== false) {
+                          openPreview(item.url || '', 'video', item.prompt);
+                        }
+                      }}
+                    >
+                      {item.status === 'failed' ? (
+                        // 生成失败状态
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
+                          <Video className="w-12 h-12 text-red-400 mb-2" />
+                          <p className="text-sm text-red-600 font-medium">生成失败</p>
+                          <p className="text-xs text-red-500 mt-1 px-2 text-center">
+                            {(item as any).errorMessage || '请修改提示词后重试'}
+                          </p>
+                        </div>
+                      ) : mediaLoadStatus[item.id] === false ? (
+                        // 加载失败状态
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+                          <Video className="w-12 h-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">视频加载失败</p>
+                        </div>
+                      ) : (
+                        <video
+                          src={item.url || ''}
+                          className="w-full h-full object-cover media-optimized"
+                          preload="metadata"
+                          muted
+                          playsInline
+                          poster=""
+                          onError={(e) => {
+                            console.error('Video load error:', e);
+                            setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
+                          }}
+                          onLoadedMetadata={(e) => {
+                            const target = e.target as HTMLVideoElement;
+                            target.currentTime = 0.1;
+                            setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
+                          }}
+                        />
+                      )}
+                      
+                      {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
+                        <>
+                          {/* 播放按钮覆盖层 */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
+                              <Play className="w-6 h-6 ml-0.5" />
                             </div>
-                            
-                            {/* 视频标识 */}
-                            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                              <Video className="w-3 h-3 inline mr-1" />
-                              视频
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <div
-                        className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.status === 'failed') {
-                            // 生成失败，不打开预览
-                            return;
-                          }
-                          if (mediaLoadStatus[item.id] !== false) {
-                            openPreview(item.url || '', 'image', item.prompt);
-                          }
-                        }}
-                      >
-                        {item.status === 'failed' ? (
-                          // 生成失败状态
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                            <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
-                            <p className="text-sm text-red-600 font-medium">生成失败</p>
-                            <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                              {(item as any).errorMessage || '请修改提示词后重试'}
-                            </p>
                           </div>
-                        ) : mediaLoadStatus[item.id] === false ? (
-                          // 加载失败状态
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                            <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500">加载失败</p>
+                          
+                          {/* 视频标识 */}
+                          <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+                            <Video className="w-3 h-3 inline mr-1" />
+                            视频
                           </div>
-                        ) : (
-                          <img
-                            src={item.url || '/placeholder-image.png'}
-                            alt={item.prompt || '生成内容'}
-                            className="w-full h-full object-cover media-optimized"
-                            loading="lazy"
-                            onError={(e) => {
-                              setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
-                            }}
-                            onLoad={(e) => {
-                              setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
-                            }}
-                          />
-                        )}
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item.status === 'failed') {
+                          // 生成失败，不打开预览
+                          return;
+                        }
+                        if (mediaLoadStatus[item.id] !== false) {
+                          openPreview(item.url || '', 'image', item.prompt);
+                        }
+                      }}
+                    >
+                      {item.status === 'failed' ? (
+                        // 生成失败状态
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
+                          <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
+                          <p className="text-sm text-red-600 font-medium">生成失败</p>
+                          <p className="text-xs text-red-500 mt-1 px-2 text-center">
+                            {(item as any).errorMessage || '请修改提示词后重试'}
+                          </p>
+                        </div>
+                      ) : mediaLoadStatus[item.id] === false ? (
+                        // 加载失败状态
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+                          <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">加载失败</p>
+                        </div>
+                      ) : (
+                        <img
+                          src={item.url || '/placeholder-image.png'}
+                          alt={item.prompt || '生成内容'}
+                          className="w-full h-full object-cover media-optimized"
+                          loading="lazy"
+                          onError={(e) => {
+                            setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
+                          }}
+                          onLoad={(e) => {
+                            setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
 
-                    {/* 选择状态 */}
-                    <div className="absolute top-2 right-2">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedItems.includes(item.id)
+                  {/* 选择状态 */}
+                  <div className="absolute top-2 right-2">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      selectedItems.includes(item.id)
                         ? 'bg-purple-600 border-purple-600'
                         : 'bg-white/50 border-white backdrop-blur-sm'
-                        }`}>
-                        {selectedItems.includes(item.id) && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 操作按钮 */}
-                    {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                      <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(item);
-                          }}
-                          className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                          title="下载"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(item);
-                          }}
-                          className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                          title="分享"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-
-
-                  </div>
-
-                  {/* 内容信息 */}
-                  <div className="p-3 lg:p-4">
-                    <p className="text-sm text-gray-600 mb-2 lg:mb-3 line-clamp-2">
-                      {item.prompt || '无描述'}
-                    </p>
-
-                    <div className="flex items-center justify-between text-xs mb-1 lg:mb-2">
-                      <span className="truncate flex-1 mr-2">
-                        {item.status === 'failed' ? (
-                          <span className="text-red-600 font-medium">• 生成失败</span>
-                        ) : (
-                          <span className="text-gray-500">{item.style || '默认风格'}</span>
-                        )}
-                      </span>
-                      <span className="flex-shrink-0 text-gray-500">{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span className="truncate flex-1 mr-2">{item.size || '未知尺寸'}</span>
-                      <span className="flex-shrink-0">#{item.id ? item.id.slice(-6) : 'unknown'}</span>
+                    }`}>
+                      {selectedItems.includes(item.id) && (
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      )}
                     </div>
                   </div>
+
+                  {/* 操作按钮 */}
+                  {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
+                    <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(item);
+                        }}
+                        className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        title="下载"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(item);
+                        }}
+                        className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-xl shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+                        title="分享"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 内容信息 */}
+                <div className="p-3 lg:p-4">
+                  <p className="text-sm text-gray-600 mb-2 lg:mb-3 line-clamp-2">
+                    {item.prompt || '无描述'}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs mb-1 lg:mb-2">
+                    <span className="truncate flex-1 mr-2">
+                      {item.status === 'failed' ? (
+                        <span className="text-red-600 font-medium">• 生成失败</span>
+                      ) : (
+                        <span className="text-gray-500">{item.style || '默认风格'}</span>
+                      )}
+                    </span>
+                    <span className="flex-shrink-0 text-gray-500">{item.createdAt ? formatDate(item.createdAt.toString()) : '未知时间'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span className="truncate flex-1 mr-2">{item.size || '未知尺寸'}</span>
+                    <span className="flex-shrink-0">#{item.id ? item.id.slice(-6) : 'unknown'}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

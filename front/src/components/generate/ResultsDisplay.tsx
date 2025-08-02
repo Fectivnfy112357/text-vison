@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Image as ImageIcon, Download, Share2, Play, AlertCircle, Loader2 } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
-import { toast } from 'sonner';
 import MediaPreviewModal from '@/components/ui/MediaPreviewModal';
 
 interface GenerationResult {

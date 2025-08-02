@@ -16,12 +16,10 @@ const clearToken = (): void => {
   localStorage.removeItem('auth_token');
 };
 
-// 通用请求函数
-const request = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
-  const url = `${API_BASE_URL}${endpoint}`;
+// 统一的请求配置
+const getRequestConfig = (options: RequestInit = {}): RequestInit => {
   const token = getToken();
-  
-  const config: RequestInit = {
+  return {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -29,52 +27,53 @@ const request = async (endpoint: string, options: RequestInit = {}): Promise<any
     },
     ...options,
   };
+};
+
+// 统一的响应处理
+const handleResponse = async (response: Response, endpoint: string): Promise<any> => {
+  let data;
+  try {
+    data = await response.json();
+  } catch (parseError) {
+    throw new Error(`请求失败: ${response.status} ${response.statusText}`);
+  }
+  
+  if (!response.ok) {
+    if (response.status === 401) {
+      console.error('401 未授权错误:', { endpoint, responseData: data });
+      clearToken();
+      throw new Error(data.message || '登录已过期，请重新登录');
+    }
+    throw new Error(data.message || `请求失败: ${response.status}`);
+  }
+  
+  if (data.code !== 200 && data.code !== '200') {
+    console.error('业务状态码错误:', data);
+    throw new Error(data.message || '请求失败');
+  }
+  
+  return data.data || data;
+};
+
+// 统一的错误处理
+const handleRequestError = (error: any): never => {
+  console.error('API请求错误:', error);
+  if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+    throw new Error('网络连接失败，请检查网络连接或稍后重试');
+  }
+  throw error;
+};
+
+// 通用请求函数
+const request = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const config = getRequestConfig(options);
 
   try {
     const response = await fetch(url, config);
-    
-    // 尝试解析响应体
-    let data;
-    try {
-      data = await response.json();
-    } catch (parseError) {
-      // 如果无法解析JSON，抛出HTTP状态错误
-      throw new Error(`请求失败: ${response.status} ${response.statusText}`);
-    }
-    
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Token 过期或无效，清除本地存储
-        console.error('401 未授权错误详情:', {
-          endpoint,
-          token: getToken(),
-          tokenExists: !!getToken(),
-          responseData: data,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-        clearToken();
-        throw new Error(data.message || '登录已过期，请重新登录');
-      }
-      
-      // 抛出后端返回的具体错误信息
-      throw new Error(data.message || `请求失败: ${response.status}`);
-    }
-    
-    // 检查业务状态码 - 修复：确保code是数字类型的200
-    if (data.code !== 200 && data.code !== '200') {
-      console.error('业务状态码错误:', data);
-      throw new Error(data.message || '请求失败');
-    }
-    
-    // 如果有data字段则返回data，否则返回整个响应
-    return data.data || data;
+    return await handleResponse(response, endpoint);
   } catch (error) {
-    console.error('API请求错误:', error);
-    // 如果是网络错误，提供更友好的错误信息
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('网络连接失败，请检查网络连接或稍后重试');
-    }
-    throw error;
+    return handleRequestError(error);
   }
 };
 
@@ -141,14 +140,15 @@ export const authAPI = {
 export const templateAPI = {
   // 获取模板列表
   getTemplates: async (page = 1, size = 20, categoryId?: string, type?: string) => {
-    let url = `/templates?page=${page}&size=${size}`;
+    const params: Record<string, any> = { page, size };
     if (categoryId && categoryId !== '全部') {
-      url += `&categoryId=${encodeURIComponent(categoryId)}`;
+      params.categoryId = categoryId;
     }
     if (type) {
-      url += `&type=${type}`;
+      params.type = type;
     }
-    return await request(url);
+    const queryString = new URLSearchParams(params).toString();
+    return await request(`/templates?${queryString}`);
   },
 
   // 获取模板详情
@@ -163,14 +163,15 @@ export const templateAPI = {
 
   // 搜索模板
   searchTemplates: async (keyword: string, page = 1, size = 20, categoryId?: string, type?: string) => {
-    let url = `/templates/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`;
+    const params: Record<string, any> = { keyword, page, size };
     if (categoryId && categoryId !== '全部') {
-      url += `&categoryId=${encodeURIComponent(categoryId)}`;
+      params.categoryId = categoryId;
     }
     if (type) {
-      url += `&type=${type}`;
+      params.type = type;
     }
-    return await request(url);
+    const queryString = new URLSearchParams(params).toString();
+    return await request(`/templates/search?${queryString}`);
   },
 
   // 获取热门模板
@@ -293,11 +294,12 @@ export const contentAPI = {
 
   // 用户内容管理
   getUserContents: async (page = 1, size = 20, type?: string) => {
-    let url = `/contents?page=${page}&size=${size}`;
+    const params: Record<string, any> = { page, size };
     if (type) {
-      url += `&type=${type}`;
+      params.type = type;
     }
-    return await request(url);
+    const queryString = new URLSearchParams(params).toString();
+    return await request(`/contents?${queryString}`);
   },
 
   // 获取生成内容详情

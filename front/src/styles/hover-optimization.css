@@ -56,28 +56,19 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 模板卡片过渡效果 - 优化视图切换体验 */
+/* 快速过渡效果 - 模板卡片和图片 */
 .template-card {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.template-card img {
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-
+.template-card img,
 .history-card-image {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.action-button {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-input {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+/* 标准过渡效果 - 按钮和输入框 */
+.action-button,
+.search-input,
 .button-primary,
 .button-secondary,
 .button-danger {

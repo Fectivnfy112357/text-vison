@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { X, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { validatePassword, validateEmail, validateRequired, handleApiError } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface AuthModalProps {
@@ -22,10 +23,25 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 注册时验证密码确认
-    if (mode === 'register' && password !== confirmPassword) {
-      toast.error('两次输入的密码不一致');
+    // 统一验证
+    const emailError = validateEmail(email);
+    if (emailError) {
+      toast.error(emailError);
       return;
+    }
+    
+    const passwordError = validatePassword(password, mode === 'register' ? confirmPassword : undefined);
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
+    
+    if (mode === 'register') {
+      const nameError = validateRequired(name, '姓名');
+      if (nameError) {
+        toast.error(nameError);
+        return;
+      }
     }
     
     try {
@@ -44,8 +60,7 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
     } catch (error) {
       console.error(error);
       // 显示具体的错误信息
-      const errorMessage = error instanceof Error ? error.message : '操作失败，请重试';
-      toast.error(errorMessage);
+      toast.error(handleApiError(error));
     }
   };
 
