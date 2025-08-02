@@ -6,9 +6,65 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.5;
   font-weight: 400;
+  font-size: 14px; /* 移动端基础字号 */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 移动端基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f7f8fa;
+  overflow-x: hidden;
+  /* 禁用双击缩放 */
+  touch-action: manipulation;
+  /* 禁用选择 */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 输入框允许选择 */
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* 移动端安全区域适配 */
+.safe-area {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 移动端触摸优化 */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 滚动优化 */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* 主题色彩变量 */
+:root {
+  --primary-color: #3B82F6;
+  --primary-gradient: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f8fa;
+  --border-color: #e5e7eb;
 }
