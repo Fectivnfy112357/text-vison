@@ -478,6 +478,7 @@ export default function History() {
           onClose={closePreview}
           mediaUrl={previewModal.mediaUrl}
           mediaType={previewModal.mediaType}
+          autoPlay={previewModal.mediaType === 'video'}
           title={previewModal.title}
           onDownload={() => handleDownload({ id: '', url: previewModal.mediaUrl, type: previewModal.mediaType })}
           onShare={() => handleShare({ id: '', url: previewModal.mediaUrl, prompt: previewModal.title, type: previewModal.mediaType })}
