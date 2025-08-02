@@ -51,7 +51,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
 
   return (
     <div
-      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)]"
+      className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 flex flex-col w-full lg:sticky lg:top-8 lg:self-start"
     >
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
@@ -67,10 +67,10 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         <div className="flex items-center justify-center h-full">
           {history && history.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 w-full h-full">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 w-full">
               {/* 显示最多4个结果，2x2网格布局 */}
               {history.slice(0, 4).map((generation, genIndex) => (
                 <div
@@ -135,6 +135,7 @@ export default function ResultsDisplay({ history, onDownload, onShare }: Results
         title={previewModal.title}
         onDownload={() => onDownload(previewModal.mediaUrl)}
         onShare={() => onShare(previewModal.mediaUrl)}
+        autoPlay={previewModal.mediaType === 'video'}
       />    </div>  );
 }
 
@@ -173,7 +174,6 @@ function renderContent(
                 <video
                   src={url}
                   className="w-full h-full object-cover"
-                  controls
                   preload="metadata"
                   muted
                   playsInline
@@ -188,6 +188,13 @@ function renderContent(
                     target.currentTime = 0.1;
                   }}
                 />
+                
+                {/* 中央播放按钮 */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/50 backdrop-blur-sm text-white p-3 sm:p-4 rounded-full hover:bg-black/70 transition-colors duration-150">
+                    <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-1" />
+                  </div>
+                </div>
                 
                 {/* 视频标识 */}
                 <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
@@ -229,7 +236,7 @@ function renderContent(
 
             {/* 悬浮信息 */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 sm:p-3 lg:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-white text-xs font-medium hidden sm:block">点击{generation.type === 'video' ? '播放视频' : '查看大图'}</p>
+              <p className="text-white text-xs font-medium hidden sm:block">{generation.type === 'image' ? '点击查看大图' : ''}</p>
             </div>
           </div>
         ))}

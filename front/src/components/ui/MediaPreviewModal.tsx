@@ -11,6 +11,7 @@ interface MediaPreviewModalProps {
   title?: string;
   onDownload?: () => void;
   onShare?: () => void;
+  autoPlay?: boolean;
 }
 
 export default function MediaPreviewModal({
@@ -20,7 +21,8 @@ export default function MediaPreviewModal({
   mediaType,
   title,
   onDownload,
-  onShare
+  onShare,
+  autoPlay = false
 }: MediaPreviewModalProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
@@ -62,15 +64,27 @@ export default function MediaPreviewModal({
       ref.addEventListener('pause', () => setIsPlaying(false));
       ref.addEventListener('ended', () => setIsPlaying(false));
       
-      // 视频加载元数据后显示第一帧
+      // 视频加载元数据后处理
       ref.addEventListener('loadedmetadata', () => {
-        // 不自动播放，让用户手动控制
-        setIsPlaying(false);
+        if (autoPlay && mediaType === 'video') {
+          // 自动播放视频
+          ref.play().catch(error => {
+            console.warn('自动播放失败:', error);
+            setIsPlaying(false);
+          });
+        } else {
+          setIsPlaying(false);
+        }
       });
       
       // 视频加载完成后准备播放
       ref.addEventListener('canplay', () => {
-        // 视频准备就绪，但不自动播放
+        // 如果设置了自动播放且还没有播放，尝试播放
+        if (autoPlay && mediaType === 'video' && !isPlaying) {
+          ref.play().catch(error => {
+            console.warn('自动播放失败:', error);
+          });
+        }
       });
     }
   };
@@ -136,9 +150,6 @@ export default function MediaPreviewModal({
                 {title && (
                   <h3 className="text-white font-medium text-sm sm:text-base lg:text-lg truncate">{title}</h3>
                 )}
-                <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
-                  {mediaType === 'video' ? '视频' : '图片'}
-                </span>
               </div>
               <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button
