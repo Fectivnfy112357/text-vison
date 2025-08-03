@@ -118,9 +118,9 @@ const Home = () => {
   }, [banners.length])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 产品介绍轮播区域 */}
-      <div className="mb-6">
+    <div className="min-h-screen">
+      {/* 产品介绍轮播区域 - 果冻感设计 */}
+      <div className="mb-8">
         <Swiper 
           autoplay={4000} 
           className="rounded-none"
@@ -129,32 +129,41 @@ const Home = () => {
           {banners.map((banner, index) => (
             <div 
               key={index} 
-              className={`h-56 bg-gradient-to-br ${banner.gradient} flex flex-col justify-center items-center text-white px-6 relative overflow-hidden`}
+              className="h-64 relative overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, rgba(177, 151, 252, 0.8) 0%, rgba(125, 211, 252, 0.6) 50%, rgba(254, 254, 254, 0.9) 100%)`
+              }}
             >
-              {/* 背景装饰 */}
-              <div className="absolute inset-0 bg-black/10" />
-              <div className="absolute top-4 right-4 text-4xl opacity-20">
-                {banner.icon}
+              {/* 背景装饰 - 柔和圆形 */}
+              <div className="absolute inset-0">
+                <div className="absolute top-8 right-8 w-24 h-24 bg-white/20 rounded-full animate-float" />
+                <div className="absolute bottom-12 left-8 w-16 h-16 bg-mist-300/30 rounded-full animate-float" style={{ animationDelay: '2s' }} />
+                <div className="absolute top-1/2 left-1/3 w-8 h-8 bg-sky-300/40 rounded-full animate-float" style={{ animationDelay: '4s' }} />
               </div>
               
               {/* 内容 */}
-              <div className="relative z-10 text-center">
-                <div className="text-3xl mb-2">{banner.icon}</div>
-                <h2 className="text-2xl font-bold mb-2">{banner.title}</h2>
-                <p className="text-lg opacity-90 mb-2">{banner.subtitle}</p>
-                <p className="text-sm opacity-80 leading-relaxed max-w-xs">
+              <div className="relative z-10 flex flex-col justify-center items-center h-full text-center px-8">
+                <div className="text-4xl mb-4 animate-bounce-soft">{banner.icon}</div>
+                <h2 className="text-2xl font-bold mb-3 text-mist-800">{banner.title}</h2>
+                <p className="text-lg text-mist-600 mb-3 font-medium">{banner.subtitle}</p>
+                <p className="text-sm text-mist-500 leading-relaxed max-w-xs opacity-90">
                   {banner.description}
                 </p>
               </div>
               
-              {/* 指示器 */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {/* 指示器 - 果冻感设计 */}
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
                 {banners.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      i === currentBanner ? 'bg-white' : 'bg-white/50'
+                    className={`w-3 h-3 rounded-full transition-all duration-500 ${
+                      i === currentBanner 
+                        ? 'bg-white shadow-jelly scale-125' 
+                        : 'bg-white/40 hover:bg-white/60'
                     }`}
+                    style={{
+                      animation: i === currentBanner ? 'pulse-soft 2s infinite' : 'none'
+                    }}
                   />
                 ))}
               </div>
@@ -164,152 +173,204 @@ const Home = () => {
       </div>
 
       <div className="px-4">
-        {/* 用户登录注册入口 - 大按钮设计 */}
+        {/* 用户登录注册入口 - 果冻感大按钮设计 */}
         {!isAuthenticated ? (
-          <div className="mb-6">
-            <Button 
-              type="primary" 
-              size="large" 
-              block
-              className="h-16 text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-500 border-none shadow-lg"
+          <div className="mb-8">
+            <button 
+              className="w-full h-20 rounded-3xl font-semibold text-lg text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
+                boxShadow: '0 12px 40px rgba(177, 151, 252, 0.4)'
+              }}
               onClick={() => setShowAuthModal(true)}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-xl">👋</span>
+              {/* 背景动画装饰 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute top-2 right-4 w-8 h-8 bg-white/20 rounded-full animate-float" />
+              <div className="absolute bottom-3 left-6 w-4 h-4 bg-white/30 rounded-full animate-float" style={{ animationDelay: '1s' }} />
+              
+              <div className="relative z-10 flex items-center justify-center space-x-3">
+                <span className="text-2xl animate-bounce-soft">👋</span>
                 <span>登录 / 注册</span>
               </div>
-            </Button>
-            <p className="text-center text-sm text-gray-500 mt-2">
+            </button>
+            <p className="text-center text-sm text-mist-500 mt-3 font-medium">
               登录后解锁全部功能
             </p>
           </div>
         ) : (
-          <div className="mb-6">
-            <div className="mobile-card bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          <div className="mb-8">
+            <div className="mobile-card bg-gradient-to-r from-mist-50/80 to-sky-50/80 border-mist-200/50">
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 bg-gradient-to-r from-mist-500 to-sky-400 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-jelly">
                   {user?.name?.charAt(0) || '用'}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-mist-800 text-lg">
                     欢迎回来，{user?.name || '用户'}！
                   </h3>
-                  <p className="text-sm text-gray-600">继续您的创作之旅</p>
+                  <p className="text-sm text-mist-600 mt-1">继续您的创作之旅</p>
                 </div>
+                <div className="w-6 h-6 bg-gradient-to-r from-mist-400 to-sky-400 rounded-full animate-pulse-soft" />
               </div>
             </div>
           </div>
         )}
 
-        {/* 快速生成入口 */}
-        <div className="mb-6">
-          <Button 
-            type="primary" 
-            size="large" 
-            block
-            className="h-14 text-lg font-semibold bg-gradient-to-r from-pink-500 to-purple-500 border-none shadow-md"
+        {/* 快速生成入口 - 果冻感设计 */}
+        <div className="mb-8">
+          <button 
+            className="w-full h-16 rounded-3xl font-semibold text-lg text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #f87171 0%, #b197fc 50%, #7dd3fc 100%)',
+              boxShadow: '0 12px 40px rgba(248, 113, 113, 0.3)'
+            }}
             onClick={handleQuickGenerate}
           >
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-xl">🚀</span>
+            {/* 背景动画装饰 */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute top-2 right-6 w-6 h-6 bg-white/20 rounded-full animate-float" />
+            <div className="absolute bottom-2 left-8 w-4 h-4 bg-white/30 rounded-full animate-float" style={{ animationDelay: '1.5s' }} />
+            
+            <div className="relative z-10 flex items-center justify-center space-x-3">
+              <span className="text-2xl animate-bounce-soft">🚀</span>
               <span>开始创作</span>
             </div>
-          </Button>
+          </button>
         </div>
 
-        {/* 功能特色展示卡片 - 垂直布局适配小屏幕 */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-            <span className="mr-2">✨</span>
+        {/* 功能特色展示卡片 - 果冻感网格布局 */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold mb-6 text-mist-800 flex items-center justify-center">
+            <span className="mr-3 text-2xl animate-bounce-soft">✨</span>
             功能特色
           </h3>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
             {features.map((feature, index) => (
               <div
                 key={index}
                 onClick={feature.action}
-                className="mobile-card cursor-pointer hover:shadow-md transition-all duration-300 active:scale-95"
+                className="relative p-6 rounded-3xl cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 group"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(177, 151, 252, 0.1)',
+                  boxShadow: '0 8px 32px rgba(177, 151, 252, 0.1)'
+                }}
               >
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center text-xl shadow-sm`}>
+                {/* 背景渐变装饰 */}
+                <div 
+                  className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-br ${feature.color}`}
+                />
+                
+                <div className="relative z-10 text-center">
+                  <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center text-2xl shadow-jelly`}>
                     {feature.icon}
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-800 mb-1">
-                      {feature.title}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {feature.description}
-                    </p>
-                  </div>
-                  <div className="text-gray-400">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                  <h4 className="font-bold text-mist-800 mb-2 text-sm">
+                    {feature.title}
+                  </h4>
+                  <p className="text-xs text-mist-600 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
+                
+                {/* 悬浮装饰点 */}
+                <div className="absolute top-3 right-3 w-2 h-2 bg-gradient-to-r from-mist-400 to-sky-400 rounded-full animate-pulse-soft" />
               </div>
             ))}
           </div>
         </div>
 
-        {/* 统计数据展示 */}
-        <div className="mb-6">
-          <div className="mobile-card bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-            <h3 className="text-lg font-semibold mb-4 text-center">平台数据</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              {stats.map((stat, index) => (
-                <div key={index} className="space-y-1">
-                  <div className="text-2xl font-bold">{stat.number}</div>
-                  <div className="text-sm opacity-90">{stat.label}</div>
-                </div>
-              ))}
+        {/* 统计数据展示 - 果冻感设计 */}
+        <div className="mb-8">
+          <div 
+            className="mobile-card text-white relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
+              boxShadow: '0 12px 40px rgba(177, 151, 252, 0.3)'
+            }}
+          >
+            {/* 背景装饰 */}
+            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full animate-float" />
+            <div className="absolute bottom-6 left-6 w-12 h-12 bg-white/15 rounded-full animate-float" style={{ animationDelay: '2s' }} />
+            
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold mb-6 text-center flex items-center justify-center">
+                <span className="mr-2 text-2xl animate-bounce-soft">📊</span>
+                平台数据
+              </h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                {stats.map((stat, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="text-2xl font-bold drop-shadow-sm">{stat.number}</div>
+                    <div className="text-sm opacity-90 font-medium">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 新用户指南 */}
-        <div className="mobile-card mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-            <span className="mr-2">📖</span>
+        {/* 新用户指南 - 果冻感设计 */}
+        <div className="mobile-card mb-8">
+          <h3 className="text-xl font-bold mb-6 text-mist-800 flex items-center justify-center">
+            <span className="mr-3 text-2xl animate-bounce-soft">📖</span>
             新用户指南
           </h3>
           <div className="space-y-4">
             {[
-              { step: 1, text: '输入创意描述', detail: '用文字描述您想要的图片或视频' },
-              { step: 2, text: '选择生成类型和风格', detail: '选择图片或视频，设置尺寸和艺术风格' },
-              { step: 3, text: '等待AI生成精美作品', detail: '几秒钟后即可获得专业级作品' }
+              { step: 1, text: '输入创意描述', detail: '用文字描述您想要的图片或视频', icon: '✍️' },
+              { step: 2, text: '选择生成类型和风格', detail: '选择图片或视频，设置尺寸和艺术风格', icon: '🎨' },
+              { step: 3, text: '等待AI生成精美作品', detail: '几秒钟后即可获得专业级作品', icon: '⚡' }
             ].map((guide, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+              <div key={index} className="flex items-start space-x-4 p-4 rounded-2xl bg-gradient-to-r from-mist-50/50 to-sky-50/50 border border-mist-200/30">
+                <div className="w-12 h-12 bg-gradient-to-r from-mist-500 to-sky-400 text-white rounded-2xl flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-jelly">
                   {guide.step}
                 </div>
-                <div>
-                  <div className="font-medium text-gray-800">{guide.text}</div>
-                  <div className="text-sm text-gray-600 mt-1">{guide.detail}</div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="text-lg">{guide.icon}</span>
+                    <div className="font-semibold text-mist-800">{guide.text}</div>
+                  </div>
+                  <div className="text-sm text-mist-600 leading-relaxed">{guide.detail}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 底部CTA */}
-        <div className="mobile-card bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 text-center mb-8">
-          <div className="text-4xl mb-3">🎯</div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            准备好释放您的创造力了吗？
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            加入文生视界，开启您的AI创作之旅
-          </p>
-          <Button 
-            type="primary" 
-            size="large"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 border-none shadow-md"
-            onClick={handleQuickGenerate}
-          >
-            立即开始创作
-          </Button>
+        {/* 底部CTA - 果冻感设计 */}
+        <div 
+          className="mobile-card text-center mb-8 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(177, 151, 252, 0.1) 0%, rgba(125, 211, 252, 0.1) 100%)',
+            border: '1px solid rgba(177, 151, 252, 0.2)'
+          }}
+        >
+          {/* 背景装饰 */}
+          <div className="absolute top-4 right-4 w-16 h-16 bg-mist-200/30 rounded-full animate-float" />
+          <div className="absolute bottom-4 left-4 w-10 h-10 bg-sky-200/40 rounded-full animate-float" style={{ animationDelay: '1s' }} />
+          
+          <div className="relative z-10">
+            <div className="text-5xl mb-4 animate-bounce-soft">🎯</div>
+            <h3 className="text-xl font-bold text-mist-800 mb-3">
+              准备好释放您的创造力了吗？
+            </h3>
+            <p className="text-sm text-mist-600 mb-6 leading-relaxed">
+              加入文生视界，开启您的AI创作之旅
+            </p>
+            <button 
+              className="px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
+                boxShadow: '0 8px 32px rgba(177, 151, 252, 0.3)'
+              }}
+              onClick={handleQuickGenerate}
+            >
+              立即开始创作
+            </button>
+          </div>
         </div>
       </div>
 

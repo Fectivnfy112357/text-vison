@@ -261,82 +261,132 @@ const History = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <NavBar title="生成历史" className="mobile-header" />
+      <div className="min-h-screen bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+        <NavBar 
+          title={
+            <span className="flex items-center justify-center text-mist-800 font-bold">
+              <span className="mr-2 text-2xl animate-bounce-soft">📚</span>
+              生成历史
+            </span>
+          }
+          className="mobile-header backdrop-blur-md bg-white/80 border-b border-mist-100" 
+        />
         <div className="flex flex-col items-center justify-center h-96 px-4">
-          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="w-10 h-10 text-purple-600" />
+          <div className="w-24 h-24 bg-gradient-to-r from-mist-200 to-sky-200 rounded-3xl flex items-center justify-center mb-6 shadow-jelly animate-float">
+            <Calendar className="w-12 h-12 text-mist-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">请先登录</h3>
-          <p className="text-gray-600 text-center mb-4">登录后即可查看您的创作历史记录</p>
+          <h3 className="text-xl font-bold text-mist-800 mb-3">请先登录</h3>
+          <p className="text-mist-600 text-center mb-6 leading-relaxed">登录后即可查看您的创作历史记录</p>
+          <div className="w-16 h-16 bg-mist-100/50 rounded-full animate-pulse" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       <NavBar 
-        title="生成历史" 
-        className="mobile-header"
-        rightText={isSelectionMode ? '取消' : '选择'}
+        title={
+          <span className="flex items-center justify-center text-mist-800 font-bold">
+            <span className="mr-2 text-2xl animate-bounce-soft">📚</span>
+            生成历史
+          </span>
+        }
+        className="mobile-header backdrop-blur-md bg-white/80 border-b border-mist-100"
+        rightText={
+          <span className={`font-medium transition-colors duration-300 ${
+            isSelectionMode ? 'text-red-500' : 'text-mist-600'
+          }`}>
+            {isSelectionMode ? '取消' : '选择'}
+          </span>
+        }
         onClickRight={toggleSelectionMode}
       />
       
-      {/* 搜索栏 */}
-      <div className="bg-white px-4 py-3 border-b border-gray-100">
-        <Search
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="搜索创作内容..."
-          shape="round"
-          leftIcon={<SearchIcon className="w-4 h-4" />}
-        />
+      {/* 搜索栏 - 果冻感设计 */}
+      <div className="mx-4 mt-4 mb-6">
+        <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+          <Search
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="搜索创作内容..."
+            shape="round"
+            leftIcon={<SearchIcon className="w-4 h-4 text-mist-600" />}
+            className="mobile-input"
+            style={{
+              background: 'rgba(255, 255, 255, 0.8)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(177, 151, 252, 0.2)',
+              borderRadius: '16px'
+            }}
+          />
+        </div>
       </div>
 
-      {/* 类型筛选 */}
-      <div className="bg-white border-b border-gray-100">
-        <Tabs 
-          active={filterType} 
-          onChange={(name) => setFilterType(name as 'all' | 'image' | 'video')}
-          className="px-4"
-        >
-          <Tabs.TabPane title="全部" name="all" />
-          <Tabs.TabPane title="图片" name="image" />
-          <Tabs.TabPane title="视频" name="video" />
-        </Tabs>
-      </div>
-
-      {/* 批量操作栏 */}
-      {isSelectionMode && (
-        <div className="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Checkbox
-              checked={selectedItems.length === filteredHistory.length && filteredHistory.length > 0}
-              onChange={toggleSelectAll}
-            >
-              全选
-            </Checkbox>
-            {selectedItems.length > 0 && (
-              <span className="text-sm text-gray-500">
-                已选择 {selectedItems.length} 个
-              </span>
-            )}
+      {/* 类型筛选 - 果冻感设计 */}
+      <div className="mx-4 mb-6">
+        <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+          <h3 className="text-lg font-bold text-mist-800 mb-4 flex items-center">
+            <span className="mr-2 text-xl animate-bounce-soft">🎯</span>
+            类型筛选
+          </h3>
+          <div className="flex gap-3">
+            {[
+              { key: 'all', label: '全部', icon: '📋' },
+              { key: 'image', label: '图片', icon: '🖼️' },
+              { key: 'video', label: '视频', icon: '🎬' }
+            ].map((item) => (
+              <button
+                key={item.key}
+                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
+                  filterType === item.key
+                    ? 'bg-gradient-to-r from-mist-500 to-sky-400 text-white shadow-jelly'
+                    : 'bg-gradient-to-r from-mist-100/80 to-sky-100/80 text-mist-700 border border-mist-200/50 hover:shadow-md'
+                }`}
+                onClick={() => setFilterType(item.key as 'all' | 'image' | 'video')}
+              >
+                <span className="mr-2">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
           </div>
-          {selectedItems.length > 0 && (
-            <Button
-              type="danger"
-              size="small"
-              onClick={handleBatchDelete}
-              icon={<Trash2 className="w-4 h-4" />}
-            >
-              删除
-            </Button>
-          )}
+        </div>
+      </div>
+
+      {/* 批量操作栏 - 果冻感设计 */}
+      {isSelectionMode && (
+        <div className="mx-4 mb-6">
+          <div className="mobile-card backdrop-blur-md bg-gradient-to-r from-red-50/80 to-pink-50/80 border border-red-200/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Checkbox
+                  checked={selectedItems.length === filteredHistory.length && filteredHistory.length > 0}
+                  onChange={toggleSelectAll}
+                  className="text-red-500"
+                >
+                  <span className="font-medium text-mist-800">全选</span>
+                </Checkbox>
+                {selectedItems.length > 0 && (
+                  <span className="text-sm text-mist-600 bg-white/60 px-3 py-1 rounded-lg">
+                    已选择 {selectedItems.length} 个
+                  </span>
+                )}
+              </div>
+              {selectedItems.length > 0 && (
+                <button
+                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium shadow-jelly transition-all duration-300 hover:scale-105 active:scale-95 flex items-center"
+                  onClick={handleBatchDelete}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  删除
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 历史记录列表 */}
+      {/* 历史记录列表 - 果冻感设计 */}
       <PullRefresh loading={refreshing} onRefresh={onRefresh}>
         <List
           loading={loading}
@@ -346,157 +396,163 @@ const History = () => {
           loadingText="加载中..."
         >
           {isLoadingHistory && filteredHistory.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Loading size="24px" className="mb-4" />
-              <p className="text-gray-500">正在加载历史记录...</p>
+            <div className="mx-4">
+              <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50 flex flex-col items-center justify-center py-16">
+                <Loading size="24px" className="mb-4 text-mist-500" />
+                <p className="text-mist-600">正在加载历史记录...</p>
+              </div>
             </div>
           ) : filteredHistory.length === 0 ? (
-            <Empty
-              image={<Calendar className="w-16 h-16 text-gray-400" />}
-              description={
-                searchQuery || filterType !== 'all'
-                  ? '没有找到匹配的创作'
-                  : '还没有创作历史'
-              }
-            >
-              {!searchQuery && filterType === 'all' && (
-                <Button type="primary" size="small" className="mt-4">
-                  开始创作
-                </Button>
-              )}
-            </Empty>
+            <div className="mx-4">
+              <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50 flex flex-col items-center justify-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-mist-100 to-sky-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                  <Calendar className="w-10 h-10 text-mist-500" />
+                </div>
+                <h3 className="text-lg font-bold text-mist-800 mb-2">
+                  {searchQuery || filterType !== 'all'
+                    ? '没有找到匹配的创作'
+                    : '还没有创作历史'}
+                </h3>
+                <p className="text-mist-600 text-center mb-4">
+                  {searchQuery || filterType !== 'all'
+                    ? '试试其他关键词或筛选条件'
+                    : '开始你的第一次创作吧'}
+                </p>
+                {!searchQuery && filterType === 'all' && (
+                  <button className="px-6 py-3 bg-gradient-to-r from-mist-500 to-sky-400 text-white rounded-xl font-medium shadow-jelly transition-all duration-300 hover:scale-105 active:scale-95">
+                    开始创作
+                  </button>
+                )}
+              </div>
+            </div>
           ) : (
-            filteredHistory.map((item) => (
-              <SwipeCell
-                key={item.id}
-                rightAction={
-                  <div className="flex h-full">
-                    <Button
-                      square
-                      type="primary"
-                      text="分享"
-                      className="h-full"
-                      onClick={() => handleShare(item)}
-                    />
-                    <Button
-                      square
-                      type="danger"
-                      text="删除"
-                      className="h-full"
-                      onClick={() => handleDelete(item)}
-                    />
-                  </div>
-                }
-              >
-                <Cell
-                  className="py-3"
-                  onClick={() => {
-                    if (isSelectionMode) {
-                      toggleItemSelection(item.id)
-                    }
-                  }}
-                >
-                  <div className="flex items-start space-x-3">
-                    {/* 选择框 */}
-                    {isSelectionMode && (
-                      <Checkbox
-                        checked={selectedItems.includes(item.id)}
-                        onChange={() => toggleItemSelection(item.id)}
-                        className="mt-1"
-                      />
-                    )}
-                    
-                    {/* 媒体预览 */}
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                      {item.type === 'video' ? (
-                        <div className="relative w-full h-full">
-                          {item.status === 'failed' ? (
-                            <div className="w-full h-full flex items-center justify-center bg-red-50">
-                              <Video className="w-6 h-6 text-red-400" />
-                            </div>
-                          ) : item.url ? (
-                            <>
-                              <video
-                                src={item.url}
-                                className="w-full h-full object-cover"
-                                preload="metadata"
-                                muted
-                                playsInline
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                <Play className="w-4 h-4 text-white" />
-                              </div>
-                            </>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Video className="w-6 h-6 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="relative w-full h-full">
-                          {item.status === 'failed' ? (
-                            <div className="w-full h-full flex items-center justify-center bg-red-50">
-                              <ImageIcon className="w-6 h-6 text-red-400" />
-                            </div>
-                          ) : item.url ? (
-                            <Image
-                              src={item.url}
-                              fit="cover"
-                              className="w-full h-full"
-                              errorIcon={<ImageIcon className="w-6 h-6 text-gray-400" />}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon className="w-6 h-6 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                      )}
+            <div className="space-y-4 px-4">
+              {filteredHistory.map((item) => (
+                <SwipeCell
+                  key={item.id}
+                  rightAction={
+                    <div className="flex h-full">
+                      <button
+                        className="h-full px-6 bg-gradient-to-r from-mist-500 to-sky-400 text-white font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+                        onClick={() => handleShare(item)}
+                      >
+                        分享
+                      </button>
+                      <button
+                        className="h-full px-6 bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+                        onClick={() => handleDelete(item)}
+                      >
+                        删除
+                      </button>
                     </div>
-                    
-                    {/* 内容信息 */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                        {item.prompt || '无提示词'}
-                      </p>
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <span className="flex items-center">
-                          {item.type === 'video' ? (
-                            <Video className="w-3 h-3 mr-1" />
-                          ) : (
-                            <ImageIcon className="w-3 h-3 mr-1" />
-                          )}
-                          {item.type === 'video' ? '视频' : '图片'}
-                        </span>
-                        <span>•</span>
-                        <span>{formatDate(item.createdAt)}</span>
-                        {item.status === 'failed' && (
-                          <>
-                            <span>•</span>
-                            <span className="text-red-500">生成失败</span>
-                          </>
+                  }
+                >
+                  <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-start space-x-3">
+                      {/* 选择框 */}
+                      {isSelectionMode && (
+                        <Checkbox
+                          checked={selectedItems.includes(item.id)}
+                          onChange={() => toggleItemSelection(item.id)}
+                          className="mt-1 text-mist-500"
+                        />
+                      )}
+                      
+                      {/* 媒体预览 */}
+                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-mist-100 to-sky-100 flex-shrink-0 shadow-soft">
+                        {item.type === 'video' ? (
+                          <div className="relative w-full h-full">
+                            {item.status === 'failed' ? (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-100 to-pink-100">
+                                <Video className="w-6 h-6 text-red-500" />
+                              </div>
+                            ) : item.url ? (
+                              <>
+                                <video
+                                  src={item.url}
+                                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                  preload="metadata"
+                                  muted
+                                  playsInline
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                  <Play className="w-4 h-4 text-white" />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Video className="w-6 h-6 text-mist-500" />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-full">
+                            {item.status === 'failed' ? (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-100 to-pink-100">
+                                <ImageIcon className="w-6 h-6 text-red-500" />
+                              </div>
+                            ) : item.url ? (
+                              <Image
+                                src={item.url}
+                                fit="cover"
+                                className="w-full h-full transition-transform duration-300 hover:scale-110"
+                                errorIcon={<ImageIcon className="w-6 h-6 text-mist-500" />}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="w-6 h-6 text-mist-500" />
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
+                      
+                      {/* 内容信息 */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-mist-800 line-clamp-2 mb-2">
+                          {item.prompt || '无提示词'}
+                        </p>
+                        <div className="flex items-center space-x-2 text-xs mb-2">
+                          <span className={`px-3 py-1 font-medium rounded-lg flex items-center ${
+                            item.type === 'video'
+                              ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-600'
+                              : 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-600'
+                          }`}>
+                            {item.type === 'video' ? (
+                              <><Video className="w-3 h-3 mr-1" />视频</>
+                            ) : (
+                              <><ImageIcon className="w-3 h-3 mr-1" />图片</>
+                            )}
+                          </span>
+                          {item.status === 'failed' && (
+                            <span className="px-3 py-1 font-medium rounded-lg bg-gradient-to-r from-red-100 to-pink-100 text-red-600">
+                              ❌ 生成失败
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-mist-600 bg-white/60 px-2 py-1 rounded-lg inline-block">
+                          {formatDate(item.createdAt)}
+                        </p>
+                      </div>
+                      
+                      {/* 操作按钮 */}
+                      {!isSelectionMode && (
+                        <button
+                          className="px-4 py-2 bg-gradient-to-r from-mist-500 to-sky-400 text-white rounded-lg font-medium shadow-soft transition-all duration-300 hover:scale-105 active:scale-95 flex items-center"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setCurrentItem(item)
+                            setActionSheetVisible(true)
+                          }}
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
-                    
-                    {/* 操作按钮 */}
-                    {!isSelectionMode && (
-                      <Button
-                        size="small"
-                        type="default"
-                        icon={<MoreHorizontal className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setCurrentItem(item)
-                          setActionSheetVisible(true)
-                        }}
-                      />
-                    )}
                   </div>
-                </Cell>
-              </SwipeCell>
-            ))
+                </SwipeCell>
+              ))}
+            </div>
           )}
         </List>
       </PullRefresh>

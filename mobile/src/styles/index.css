@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 移动端基础样式 */
+/* 移动端基础样式 - 柔和疗愈风格 */
 @layer base {
   html {
     font-size: 16px;
@@ -17,9 +17,10 @@
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background: linear-gradient(135deg, #fefefe 0%, #faf8ff 50%, #f0f9ff 100%);
+    color: #4a5568;
     overflow-x: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   * {
@@ -29,71 +30,201 @@
   #app {
     min-height: 100vh;
     width: 100%;
+    position: relative;
+  }
+
+  /* 全局滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(242, 235, 235, 0.3);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #b197fc, #7dd3fc);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #9775fa, #38bdf8);
   }
 }
 
-/* 移动端优化样式 */
+/* 移动端优化样式 - 果冻感设计 */
 @layer components {
   .mobile-container {
     max-width: 24rem;
-    @apply mx-auto bg-white min-h-screen relative;
+    @apply mx-auto min-h-screen relative;
+    background: linear-gradient(135deg, #fefefe 0%, #faf8ff 30%, #f0f9ff 100%);
+    backdrop-filter: blur(10px);
   }
 
   .mobile-page {
-    @apply pb-16; /* 为底部导航栏留出空间 */
+    @apply pb-20; /* 为底部导航栏留出空间 */
+    min-height: calc(100vh - 80px);
   }
 
   .mobile-header {
-    @apply sticky top-0 z-40 bg-white border-b border-gray-200;
+    @apply sticky top-0 z-40 border-b-0;
+    background: rgba(254, 254, 254, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(177, 151, 252, 0.1);
+    box-shadow: 0 4px 20px rgba(177, 151, 252, 0.1);
   }
 
   .mobile-content {
-    @apply px-4 py-4;
+    @apply px-4 py-6;
   }
 
-  /* 触摸友好的按钮样式 */
+  /* 触摸友好的按钮样式 - 果冻感 */
   .touch-button {
-    @apply min-h-[44px] px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply min-h-[48px] px-6 py-3 rounded-2xl font-medium;
+    background: linear-gradient(135deg, #b197fc, #7dd3fc);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 32px rgba(177, 151, 252, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
   }
 
-  /* 卡片样式 */
+  .touch-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(177, 151, 252, 0.4);
+  }
+
+  .touch-button:active {
+    animation: jelly 0.6s ease-in-out;
+    transform: translateY(0);
+  }
+
+  /* 卡片样式 - 柔和果冻感 */
   .mobile-card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4;
+    @apply rounded-3xl p-6 mb-6;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(177, 151, 252, 0.1);
+    box-shadow: 0 8px 32px rgba(177, 151, 252, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* 列表项样式 */
+  .mobile-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(177, 151, 252, 0.15);
+  }
+
+  /* 列表项样式 - 现代化设计 */
   .mobile-list-item {
-    @apply flex items-center justify-between py-3 px-4 border-b border-gray-100 last:border-b-0;
+    @apply flex items-center justify-between py-4 px-6 rounded-2xl mb-2;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(177, 151, 252, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-list-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(4px);
+  }
+
+  .mobile-list-item:active {
+    animation: jelly 0.6s ease-in-out;
+  }
+
+  /* 输入框样式 */
+  .mobile-input {
+    @apply w-full px-4 py-3 rounded-2xl border-0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 2px 8px rgba(177, 151, 252, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 3px rgba(177, 151, 252, 0.2), inset 0 2px 8px rgba(177, 151, 252, 0.1);
   }
 }
 
-/* Vant组件样式覆盖 */
+/* Vant组件样式覆盖 - 果冻感主题 */
 @layer utilities {
-  /* 自定义Vant主题色 */
+  /* 自定义Vant主题色 - 柔和色调 */
   :root {
-    --van-primary-color: #3b82f6;
-    --van-success-color: #10b981;
-    --van-warning-color: #f59e0b;
-    --van-danger-color: #ef4444;
-    --van-text-color: #1e293b;
-    --van-text-color-2: #64748b;
-    --van-text-color-3: #94a3b8;
-    --van-border-color: #e2e8f0;
-    --van-background-color: #f8fafc;
-    --van-background-color-light: #ffffff;
+    --van-primary-color: #b197fc;
+    --van-success-color: #7dd3fc;
+    --van-warning-color: #fbbf24;
+    --van-danger-color: #f87171;
+    --van-text-color: #4a5568;
+    --van-text-color-2: #718096;
+    --van-text-color-3: #a0aec0;
+    --van-border-color: rgba(177, 151, 252, 0.1);
+    --van-background-color: rgba(254, 254, 254, 0.8);
+    --van-background-color-light: rgba(255, 255, 255, 0.9);
+    --van-radius-md: 16px;
+    --van-radius-lg: 24px;
   }
 
-  /* 底部导航栏样式调整 */
+  /* 底部导航栏样式调整 - 果冻感设计 */
   .van-tabbar {
-    @apply border-t border-gray-200;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(177, 151, 252, 0.1) !important;
+    box-shadow: 0 -4px 20px rgba(177, 151, 252, 0.1);
+    border-radius: 24px 24px 0 0;
   }
 
   .van-tabbar-item {
     @apply text-xs;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .van-tabbar-item--active {
-    @apply text-primary-500;
+    color: #b197fc !important;
+    transform: translateY(-2px);
+  }
+
+  .van-tabbar-item__icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .van-tabbar-item--active .van-tabbar-item__icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(177, 151, 252, 0.3));
+  }
+
+  /* 按钮组件样式 */
+  .van-button--primary {
+    background: linear-gradient(135deg, #b197fc, #7dd3fc) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(177, 151, 252, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .van-button--primary:active {
+    animation: jelly 0.6s ease-in-out;
+  }
+
+  /* 输入框组件样式 */
+  .van-field__control {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(177, 151, 252, 0.1) !important;
+  }
+
+  .van-field__control:focus {
+    box-shadow: 0 0 0 3px rgba(177, 151, 252, 0.2) !important;
+  }
+
+  /* 弹窗组件样式 */
+  .van-popup {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 24px 24px 0 0 !important;
   }
 
   /* 页面安全区域适配 */

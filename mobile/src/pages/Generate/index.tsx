@@ -153,21 +153,29 @@ const Generate = () => {
 
   return (
     <PageTransition isVisible={isPageVisible} type="fade">
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
         <NavBar 
-          title="AI生成" 
-          className="mobile-header"
-          rightText={<Settings className="w-5 h-5" />}
+          title={
+            <span className="flex items-center justify-center text-mist-800 font-bold">
+              <span className="mr-2 text-2xl animate-bounce-soft">🎨</span>
+              AI生成
+            </span>
+          }
+          className="mobile-header backdrop-blur-md bg-white/80 border-b border-purple-100"
+          rightText={<Settings className="w-5 h-5 text-purple-600" />}
           onClickRight={() => {
             setShowAdvancedSettings(true)
             buttonTap()
           }}
         />
       
-      <div className="mobile-content pb-20">
-        {/* 内容类型选择 */}
-        <div className="mobile-card mb-4">
-          <h3 className="text-lg font-semibold mb-3">生成类型</h3>
+      <div className="mobile-content pb-20 space-y-8">
+        {/* 内容类型选择 - 果冻感设计 */}
+        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+          <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
+            <span className="mr-2 text-xl animate-bounce-soft">🎯</span>
+            生成类型
+          </h3>
           <RadioGroup value={contentType} onChange={setContentType}>
             <div className="flex gap-4">
               <div className="flex-1">
@@ -194,71 +202,100 @@ const Generate = () => {
           </RadioGroup>
         </div>
         
-        {/* 文本输入区域 */}
-        <div className="mobile-card mb-4">
-          <h3 className="text-lg font-semibold mb-3">描述内容</h3>
-          <Field
-            value={prompt}
-            onChange={setPrompt}
-            type="textarea"
-            placeholder={`请描述您想要生成的${contentType === 'image' ? '图片' : '视频'}内容...`}
-            rows={4}
-            maxLength={500}
-            showWordLimit
-            className="mb-3"
-          />
+        {/* 文本输入区域 - 果冻感设计 */}
+        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+          <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
+            <span className="mr-2 text-xl animate-bounce-soft">✍️</span>
+            描述内容
+          </h3>
+          <div className="relative">
+            <Field
+              value={prompt}
+              onChange={setPrompt}
+              type="textarea"
+              placeholder={`请描述您想要生成的${contentType === 'image' ? '图片' : '视频'}内容...`}
+              rows={4}
+              maxLength={500}
+              showWordLimit
+              className="mb-3 mobile-input"
+              style={{
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(177, 151, 252, 0.2)',
+                borderRadius: '16px'
+              }}
+            />
+          </div>
           
-          {/* 快速模板 */}
+          {/* 快速模板 - 果冻感设计 */}
           {templates.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">快速模板</h4>
+              <h4 className="text-sm font-medium text-mist-700 mb-3 flex items-center">
+                <span className="mr-2 text-base animate-bounce-soft">🚀</span>
+                快速模板
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {templates.slice(0, 6).map((template) => (
-                  <Tag
+                  <button
                     key={template.id}
-                    size="medium"
-                    type="primary"
-                    plain
+                    className="px-3 py-2 text-xs font-medium text-mist-700 bg-gradient-to-r from-mist-100/80 to-sky-100/80 border border-mist-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 cursor-pointer"
                     onClick={() => handleUseTemplate(template)}
-                    className="cursor-pointer"
                   >
                     {template.title}
-                  </Tag>
+                  </button>
                 ))}
               </div>
             </div>
           )}
         </div>
         
-        {/* 参数设置 */}
-        <div className="mobile-card mb-4">
-          <h3 className="text-lg font-semibold mb-3">生成设置</h3>
-          <CellGroup inset={false}>
-            <Cell
-              title="尺寸规格"
-              value={selectedSizeText}
-              isLink
-              onClick={() => setShowSizePicker(true)}
-            />
-            <Cell
-              title="艺术风格"
-              value={selectedStyleInfo?.name || '选择风格'}
-              isLink
-              onClick={() => setShowStyleSheet(true)}
-            />
-            <Cell
-              title="高级设置"
-              isLink
-              onClick={() => setShowAdvancedSettings(true)}
-              rightIcon={<Settings className="w-5 h-5" />}
-            />
-          </CellGroup>
+        {/* 参数设置 - 果冻感设计 */}
+        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+          <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
+            <span className="mr-2 text-xl animate-bounce-soft">⚙️</span>
+            生成设置
+          </h3>
+          <div className="space-y-3">
+            <div 
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-mist-50/60 border border-mist-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
+              onClick={() => {
+                setShowSizePicker(true)
+                buttonTap()
+              }}
+            >
+              <span className="font-medium text-mist-800">尺寸规格</span>
+              <span className="text-mist-600 text-sm">{selectedSizeText}</span>
+            </div>
+            <div 
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-purple-50/60 border border-purple-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
+              onClick={() => {
+                setShowStyleSheet(true)
+                buttonTap()
+              }}
+            >
+              <span className="font-medium text-mist-800">艺术风格</span>
+              <span className="text-mist-600 text-sm">{selectedStyleInfo?.name || '选择风格'}</span>
+            </div>
+            <div 
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-pink-50/60 border border-pink-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
+              onClick={() => {
+                setShowAdvancedSettings(true)
+                buttonTap()
+              }}
+            >
+              <span className="font-medium text-mist-800">高级设置</span>
+              <Settings className="w-5 h-5 text-mist-600" />
+            </div>
+          </div>
         </div>
         
-        {/* 最近生成 */}
+        {/* 最近生成 - 果冻感设计 */}
         {history.length > 0 && (
-          <div className="mobile-card mb-4">
-            <h3 className="text-lg font-semibold mb-3">最近生成</h3>
+          <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+            <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
+              <span className="mr-2 text-xl animate-bounce-soft">🕒</span>
+              最近生成
+            </h3>
             <div className="grid grid-cols-3 gap-2">
               {history.slice(0, 6).map((item) => (
                 <div key={item.id} className="aspect-square rounded-lg overflow-hidden">
@@ -276,8 +313,8 @@ const Generate = () => {
           </div>
         )}
         
-        {/* 生成按钮 */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+        {/* 生成按钮 - 果冻感设计 */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 backdrop-blur-md bg-white/90 border-t border-purple-100">
           <LoadingButton
              type="primary"
              size="large"
@@ -286,8 +323,12 @@ const Generate = () => {
              onClick={handleGenerate}
              disabled={!prompt.trim()}
              loadingText="生成中..."
+             className="bg-gradient-to-r from-purple-500 to-pink-500 border-none shadow-lg shadow-purple-200/50 hover:shadow-xl hover:shadow-purple-300/50 transition-all duration-300 transform hover:scale-105"
            >
-             {`生成${contentType === 'image' ? '图片' : '视频'}`}
+             <span className="flex items-center justify-center">
+               <span className="mr-2 text-lg">✨</span>
+               {`生成${contentType === 'image' ? '图片' : '视频'}`}
+             </span>
            </LoadingButton>
         </div>
       </div>
@@ -298,113 +339,167 @@ const Generate = () => {
         onClose={() => setShowSizePicker(false)}
         position="bottom"
         round
+        className="backdrop-blur-md"
       >
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-4 text-center">选择尺寸</h3>
-          <div className="space-y-2">
+        <div className="p-6 bg-gradient-to-br from-white/90 to-mist-50/90 backdrop-blur-md">
+          <h3 className="text-lg font-bold mb-6 text-center text-mist-800 flex items-center justify-center">
+            <span className="mr-2 text-xl animate-bounce-soft">📐</span>
+            选择尺寸
+          </h3>
+          <div className="space-y-3">
             {currentSizeOptions.map((option) => (
               <div
                 key={option.value}
-                className={`p-3 rounded-lg border cursor-pointer ${
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
                   selectedSize === option.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200'
+                    ? 'border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 shadow-lg shadow-purple-200/50'
+                    : 'border-mist-200/50 bg-white/60 hover:border-purple-300 hover:shadow-md'
                 }`}
                 onClick={() => {
                   setSelectedSize(option.value)
                   setShowSizePicker(false)
+                  selection()
                 }}
               >
-                <span className="font-medium">{option.text}</span>
+                <span className="font-medium text-mist-800">{option.text}</span>
               </div>
             ))}
           </div>
         </div>
       </Popup>
       
-      {/* 艺术风格选择 */}
-      <ActionSheet
+      {/* 艺术风格选择 - 果冻感设计 */}
+      <Popup
         visible={showStyleSheet}
         onClose={() => setShowStyleSheet(false)}
-        title="选择艺术风格"
-        cancelText="取消"
+        position="bottom"
+        round
+        className="backdrop-blur-md"
       >
-        <div className="max-h-96 overflow-y-auto">
-          <div className="p-4 space-y-2">
+        <div className="p-6 bg-gradient-to-br from-white/90 to-purple-50/90 backdrop-blur-md">
+          <h3 className="text-lg font-bold mb-6 text-center text-mist-800 flex items-center justify-center">
+            <span className="mr-2 text-xl animate-bounce-soft">🎨</span>
+            选择艺术风格
+          </h3>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
             <div
-              className={`p-3 rounded-lg border cursor-pointer ${
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
                 selectedStyle === null
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200'
+                  ? 'border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 shadow-lg shadow-purple-200/50'
+                  : 'border-mist-200/50 bg-white/60 hover:border-purple-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedStyle(null)
                 setShowStyleSheet(false)
+                selection()
               }}
             >
-              <span className="font-medium">默认风格</span>
+              <div className="font-medium text-mist-800 mb-1">默认风格</div>
+              <div className="text-sm text-mist-600">使用系统默认的艺术风格</div>
             </div>
             {styles.map((style) => (
               <div
                 key={style.id}
-                className={`p-3 rounded-lg border cursor-pointer ${
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
                   selectedStyle === style.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200'
+                    ? 'border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 shadow-lg shadow-purple-200/50'
+                    : 'border-mist-200/50 bg-white/60 hover:border-purple-300 hover:shadow-md'
                 }`}
                 onClick={() => {
                   setSelectedStyle(style.id)
                   setShowStyleSheet(false)
+                  selection()
                 }}
               >
-                <div className="font-medium">{style.name}</div>
+                <div className="font-medium text-mist-800 mb-1">{style.name}</div>
                 {style.description && (
-                  <div className="text-sm text-gray-600 mt-1">{style.description}</div>
+                  <div className="text-sm text-mist-600">{style.description}</div>
                 )}
               </div>
             ))}
           </div>
         </div>
-      </ActionSheet>
+      </Popup>
       
-      {/* 高级设置 */}
+      {/* 高级设置 - 果冻感设计 */}
       <Popup
         visible={showAdvancedSettings}
         onClose={() => setShowAdvancedSettings(false)}
         position="bottom"
         round
+        className="backdrop-blur-md"
       >
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-4 text-center">高级设置</h3>
+        <div className="p-6 bg-gradient-to-br from-white/90 to-pink-50/90 backdrop-blur-md">
+          <h3 className="text-lg font-bold mb-6 text-center text-mist-800 flex items-center justify-center">
+            <span className="mr-2 text-xl animate-bounce-soft">⚙️</span>
+            高级设置
+          </h3>
           <div className="space-y-4">
-            <Field
-              label="生成步数"
-              value={steps.toString()}
-              onChange={(val) => setSteps(Number(val) || 20)}
-              type="number"
-              placeholder="20"
-            />
-            <Field
-              label="引导强度"
-              value={guidance.toString()}
-              onChange={(val) => setGuidance(Number(val) || 7.5)}
-              type="number"
-              placeholder="7.5"
-            />
-            <Field
-              label="随机种子"
-              value={seed}
-              onChange={setSeed}
-              placeholder="留空随机生成"
-            />
+            <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+              <Field
+                label="生成步数"
+                value={steps.toString()}
+                onChange={(val) => setSteps(Number(val) || 20)}
+                type="number"
+                placeholder="20"
+                className="mobile-input"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(177, 151, 252, 0.2)',
+                  borderRadius: '12px'
+                }}
+              />
+              <div className="text-xs text-mist-600 mt-1">推荐值: 20-50，值越高质量越好但耗时更长</div>
+            </div>
+            <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+              <Field
+                label="引导强度"
+                value={guidance.toString()}
+                onChange={(val) => setGuidance(Number(val) || 7.5)}
+                type="number"
+                placeholder="7.5"
+                className="mobile-input"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(177, 151, 252, 0.2)',
+                  borderRadius: '12px'
+                }}
+              />
+              <div className="text-xs text-mist-600 mt-1">推荐值: 5-15，值越高越贴近描述但可能过度拟合</div>
+            </div>
+            <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+              <Field
+                label="随机种子"
+                value={seed}
+                onChange={setSeed}
+                placeholder="留空随机生成"
+                className="mobile-input"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(177, 151, 252, 0.2)',
+                  borderRadius: '12px'
+                }}
+              />
+              <div className="text-xs text-mist-600 mt-1">使用相同种子可以重现相似结果</div>
+            </div>
           </div>
           <div className="mt-6">
             <Button
               type="primary"
               block
-              onClick={() => setShowAdvancedSettings(false)}
+              onClick={() => {
+                setShowAdvancedSettings(false)
+                buttonTap()
+              }}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 border-none shadow-lg shadow-purple-200/50 hover:shadow-xl hover:shadow-purple-300/50 transition-all duration-300 transform hover:scale-105"
             >
-              确定
+              <span className="flex items-center justify-center">
+                <span className="mr-2 text-base">✅</span>
+                确定
+              </span>
             </Button>
           </div>
         </div>

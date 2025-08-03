@@ -2,43 +2,49 @@ import React from 'react'
 import { Tabbar, TabbarItem } from 'react-vant'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useMobileStore } from '../../store'
+import { Home, Sparkles, BookOpen, Clock, User } from 'lucide-react'
 
 const TabBar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTab, setActiveTab } = useMobileStore()
 
-  // 定义底部导航栏的配置
+  // 定义底部导航栏的配置 - 使用Lucide图标
   const tabs = [
     {
       key: 'home',
       title: '首页',
-      icon: 'home-o',
-      path: '/home'
+      icon: Home,
+      path: '/home',
+      gradient: 'from-mist-400 to-sky-400'
     },
     {
       key: 'generate',
       title: '生成',
-      icon: 'photo-o',
-      path: '/generate'
+      icon: Sparkles,
+      path: '/generate',
+      gradient: 'from-mist-500 to-mist-300'
     },
     {
       key: 'templates',
       title: '模板',
-      icon: 'apps-o',
-      path: '/templates'
+      icon: BookOpen,
+      path: '/templates',
+      gradient: 'from-sky-400 to-mist-400'
     },
     {
       key: 'history',
       title: '历史',
-      icon: 'clock-o',
-      path: '/history'
+      icon: Clock,
+      path: '/history',
+      gradient: 'from-mist-300 to-sky-300'
     },
     {
       key: 'profile',
       title: '我的',
-      icon: 'user-o',
-      path: '/profile'
+      icon: User,
+      path: '/profile',
+      gradient: 'from-sky-300 to-mist-500'
     }
   ]
 
@@ -68,25 +74,55 @@ const TabBar = () => {
   }, [location.pathname, activeTab, setActiveTab])
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
-      <Tabbar 
-        value={activeTab} 
-        onChange={handleTabChange}
-        className="mobile-tabbar"
-        activeColor="#3B82F6"
-        inactiveColor="#6B7280"
-      >
-        {tabs.map(tab => (
-          <TabbarItem 
-            key={tab.key} 
-            name={tab.key} 
-            icon={tab.icon}
-            className="mobile-tabbar-item"
-          >
-            {tab.title}
-          </TabbarItem>
-        ))}
-      </Tabbar>
+    <div className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
+      <div className="bg-white/80 backdrop-blur-xl border-t border-mist-200/30 rounded-t-3xl shadow-mist">
+        <div className="flex items-center justify-around py-2 px-4">
+          {tabs.map(tab => {
+            const IconComponent = tab.icon
+            const isActive = activeTab === tab.key
+            
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleTabChange(tab.key)}
+                className={`flex flex-col items-center justify-center py-3 px-4 rounded-2xl transition-all duration-300 ease-out min-w-[60px] ${
+                  isActive 
+                    ? 'transform -translate-y-1 scale-105' 
+                    : 'hover:scale-105'
+                }`}
+                style={{
+                  animation: isActive ? 'jelly 0.6s ease-in-out' : 'none'
+                }}
+              >
+                <div className={`p-2 rounded-xl mb-1 transition-all duration-300 ${
+                  isActive 
+                    ? `bg-gradient-to-r ${tab.gradient} shadow-jelly` 
+                    : 'bg-cream-100/50'
+                }`}>
+                  <IconComponent 
+                    size={20} 
+                    className={`transition-all duration-300 ${
+                      isActive 
+                        ? 'text-white drop-shadow-sm' 
+                        : 'text-mist-400'
+                    }`}
+                  />
+                </div>
+                <span className={`text-xs font-medium transition-all duration-300 ${
+                  isActive 
+                    ? 'text-mist-600 font-semibold' 
+                    : 'text-mist-400'
+                }`}>
+                  {tab.title}
+                </span>
+                {isActive && (
+                  <div className="absolute -bottom-1 w-1 h-1 bg-gradient-to-r from-mist-400 to-sky-400 rounded-full animate-pulse-soft" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

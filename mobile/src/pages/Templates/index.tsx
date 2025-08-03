@@ -200,11 +200,16 @@ const Templates: React.FC = () => {
 
   return (
     <PageTransition isVisible={isPageVisible} type="fade">
-      <div ref={swipeRef} className="min-h-screen bg-gray-50">
+      <div ref={swipeRef} className="min-h-screen bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
         <NavBar 
-          title="模板库" 
-          className="mobile-header"
-          rightText={<SearchIcon className="w-5 h-5" />}
+          title={
+            <span className="flex items-center justify-center text-mist-800 font-bold">
+              <span className="mr-2 text-2xl animate-bounce-soft">📚</span>
+              模板库
+            </span>
+          }
+          className="mobile-header backdrop-blur-md bg-white/80 border-b border-mist-100"
+          rightText={<SearchIcon className="w-5 h-5 text-mist-600" />}
           onClickRight={() => {
             setShowSearch(!showSearch)
             buttonTap()
@@ -212,33 +217,48 @@ const Templates: React.FC = () => {
         />
       
       <PullRefresh loading={refreshing} onRefresh={onRefresh}>
-        <div className="mobile-content pb-20">
-          {/* 搜索框 */}
+        <div className="mobile-content pb-20 space-y-6">
+          {/* 搜索框 - 果冻感设计 */}
           {showSearch && (
-            <div className="p-4 bg-white mb-2">
-              <Search
-                value={searchQuery}
-                placeholder="搜索模板..."
-                onSearch={handleSearch}
-                onChange={setSearchQuery}
-                onClear={() => setSearchQuery('')}
-              />
+            <div className="mx-4 mt-4">
+              <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+                <Search
+                  value={searchQuery}
+                  placeholder="搜索模板..."
+                  onSearch={handleSearch}
+                  onChange={setSearchQuery}
+                  onClear={() => setSearchQuery('')}
+                  className="mobile-input"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(177, 151, 252, 0.2)',
+                    borderRadius: '16px'
+                  }}
+                />
+              </div>
             </div>
           )}
 
-          {/* 热门模板 */}
+          {/* 热门模板 - 果冻感设计 */}
           {!searchQuery && popularTemplates.length > 0 && (
-            <div className="bg-white mb-2">
-              <div className="p-4 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">🔥 热门模板</h3>
-              </div>
-              <div className="p-4">
-                <Grid columns={2} gutter={12}>
+            <div className="mx-4">
+              <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-mist-800 flex items-center">
+                    <span className="mr-3 text-2xl animate-bounce-soft">🔥</span>
+                    热门模板
+                  </h3>
+                </div>
+                <Grid columns={2} gutter={16}>
                   {popularTemplates.map((template) => (
                     <GridItem key={template.id}>
                       <div 
-                        className="relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100"
-                        onClick={() => handleTemplateDetail(template)}
+                        className="relative bg-gradient-to-br from-white/90 to-mist-50/90 rounded-2xl overflow-hidden border border-mist-200/30 shadow-soft backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-jelly cursor-pointer"
+                        onClick={() => {
+                          handleTemplateDetail(template)
+                          buttonTap()
+                        }}
                       >
                         <div className="relative aspect-video">
                           <Image
@@ -248,22 +268,24 @@ const Templates: React.FC = () => {
                             className="w-full h-full"
                             loading={<Loading className="w-8 h-8" />}
                           />
-                          <div className="absolute top-2 right-2">
-                            <Tag color="#ff6b6b" size="small">
+                          <div className="absolute top-3 right-3">
+                            <div className="px-2 py-1 bg-gradient-to-r from-red-400 to-pink-400 text-white text-xs font-bold rounded-full shadow-md">
                               热门
-                            </Tag>
+                            </div>
                           </div>
+                          {/* 渐变遮罩 */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                         </div>
-                        <div className="p-3">
-                          <h4 className="text-sm font-medium text-gray-900 mb-1 line-clamp-1">
+                        <div className="p-4">
+                          <h4 className="text-sm font-semibold text-mist-800 mb-2 line-clamp-1">
                             {template.title}
                           </h4>
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span className="flex items-center">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="flex items-center text-mist-600">
                               <Eye className="w-3 h-3 mr-1" />
                               {template.views}
                             </span>
-                            <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                            <span className="px-2 py-1 bg-gradient-to-r from-sky-100 to-mist-100 text-sky-700 rounded-lg font-medium">
                               {template.type === 'image' ? '图片' : '视频'}
                             </span>
                           </div>
@@ -276,58 +298,120 @@ const Templates: React.FC = () => {
             </div>
           )}
 
-          {/* 分类标签 */}
-          <div className="bg-white mb-2">
-            <Tabs 
-              active={activeCategory} 
-              onChange={setActiveCategory}
-              scrollable
-              className="template-tabs"
-            >
-              {categoryTabs.map((category) => (
-                <Tabs.TabPane key={category.id} title={category.name} name={category.id} />
-              ))}
-            </Tabs>
+          {/* 分类标签 - 果冻感设计 */}
+          <div className="mx-4">
+            <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+              <h3 className="text-lg font-bold text-mist-800 mb-4 flex items-center">
+                <span className="mr-2 text-xl animate-bounce-soft">🏷️</span>
+                分类筛选
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {categoryTabs.map((category) => (
+                  <button
+                    key={category.id}
+                    className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
+                      activeCategory === category.id
+                        ? 'bg-gradient-to-r from-mist-500 to-sky-400 text-white shadow-jelly'
+                        : 'bg-gradient-to-r from-mist-100/80 to-sky-100/80 text-mist-700 border border-mist-200/50 hover:shadow-md'
+                    }`}
+                    onClick={() => {
+                      setActiveCategory(category.id)
+                      selection()
+                    }}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* 模板列表 */}
-          <div className="bg-white">
-            {loading || isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loading className="w-8 h-8" />
-                <span className="ml-2 text-gray-600">加载中...</span>
-              </div>
-            ) : filteredTemplates.length === 0 ? (
-              <div className="py-20">
-                <Empty description={searchQuery ? '未找到相关模板' : '暂无模板'} />
-                {searchQuery && (
-                  <div className="text-center mt-4">
-                    <Button 
-                      size="small" 
-                      type="primary" 
+          {/* 模板列表 - 果冻感设计 */}
+          <div className="mx-4">
+            <div className="mobile-card backdrop-blur-md bg-white/80 border border-mist-200/50">
+              {loading || isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-16 h-16 bg-gradient-to-r from-mist-200 to-sky-200 rounded-full animate-pulse mb-4" />
+                  <span className="text-mist-600 font-medium">加载中...</span>
+                </div>
+              ) : filteredTemplates.length === 0 ? (
+                <div className="py-20 text-center">
+                  <div className="text-6xl mb-4 animate-bounce-soft">📭</div>
+                  <div className="text-mist-600 mb-4">
+                    {searchQuery ? '未找到相关模板' : '暂无模板'}
+                  </div>
+                  {searchQuery && (
+                    <button 
+                      className="px-6 py-3 bg-gradient-to-r from-mist-500 to-sky-400 text-white rounded-xl font-medium shadow-jelly transition-all duration-300 hover:scale-105 active:scale-95"
                       onClick={() => {
                         setSearchQuery('')
                         setShowSearch(false)
+                        buttonTap()
                       }}
                     >
                       清除搜索
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="p-4">
-                <Grid columns={2} gutter={12}>
-                  {filteredTemplates.map((template, index) => (
-                    <GridItem key={template.id}>
-                      <ListItemTransition index={index}>
-                        <TemplateCard template={template} index={index} />
-                      </ListItemTransition>
-                    </GridItem>
-                  ))}
-                </Grid>
-              </div>
-            )}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-lg font-bold text-mist-800 mb-6 flex items-center">
+                    <span className="mr-2 text-xl animate-bounce-soft">🎨</span>
+                    模板列表
+                    <span className="ml-2 px-2 py-1 bg-gradient-to-r from-mist-100 to-sky-100 text-mist-600 text-sm rounded-lg">
+                      {filteredTemplates.length}
+                    </span>
+                  </h3>
+                  <Grid columns={2} gutter={16}>
+                    {filteredTemplates.map((template, index) => (
+                      <GridItem key={template.id}>
+                        <ListItemTransition index={index}>
+                          <div 
+                            className="relative bg-gradient-to-br from-white/90 to-mist-50/90 rounded-2xl overflow-hidden border border-mist-200/30 shadow-soft backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-jelly cursor-pointer"
+                            onClick={() => {
+                              handleTemplateDetail(template)
+                              buttonTap()
+                            }}
+                          >
+                            <div className="relative aspect-video">
+                              <Image
+                                src={template.preview}
+                                alt={template.title}
+                                fit="cover"
+                                className="w-full h-full"
+                                loading={<Loading className="w-8 h-8" />}
+                              />
+                              {template.isPopular && (
+                                <div className="absolute top-3 right-3">
+                                  <div className="px-2 py-1 bg-gradient-to-r from-red-400 to-pink-400 text-white text-xs font-bold rounded-full shadow-md">
+                                    热门
+                                  </div>
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                            </div>
+                            <div className="p-4">
+                              <h4 className="text-sm font-semibold text-mist-800 mb-2 line-clamp-1">
+                                {template.title}
+                              </h4>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center text-mist-600">
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  {template.views}
+                                </span>
+                                <span className="px-2 py-1 bg-gradient-to-r from-sky-100 to-mist-100 text-sky-700 rounded-lg font-medium">
+                                  {template.type === 'image' ? '图片' : '视频'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </ListItemTransition>
+                      </GridItem>
+                    ))}
+                  </Grid>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </PullRefresh>
