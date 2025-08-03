@@ -17,13 +17,12 @@ import Layout from './components/common/Layout'
 import ErrorBoundary from './components/common/ErrorBoundary'
 
 // 状态管理
-import { useUserStore, useMobileStore, useNetworkStore } from './store'
+import { useUserStore, useMobileStore } from './store'
 import { getDeviceInfo, getNetworkStatus } from './utils'
 
 const App = () => {
   const { checkAuth } = useUserStore()
-  const { setDeviceInfo } = useMobileStore()
-  const { setOnline, setNetworkType } = useNetworkStore()
+  const { setDeviceInfo, setNetworkStatus } = useMobileStore()
 
   // 应用初始化
   // @ts-ignore
@@ -39,14 +38,11 @@ const App = () => {
         
         // 设置网络状态
         const networkStatus = getNetworkStatus()
-        setOnline(networkStatus.isOnline)
-        if (networkStatus.effectiveType) {
-          setNetworkType(networkStatus.effectiveType)
-        }
+        setNetworkStatus(networkStatus)
         
         // 监听网络状态变化
-        const handleOnline = () => setOnline(true)
-        const handleOffline = () => setOnline(false)
+        const handleOnline = () => setNetworkStatus({ ...getNetworkStatus(), isOnline: true })
+        const handleOffline = () => setNetworkStatus({ ...getNetworkStatus(), isOnline: false })
         
         window.addEventListener('online', handleOnline)
         window.addEventListener('offline', handleOffline)
@@ -55,7 +51,7 @@ const App = () => {
         const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
         if (connection) {
           const handleConnectionChange = () => {
-            setNetworkType(connection.effectiveType || 'unknown')
+            setNetworkStatus(getNetworkStatus())
           }
           connection.addEventListener('change', handleConnectionChange)
           
@@ -76,7 +72,7 @@ const App = () => {
     }
 
     initializeApp()
-  }, [checkAuth, setDeviceInfo, setOnline, setNetworkType])
+  }, [checkAuth, setDeviceInfo, setNetworkStatus])
 
   return (
     <ErrorBoundary>

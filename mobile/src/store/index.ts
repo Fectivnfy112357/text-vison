@@ -132,6 +132,8 @@ interface TemplateState {
   searchQuery: string
   isLoading: boolean
   fetchTemplates: (categoryId?: string, searchQuery?: string) => Promise<void>
+  fetchCategories: () => Promise<void>
+  searchTemplates: (query: string, categoryId?: string) => Promise<void>
   setSelectedCategory: (categoryId: string) => void
   setSearchQuery: (query: string) => void
   loadCategories: () => Promise<void>
@@ -523,6 +525,57 @@ export const useTemplateStore = create<TemplateState>()(
               categoryId
             );
           }
+          
+          const templates = templatesData.records
+            .filter((template: any) => template && typeof template === 'object')
+            .map((template: any) => ({
+              id: template.id ? template.id.toString() : 'unknown',
+              title: template.title || '未命名模板',
+              description: template.description || '暂无描述',
+              prompt: template.prompt || '',
+              categoryId: template.categoryId || template.category || '其他',
+              tags: template.tags ? template.tags.split(',').filter(Boolean) : [],
+              imageUrl: template.imageUrl || template.preview || '/placeholder-template.png',
+              preview: template.preview || template.imageUrl || '/placeholder-template.png',
+              type: template.type || 'image',
+              style: template.style || '默认风格',
+              size: template.size || 'landscape_16_9',
+              views: template.usageCount || 0,
+              isPopular: template.isPopular || false
+            }));
+          
+          set({ 
+            templates,
+            isLoading: false 
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      fetchCategories: async () => {
+        try {
+          const { templateCategoryAPI } = await import('../lib/api');
+          const categoriesData = await templateCategoryAPI.getAllCategories();
+          const categories = [{ id: 0, name: '全部' }, ...categoriesData];
+          set({ categories });
+        } catch (error) {
+          console.error('加载分类失败:', error);
+          throw error;
+        }
+      },
+
+      searchTemplates: async (query: string, categoryId?: string) => {
+        set({ isLoading: true });
+        try {
+          const { templateAPI } = await import('../lib/api');
+          const templatesData = await templateAPI.searchTemplates(
+            query.trim(),
+            1,
+            100,
+            categoryId
+          );
           
           const templates = templatesData.records
             .filter((template: any) => template && typeof template === 'object')
