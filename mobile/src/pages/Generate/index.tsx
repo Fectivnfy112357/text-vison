@@ -19,7 +19,7 @@ import {
   Tag
 } from 'react-vant'
 import { useGenerationStore, useArtStyleStore, useTemplateStore } from '../../store'
-import { Play, Image as ImageIcon, Settings, Palette, Download, Share2 } from 'lucide-react'
+import { Play, Image as ImageIcon, Settings, Palette, Download, Share2, ChevronRight, Sparkles } from 'lucide-react'
 import ShareModal from '../../components/common/ShareModal'
 import { useGestures, usePinchGesture } from '../../hooks/useGestures'
 import { useHapticFeedback } from '../../utils/haptics'
@@ -153,47 +153,85 @@ const Generate = () => {
 
   return (
     <PageTransition isVisible={isPageVisible} type="fade">
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
+      <div className="min-h-screen bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
         <NavBar 
           title={
             <span className="flex items-center justify-center text-mist-800 font-bold">
               <span className="mr-2 text-2xl animate-bounce-soft">🎨</span>
-              AI生成
+              AI创作工坊
             </span>
           }
-          className="mobile-header backdrop-blur-md bg-white/80 border-b border-purple-100"
-          rightText={<Settings className="w-5 h-5 text-purple-600" />}
+          className="mobile-header backdrop-blur-md bg-white/80 border-b border-mist-100 shadow-soft"
+          rightText={<Settings className="w-5 h-5 text-mist-600" />}
           onClickRight={() => {
             setShowAdvancedSettings(true)
             buttonTap()
           }}
         />
       
-      <div className="mobile-content pb-20 space-y-8">
-        {/* 内容类型选择 - 果冻感设计 */}
-        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+      <div className="mobile-content pb-20 space-y-6">
+        {/* 创作灵感区域 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
+          <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
+            <span className="mr-2 text-xl animate-bounce-soft">💡</span>
+            创作灵感
+          </h3>
+          <p className="text-sm text-mist-600 mb-4 leading-relaxed">
+            描述您想要创作的内容，AI将为您生成精美的视觉作品
+          </p>
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {['梦幻森林', '未来城市', '可爱动物', '抽象艺术'].map((tag, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-1 bg-mist-100 text-mist-700 rounded-full text-xs font-medium hover:bg-mist-200 transition-colors"
+                  onClick={() => setPrompt(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 内容类型选择 - 重新设计 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
           <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
             <span className="mr-2 text-xl animate-bounce-soft">🎯</span>
-            生成类型
+            创作类型
           </h3>
           <RadioGroup value={contentType} onChange={setContentType}>
-            <div className="flex gap-4">
-              <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative">
                 <Radio name="image" className="w-full">
-                  <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                  <div className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                    contentType === 'image' 
+                      ? 'border-mist-300 bg-mist-50 shadow-jelly' 
+                      : 'border-mist-200 bg-white hover:border-mist-300'
+                  }`}>
                     <div className="text-center">
-                      <ImageIcon className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                      <span className="text-sm font-medium">图片生成</span>
+                      <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-sky-100 to-mist-100 rounded-xl flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-sky-600" />
+                      </div>
+                      <span className="text-sm font-semibold text-mist-800">图片生成</span>
+                      <p className="text-xs text-mist-600 mt-1">高质量图像创作</p>
                     </div>
                   </div>
                 </Radio>
               </div>
-              <div className="flex-1">
+              <div className="relative">
                 <Radio name="video" className="w-full">
-                  <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                  <div className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                    contentType === 'video' 
+                      ? 'border-mist-300 bg-mist-50 shadow-jelly' 
+                      : 'border-mist-200 bg-white hover:border-mist-300'
+                  }`}>
                     <div className="text-center">
-                      <Play className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                      <span className="text-sm font-medium">视频生成</span>
+                      <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-mist-100 to-sky-100 rounded-xl flex items-center justify-center">
+                        <Play className="w-6 h-6 text-mist-600" />
+                      </div>
+                      <span className="text-sm font-semibold text-mist-800">视频生成</span>
+                      <p className="text-xs text-mist-600 mt-1">动态视频创作</p>
                     </div>
                   </div>
                 </Radio>
@@ -202,11 +240,11 @@ const Generate = () => {
           </RadioGroup>
         </div>
         
-        {/* 文本输入区域 - 果冻感设计 */}
-        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+        {/* 文本输入区域 - 重新设计 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
           <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
             <span className="mr-2 text-xl animate-bounce-soft">✍️</span>
-            描述内容
+            创作描述
           </h3>
           <div className="relative">
             <Field
@@ -249,52 +287,79 @@ const Generate = () => {
           )}
         </div>
         
-        {/* 参数设置 - 果冻感设计 */}
-        <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+        {/* 参数设置 - 重新设计 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
           <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
             <span className="mr-2 text-xl animate-bounce-soft">⚙️</span>
-            生成设置
+            创作参数
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div 
-              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-mist-50/60 border border-mist-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-mist-50 to-sky-50 border border-mist-200 rounded-xl transition-all duration-300 hover:shadow-jelly hover:scale-[1.02] cursor-pointer"
               onClick={() => {
                 setShowSizePicker(true)
                 buttonTap()
               }}
             >
-              <span className="font-medium text-mist-800">尺寸规格</span>
-              <span className="text-mist-600 text-sm">{selectedSizeText}</span>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-sm">📐</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-mist-800 text-sm">尺寸规格</span>
+                  <p className="text-xs text-mist-600">选择输出尺寸</p>
+                </div>
+              </div>
+              <span className="text-mist-700 text-sm font-medium">{selectedSizeText}</span>
             </div>
             <div 
-              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-purple-50/60 border border-purple-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-mist-50 to-cream-50 border border-mist-200 rounded-xl transition-all duration-300 hover:shadow-jelly hover:scale-[1.02] cursor-pointer"
               onClick={() => {
                 setShowStyleSheet(true)
                 buttonTap()
               }}
             >
-              <span className="font-medium text-mist-800">艺术风格</span>
-              <span className="text-mist-600 text-sm">{selectedStyleInfo?.name || '选择风格'}</span>
-            </div>
-            <div 
-              className="flex items-center justify-between p-4 bg-gradient-to-r from-white/60 to-pink-50/60 border border-pink-200/50 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-pointer"
-              onClick={() => {
-                setShowAdvancedSettings(true)
-                buttonTap()
-              }}
-            >
-              <span className="font-medium text-mist-800">高级设置</span>
-              <Settings className="w-5 h-5 text-mist-600" />
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-mist-100 rounded-lg flex items-center justify-center mr-3">
+                  <Palette className="w-4 h-4 text-mist-600" />
+                </div>
+                <div>
+                  <span className="font-semibold text-mist-800 text-sm">艺术风格</span>
+                  <p className="text-xs text-mist-600">选择创作风格</p>
+                </div>
+              </div>
+              <span className="text-mist-700 text-sm font-medium">{selectedStyleInfo?.name || '默认风格'}</span>
             </div>
           </div>
         </div>
         
+        {/* 高级设置 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
+          <div 
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-mist-50 to-purple-50 border border-mist-200 rounded-xl transition-all duration-300 hover:shadow-jelly hover:scale-[1.02] cursor-pointer"
+            onClick={() => {
+              setShowAdvancedSettings(true)
+              buttonTap()
+            }}
+          >
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                <Settings className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <span className="font-semibold text-mist-800 text-sm">高级设置</span>
+                <p className="text-xs text-mist-600">调整生成参数</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* 最近生成 - 果冻感设计 */}
         {history.length > 0 && (
-          <div className="mobile-card backdrop-blur-md bg-white/80 border border-purple-100 shadow-lg shadow-purple-100/50">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
             <h3 className="text-lg font-bold mb-4 text-mist-800 flex items-center">
               <span className="mr-2 text-xl animate-bounce-soft">🕒</span>
-              最近生成
+              最近创作
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {history.slice(0, 6).map((item) => (
@@ -313,8 +378,8 @@ const Generate = () => {
           </div>
         )}
         
-        {/* 生成按钮 - 果冻感设计 */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 backdrop-blur-md bg-white/90 border-t border-purple-100">
+        {/* 生成按钮 - 重新设计 */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 backdrop-blur-md bg-white/90 border-t border-mist-100">
           <LoadingButton
              type="primary"
              size="large"
@@ -322,12 +387,12 @@ const Generate = () => {
              loading={isGenerating}
              onClick={handleGenerate}
              disabled={!prompt.trim()}
-             loadingText="生成中..."
-             className="bg-gradient-to-r from-purple-500 to-pink-500 border-none shadow-lg shadow-purple-200/50 hover:shadow-xl hover:shadow-purple-300/50 transition-all duration-300 transform hover:scale-105"
+             loadingText="创作中..."
+             className="bg-gradient-to-r from-mist-400 to-sky-400 border-none shadow-jelly hover:shadow-xl transition-all duration-300 transform hover:scale-105"
            >
              <span className="flex items-center justify-center">
                <span className="mr-2 text-lg">✨</span>
-               {`生成${contentType === 'image' ? '图片' : '视频'}`}
+               {`开始创作${contentType === 'image' ? '图片' : '视频'}`}
              </span>
            </LoadingButton>
         </div>

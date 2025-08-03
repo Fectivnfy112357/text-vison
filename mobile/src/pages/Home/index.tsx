@@ -1,9 +1,10 @@
 
 import React from 'react'
-import { Button, Swiper, Grid, GridItem, Popup, Toast } from 'react-vant'
+import { Button, Swiper, Grid, GridItem, Popup, Toast, Cell, CellGroup, Tag, Space } from 'react-vant'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store'
 import AuthModal from '../../components/common/AuthModal'
+import { Sparkles, Zap, Heart, Users, Star, ArrowRight, Play, Image as ImageIcon } from 'lucide-react'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -19,29 +20,73 @@ const Home = () => {
       title: '文生视界',
       subtitle: 'AI驱动的创意生成平台',
       description: '让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品',
-      gradient: 'from-purple-600 via-blue-600 to-pink-600',
-      icon: '✨'
+      icon: '✨',
+      bgColor: 'from-mist-200 via-sky-100 to-cream-100'
     },
     {
       title: 'AI智能生成',
       subtitle: '先进的AI技术驱动',
       description: '将您的文字描述转化为精美的视觉作品，释放无限创意潜能',
-      gradient: 'from-blue-500 via-purple-500 to-indigo-600',
-      icon: '🎨'
+      icon: '🎨',
+      bgColor: 'from-sky-100 via-mist-100 to-cream-200'
     },
     {
       title: '高质量输出',
       subtitle: '专业级别的创作体验',
       description: '生成高分辨率图片和动态视频，满足各种创作需求',
-      gradient: 'from-pink-500 via-rose-500 to-purple-600',
-      icon: '🚀'
+      icon: '🚀',
+      bgColor: 'from-cream-100 via-mist-200 to-sky-100'
     },
     {
       title: '快速便捷',
       subtitle: '秒级响应，即时创作',
       description: '快速生成精美作品，让创意不再等待，随时随地开始创作',
-      gradient: 'from-green-500 via-teal-500 to-blue-600',
-      icon: '⚡'
+      icon: '⚡',
+      bgColor: 'from-mist-100 via-cream-100 to-sky-200'
+    }
+  ]
+
+  // 产品亮点数据
+  const highlights = [
+    {
+      icon: <Sparkles className="w-6 h-6 text-mist-600" />,
+      title: '智能创作',
+      description: '先进AI算法，理解您的创意意图'
+    },
+    {
+      icon: <Zap className="w-6 h-6 text-sky-600" />,
+      title: '极速生成',
+      description: '秒级响应，即时获得创作结果'
+    },
+    {
+      icon: <Heart className="w-6 h-6 text-pink-500" />,
+      title: '用户友好',
+      description: '简单易用，人人都能成为创作者'
+    }
+  ]
+
+  // 用户评价数据
+  const testimonials = [
+    {
+      name: '小李',
+      role: '设计师',
+      content: '文生视界让我的创作效率提升了10倍，真的太棒了！',
+      avatar: '👨‍🎨',
+      rating: 5
+    },
+    {
+      name: '小王',
+      role: '内容创作者',
+      content: '生成的图片质量超出预期，完全满足我的需求。',
+      avatar: '👩‍💼',
+      rating: 5
+    },
+    {
+      name: '小张',
+      role: '学生',
+      content: '操作简单，效果惊艳，推荐给所有朋友！',
+      avatar: '👨‍🎓',
+      rating: 5
     }
   ]
 
@@ -118,58 +163,133 @@ const Home = () => {
   }, [banners.length])
 
   return (
-    <div className="min-h-screen">
-      {/* 产品介绍轮播区域 - 果冻感设计 */}
-      <div className="mb-8">
-        <Swiper 
-          autoplay={4000} 
-          className="rounded-none"
-          onChange={(index) => setCurrentBanner(index)}
-        >
-          {banners.map((banner, index) => (
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+      {/* 品牌头部区域 - 官网特色 */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-mist-100/80 via-sky-50/60 to-cream-100/80" />
+        <div className="absolute top-8 right-8 w-32 h-32 bg-mist-200/30 rounded-full animate-float" />
+        <div className="absolute bottom-12 left-8 w-20 h-20 bg-sky-200/40 rounded-full animate-float" style={{ animationDelay: '2s' }} />
+        
+        <div className="relative z-10 px-6 py-12 text-center">
+          <div className="mb-6">
+            <div className="text-6xl mb-4 animate-bounce-soft">✨</div>
+            <h1 className="text-3xl font-bold text-mist-800 mb-3">文生视界</h1>
+            <p className="text-lg text-mist-600 font-medium mb-2">AI驱动的创意生成平台</p>
+            <p className="text-sm text-mist-500 leading-relaxed max-w-sm mx-auto">
+              让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品
+            </p>
+          </div>
+          
+          {/* 快速体验按钮 */}
+          <button 
+            className="inline-flex items-center px-8 py-4 rounded-full font-semibold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95 shadow-jelly"
+            style={{
+              background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)'
+            }}
+            onClick={handleQuickGenerate}
+          >
+            <Play className="w-5 h-5 mr-2" />
+            <span>立即体验</span>
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </div>
+
+      {/* 产品亮点区域 */}
+      <div className="px-4 py-8">
+        <h2 className="text-xl font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
+          <Sparkles className="w-6 h-6 mr-2 text-mist-600" />
+          产品亮点
+        </h2>
+        <div className="grid grid-cols-1 gap-4">
+          {highlights.map((highlight, index) => (
             <div 
-              key={index} 
-              className="h-64 relative overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, rgba(177, 151, 252, 0.8) 0%, rgba(125, 211, 252, 0.6) 50%, rgba(254, 254, 254, 0.9) 100%)`
-              }}
+              key={index}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft hover:shadow-jelly transition-all duration-300 hover:scale-105"
             >
-              {/* 背景装饰 - 柔和圆形 */}
-              <div className="absolute inset-0">
-                <div className="absolute top-8 right-8 w-24 h-24 bg-white/20 rounded-full animate-float" />
-                <div className="absolute bottom-12 left-8 w-16 h-16 bg-mist-300/30 rounded-full animate-float" style={{ animationDelay: '2s' }} />
-                <div className="absolute top-1/2 left-1/3 w-8 h-8 bg-sky-300/40 rounded-full animate-float" style={{ animationDelay: '4s' }} />
-              </div>
-              
-              {/* 内容 */}
-              <div className="relative z-10 flex flex-col justify-center items-center h-full text-center px-8">
-                <div className="text-4xl mb-4 animate-bounce-soft">{banner.icon}</div>
-                <h2 className="text-2xl font-bold mb-3 text-mist-800">{banner.title}</h2>
-                <p className="text-lg text-mist-600 mb-3 font-medium">{banner.subtitle}</p>
-                <p className="text-sm text-mist-500 leading-relaxed max-w-xs opacity-90">
-                  {banner.description}
-                </p>
-              </div>
-              
-              {/* 指示器 - 果冻感设计 */}
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
-                {banners.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                      i === currentBanner 
-                        ? 'bg-white shadow-jelly scale-125' 
-                        : 'bg-white/40 hover:bg-white/60'
-                    }`}
-                    style={{
-                      animation: i === currentBanner ? 'pulse-soft 2s infinite' : 'none'
-                    }}
-                  />
-                ))}
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-mist-100 to-sky-100 rounded-xl flex items-center justify-center">
+                  {highlight.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-mist-800 mb-2">{highlight.title}</h3>
+                  <p className="text-sm text-mist-600 leading-relaxed">{highlight.description}</p>
+                </div>
               </div>
             </div>
           ))}
-        </Swiper>
+        </div>
+      </div>
+
+      {/* 核心功能展示区域 */}
+      <div className="px-4 py-8">
+        <h2 className="text-xl font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
+          <ImageIcon className="w-6 h-6 mr-2 text-sky-600" />
+          核心功能
+        </h2>
+        <div className="grid grid-cols-2 gap-4">
+          {features.map((feature, index) => (
+            <button
+              key={index}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft hover:shadow-jelly transition-all duration-300 hover:scale-105 active:scale-95 text-left"
+              onClick={feature.action}
+            >
+              <div className="text-3xl mb-3 animate-bounce-soft">{feature.icon}</div>
+              <h3 className="font-semibold text-mist-800 mb-2 text-sm">{feature.title}</h3>
+              <p className="text-xs text-mist-600 leading-relaxed">{feature.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 统计数据展示 */}
+      <div className="px-4 py-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
+          <h2 className="text-lg font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
+            <Users className="w-5 h-5 mr-2 text-mist-600" />
+            平台数据
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-2xl font-bold text-mist-800 mb-1">{stat.number}</div>
+                <div className="text-xs text-mist-600">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 用户评价区域 */}
+      <div className="px-4 py-8">
+        <h2 className="text-xl font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
+          <Star className="w-6 h-6 mr-2 text-yellow-500" />
+          用户评价
+        </h2>
+        <div className="space-y-4">
+          {testimonials.map((testimonial, index) => (
+            <div 
+              key={index}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft"
+            >
+              <div className="flex items-start space-x-4">
+                <div className="text-2xl">{testimonial.avatar}</div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="font-semibold text-mist-800 text-sm">{testimonial.name}</span>
+                    <span className="text-xs text-mist-500">{testimonial.role}</span>
+                    <div className="flex">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-mist-600 leading-relaxed">{testimonial.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="px-4">
