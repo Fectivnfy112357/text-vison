@@ -9,15 +9,8 @@ const TabBar = () => {
   const location = useLocation()
   const { activeTab, setActiveTab } = useMobileStore()
 
-  // 定义底部导航栏的配置 - 使用Lucide图标
+  // 定义底部导航栏的配置 - 使用Lucide图标，移除我的页面
   const tabs = [
-    {
-      key: 'home',
-      title: '首页',
-      icon: Home,
-      path: '/home',
-      gradient: 'from-mist-400 to-sky-400'
-    },
     {
       key: 'generate',
       title: '生成',
@@ -38,13 +31,6 @@ const TabBar = () => {
       icon: Clock,
       path: '/history',
       gradient: 'from-mist-300 to-sky-300'
-    },
-    {
-      key: 'profile',
-      title: '我的',
-      icon: User,
-      path: '/profile',
-      gradient: 'from-sky-300 to-mist-500'
     }
   ]
 

@@ -45,7 +45,7 @@ interface Category {
   icon?: string
 }
 
-const Templates: React.FC = () => {
+const Templates = () => {
   const navigate = useNavigate()
   const { 
     templates, 
@@ -177,9 +177,11 @@ const Templates: React.FC = () => {
     setShowTemplateDetail(true)
   }
 
-  // 分类标签
+  // 分类标签 - 修复重复的"全部"问题
   const categoryTabs = useMemo(() => {
-    const allCategories = [{ id: '全部', name: '全部' }, ...categories]
+    // 确保不会有重复的"全部"选项
+    const filteredCategories = categories.filter(cat => String(cat.id) !== '全部' && cat.name !== '全部')
+    const allCategories = [{ id: '全部', name: '全部' }, ...filteredCategories]
     return allCategories
   }, [categories])
 
@@ -416,53 +418,70 @@ const Templates: React.FC = () => {
         </div>
       </PullRefresh>
 
-      {/* 模板详情弹窗 */}
-      <ModalTransition 
-        isVisible={showTemplateDetail}
+      {/* 模板详情弹窗 - 果冻感设计 */}
+      <Popup
+        visible={showTemplateDetail}
         onClose={() => setShowTemplateDetail(false)}
-        className="max-w-lg w-full mx-4"
+        position="bottom"
+        round
+        className="backdrop-blur-md"
       >
         {selectedTemplate && (
-          <div className="p-6">
-            <div className="text-center mb-4">
-              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="p-6 bg-gradient-to-br from-white/95 to-mist-50/95 backdrop-blur-md">
+            <div className="text-center mb-6">
+              <div className="w-12 h-1 bg-gradient-to-r from-mist-300 to-sky-300 rounded-full mx-auto mb-4" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mist-400 to-sky-400 rounded-full mb-4 shadow-lg shadow-mist-200/50">
+                <span className="text-2xl animate-bounce-soft">
+                  {selectedTemplate.type === 'image' ? '🖼️' : '🎬'}
+                </span>
+              </div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-mist-600 to-sky-600 bg-clip-text text-transparent mb-2">
                 {selectedTemplate.title}
               </h3>
             </div>
             
-            <div className="relative aspect-video mb-4 rounded-lg overflow-hidden">
+            <div className="relative aspect-video mb-6 rounded-2xl overflow-hidden border border-mist-200/50 shadow-lg shadow-mist-100/50">
               <Image
                 src={selectedTemplate.preview}
                 alt={selectedTemplate.title}
                 fit="cover"
                 className="w-full h-full"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
             </div>
             
-            <div className="space-y-3 mb-6">
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {selectedTemplate.description}
-              </p>
+            <div className="space-y-4 mb-6">
+              <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                <p className="text-mist-700 text-sm leading-relaxed">
+                  {selectedTemplate.description}
+                </p>
+              </div>
               
-              <div className="flex flex-wrap gap-2">
-                <Tag color="#e3f2fd">{selectedTemplate.style}</Tag>
-                <Tag color="#f3e5f5">
-                  {selectedTemplate.type === 'image' ? '图片模板' : '视频模板'}
-                </Tag>
-                <Tag color="#e8f5e8">
-                  <Eye className="w-3 h-3 mr-1" />
-                  {selectedTemplate.views} 次使用
-                </Tag>
+              <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                <div className="flex flex-wrap gap-2">
+                  <div className="px-3 py-1 bg-gradient-to-r from-mist-100 to-sky-100 text-mist-700 rounded-lg text-sm font-medium">
+                    {selectedTemplate.style}
+                  </div>
+                  <div className="px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-lg text-sm font-medium">
+                    {selectedTemplate.type === 'image' ? '图片模板' : '视频模板'}
+                  </div>
+                  <div className="px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-lg text-sm font-medium flex items-center">
+                    <Eye className="w-3 h-3 mr-1" />
+                    {selectedTemplate.views} 次使用
+                  </div>
+                </div>
               </div>
               
               {selectedTemplate.tags && selectedTemplate.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {selectedTemplate.tags.map((tag, index) => (
-                    <Tag key={index} size="small" color="#f5f5f5">
-                      {tag}
-                    </Tag>
-                  ))}
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <div className="text-sm font-medium text-mist-700 mb-2">标签</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTemplate.tags.map((tag, index) => (
+                      <div key={index} className="px-2 py-1 bg-gradient-to-r from-gray-100 to-mist-100 text-gray-700 rounded-lg text-xs">
+                        #{tag}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -477,14 +496,17 @@ const Templates: React.FC = () => {
                   setShowTemplateDetail(false)
                   success()
                 }}
-                icon={<Wand2 className="w-4 h-4" />}
+                className="h-12 text-lg font-semibold bg-gradient-to-r from-mist-500 to-sky-500 border-none shadow-lg shadow-mist-200/50 hover:shadow-xl hover:shadow-mist-300/50 transition-all duration-300 transform hover:scale-105"
               >
-                使用模板
+                <span className="flex items-center justify-center">
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  使用模板
+                </span>
               </Button>
             </div>
           </div>
         )}
-      </ModalTransition>
+      </Popup>
       </div>
     </PageTransition>
   )

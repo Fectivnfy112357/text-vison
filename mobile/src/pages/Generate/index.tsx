@@ -42,10 +42,22 @@ const Generate = () => {
   const [imageScale, setImageScale] = useState(1)
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
   
-  // 高级设置
+  // 高级设置 - 与PC端保持一致
   const [steps, setSteps] = useState(20)
   const [guidance, setGuidance] = useState(7.5)
   const [seed, setSeed] = useState('')
+  const [quality, setQuality] = useState('standard')
+  const [watermark, setWatermark] = useState(false)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  
+  // 视频参数
+  const [resolution, setResolution] = useState('720p')
+  const [duration, setDuration] = useState(5)
+  const [ratio, setRatio] = useState('16:9')
+  const [fps, setFps] = useState(24)
+  const [cameraFixed, setCameraFixed] = useState(false)
+  const [cfgScale, setCfgScale] = useState(7)
+  const [count, setCount] = useState(1)
   
   // 触觉反馈和手势支持
    const { buttonTap, success, error: hapticError, selection } = useHapticFeedback()
@@ -74,13 +86,14 @@ const Generate = () => {
   
   const { templates } = useTemplateStore()
   
-  // 尺寸选项
+  // 尺寸选项 - 与PC端保持一致
   const sizeOptions = {
     image: [
       { text: '正方形 (1024x1024)', value: '1024x1024' },
-      { text: '横向 (1344x768)', value: '1344x768' },
-      { text: '纵向 (768x1344)', value: '768x1344' },
-      { text: '宽屏 (1536x640)', value: '1536x640' },
+      { text: '横屏 (1152x896)', value: '1152x896' },
+      { text: '竖屏 (896x1152)', value: '896x1152' },
+      { text: '宽屏 (1216x832)', value: '1216x832' },
+      { text: '长屏 (832x1216)', value: '832x1216' },
     ],
     video: [
       { text: '标准 (1280x720)', value: '1280x720' },
@@ -89,6 +102,35 @@ const Generate = () => {
       { text: '方形 (1024x1024)', value: '1024x1024' },
     ]
   }
+  
+  // 质量选项
+  const qualityOptions = [
+    { text: '标准质量', value: 'standard' },
+    { text: '高清质量', value: 'hd' }
+  ]
+  
+  // 视频分辨率选项
+  const resolutionOptions = [
+    { text: '480p (标清)', value: '480p' },
+    { text: '720p (高清)', value: '720p' },
+    { text: '1080p (全高清)', value: '1080p' }
+  ]
+  
+  // 视频比例选项
+  const ratioOptions = [
+    { text: '正方形 (1:1)', value: '1:1' },
+    { text: '竖屏 (3:4)', value: '3:4' },
+    { text: '横屏 (4:3)', value: '4:3' },
+    { text: '宽屏 (16:9)', value: '16:9' },
+    { text: '竖屏 (9:16)', value: '9:16' },
+    { text: '超宽屏 (21:9)', value: '21:9' }
+  ]
+  
+  // 时长选项
+  const durationOptions = [
+    { text: '5秒', value: 5 },
+    { text: '10秒', value: 10 }
+  ]
   
   useEffect(() => {
     fetchStyles(contentType)
@@ -105,12 +147,27 @@ const Generate = () => {
     buttonTap()
     
     try {
-      const options = {
+      const options: any = {
         size: selectedSize,
         styleId: selectedStyle,
-        steps,
-        guidance,
-        seed: seed || undefined
+        watermark,
+        referenceImage
+      }
+      
+      if (contentType === 'image') {
+        options.quality = quality
+        if (seed) options.seed = Number(seed)
+        if (guidance !== 7.5) options.guidanceScale = guidance
+      }
+      
+      if (contentType === 'video') {
+        options.resolution = resolution
+        options.duration = duration
+        options.ratio = ratio
+        options.fps = fps
+        options.cameraFixed = cameraFixed
+        options.cfgScale = cfgScale
+        options.count = count
       }
       
       await generateContent(prompt, contentType, options)
@@ -486,7 +543,7 @@ const Generate = () => {
         </div>
       </Popup>
       
-      {/* 高级设置 - 果冻感设计 */}
+      {/* 高级设置 - 果冻感设计，与PC端参数一致 */}
       <Popup
         visible={showAdvancedSettings}
         onClose={() => setShowAdvancedSettings(false)}
@@ -494,61 +551,193 @@ const Generate = () => {
         round
         className="backdrop-blur-md"
       >
-        <div className="p-6 bg-gradient-to-br from-white/90 to-pink-50/90 backdrop-blur-md">
+        <div className="p-6 bg-gradient-to-br from-white/90 to-pink-50/90 backdrop-blur-md max-h-[80vh] overflow-y-auto">
           <h3 className="text-lg font-bold mb-6 text-center text-mist-800 flex items-center justify-center">
             <span className="mr-2 text-xl animate-bounce-soft">⚙️</span>
             高级设置
           </h3>
           <div className="space-y-4">
+            {/* 图片专用参数 */}
+            {contentType === 'image' && (
+              <>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <label className="block text-sm font-medium text-mist-700 mb-2">图片质量</label>
+                  <div className="space-y-2">
+                    {qualityOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
+                          quality === option.value
+                            ? 'border-mist-400 bg-mist-50'
+                            : 'border-mist-200 bg-white hover:border-mist-300'
+                        }`}
+                        onClick={() => {
+                          setQuality(option.value)
+                          selection()
+                        }}
+                      >
+                        <span className="text-sm font-medium text-mist-800">{option.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    label="引导强度"
+                    value={guidance.toString()}
+                    onChange={(val) => setGuidance(Number(val) || 7.5)}
+                    type="number"
+                    placeholder="7.5"
+                    className="mobile-input"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                  <div className="text-xs text-mist-600 mt-1">推荐值: 1-10，值越高越贴近描述</div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    label="随机种子"
+                    value={seed}
+                    onChange={setSeed}
+                    type="number"
+                    placeholder="留空随机生成"
+                    className="mobile-input"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                  <div className="text-xs text-mist-600 mt-1">使用相同种子可以重现相似结果</div>
+                </div>
+              </>
+            )}
+            
+            {/* 视频专用参数 */}
+            {contentType === 'video' && (
+              <>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <label className="block text-sm font-medium text-mist-700 mb-2">分辨率</label>
+                  <div className="space-y-2">
+                    {resolutionOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
+                          resolution === option.value
+                            ? 'border-mist-400 bg-mist-50'
+                            : 'border-mist-200 bg-white hover:border-mist-300'
+                        }`}
+                        onClick={() => {
+                          setResolution(option.value)
+                          selection()
+                        }}
+                      >
+                        <span className="text-sm font-medium text-mist-800">{option.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <label className="block text-sm font-medium text-mist-700 mb-2">时长</label>
+                  <div className="space-y-2">
+                    {durationOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
+                          duration === option.value
+                            ? 'border-mist-400 bg-mist-50'
+                            : 'border-mist-200 bg-white hover:border-mist-300'
+                        }`}
+                        onClick={() => {
+                          setDuration(option.value)
+                          selection()
+                        }}
+                      >
+                        <span className="text-sm font-medium text-mist-800">{option.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <label className="block text-sm font-medium text-mist-700 mb-2">画面比例</label>
+                  <div className="space-y-2">
+                    {ratioOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
+                          ratio === option.value
+                            ? 'border-mist-400 bg-mist-50'
+                            : 'border-mist-200 bg-white hover:border-mist-300'
+                        }`}
+                        onClick={() => {
+                          setRatio(option.value)
+                          selection()
+                        }}
+                      >
+                        <span className="text-sm font-medium text-mist-800">{option.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    label="帧率"
+                    value={fps.toString()}
+                    onChange={(val) => setFps(Number(val) || 24)}
+                    type="number"
+                    placeholder="24"
+                    className="mobile-input"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                  <div className="text-xs text-mist-600 mt-1">推荐值: 12-60，值越高越流畅</div>
+                </div>
+                <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm font-medium text-mist-700">固定摄像头</label>
+                      <p className="text-xs text-mist-600 mt-1">减少镜头运动，画面更稳定</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={cameraFixed}
+                        onChange={(e) => setCameraFixed(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mist-300/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-mist-400 peer-checked:to-sky-400"></div>
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* 通用参数 */}
             <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
-              <Field
-                label="生成步数"
-                value={steps.toString()}
-                onChange={(val) => setSteps(Number(val) || 20)}
-                type="number"
-                placeholder="20"
-                className="mobile-input"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(177, 151, 252, 0.2)',
-                  borderRadius: '12px'
-                }}
-              />
-              <div className="text-xs text-mist-600 mt-1">推荐值: 20-50，值越高质量越好但耗时更长</div>
-            </div>
-            <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
-              <Field
-                label="引导强度"
-                value={guidance.toString()}
-                onChange={(val) => setGuidance(Number(val) || 7.5)}
-                type="number"
-                placeholder="7.5"
-                className="mobile-input"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(177, 151, 252, 0.2)',
-                  borderRadius: '12px'
-                }}
-              />
-              <div className="text-xs text-mist-600 mt-1">推荐值: 5-15，值越高越贴近描述但可能过度拟合</div>
-            </div>
-            <div className="p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
-              <Field
-                label="随机种子"
-                value={seed}
-                onChange={setSeed}
-                placeholder="留空随机生成"
-                className="mobile-input"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(177, 151, 252, 0.2)',
-                  borderRadius: '12px'
-                }}
-              />
-              <div className="text-xs text-mist-600 mt-1">使用相同种子可以重现相似结果</div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-mist-700">添加水印</label>
+                  <p className="text-xs text-mist-600 mt-1">在生成内容上添加水印</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={watermark}
+                    onChange={(e) => setWatermark(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mist-300/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-mist-400 peer-checked:to-sky-400"></div>
+                </label>
+              </div>
             </div>
           </div>
           <div className="mt-6">

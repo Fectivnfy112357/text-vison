@@ -7,10 +7,10 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
+    "verbatimModuleSyntax": false,
+    "moduleDetection": "auto",
     "noEmit": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,

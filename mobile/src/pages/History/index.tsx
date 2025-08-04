@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   NavBar, 
   Search, 
@@ -30,21 +30,12 @@ import {
   Calendar
 } from 'lucide-react'
 import { useGenerationStore } from '../../store'
+import type { GeneratedContent } from '../../store'
 import { useUserStore } from '../../store'
 import { contentAPI } from '../../lib/api'
 import ShareModal from '../../components/common/ShareModal'
 
-interface HistoryItem {
-  id: string
-  type: 'image' | 'video'
-  prompt: string
-  url?: string
-  urls?: string[]
-  createdAt: Date
-  size?: string
-  style?: string
-  status?: 'generating' | 'processing' | 'completed' | 'failed'
-}
+type HistoryItem = GeneratedContent
 
 const History = () => {
   const [searchQuery, setSearchQuery] = useState('')

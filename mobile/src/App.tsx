@@ -8,7 +8,6 @@ import Home from './pages/Home'
 import Generate from './pages/Generate'
 import Templates from './pages/Templates'
 import History from './pages/History'
-import Profile from './pages/Profile'
 
 // 布局组件
 import Layout from './components/common/Layout'
@@ -85,7 +84,6 @@ const App = () => {
               <Route path="/generate" element={<Generate />} />
               <Route path="/templates" element={<Templates />} />
               <Route path="/history" element={<History />} />
-              <Route path="/profile" element={<Profile />} />
             </Routes>
           </Layout>
         </Router>

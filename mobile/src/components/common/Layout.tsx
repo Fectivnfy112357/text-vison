@@ -10,7 +10,7 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   
   // 不显示底部导航栏的页面
-  const hideTabBarPages = ['/login', '/register']
+  const hideTabBarPages = ['/login', '/register', '/home']
   const showTabBar = !hideTabBarPages.includes(location.pathname)
 
   return (

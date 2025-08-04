@@ -53,7 +53,7 @@ interface MobileState {
 }
 
 // 生成内容接口
-interface GeneratedContent {
+export interface GeneratedContent {
   id: string
   type: 'image' | 'video'
   prompt: string

@@ -229,134 +229,194 @@ const AuthModal = ({ visible, onClose, onSuccess }: AuthModalProps) => {
       round
       closeable
       closeIcon="close"
-      className="auth-modal"
+      className="auth-modal backdrop-blur-md"
     >
-      <div className="p-6 pb-8">
-        {/* 标题 */}
+      <div className="p-6 pb-8 bg-gradient-to-br from-white/95 to-mist-50/95 backdrop-blur-md">
+        {/* 标题 - 果冻感设计 */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mist-400 to-sky-400 rounded-full mb-4 shadow-lg shadow-mist-200/50">
+            <span className="text-2xl animate-bounce-soft">
+              {activeTab === 'login' ? '🎨' : '✨'}
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-mist-600 to-sky-600 bg-clip-text text-transparent mb-2">
             {activeTab === 'login' ? '欢迎回来' : '加入我们'}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-mist-600">
             {activeTab === 'login' ? '登录您的账户继续创作' : '创建账户开始您的AI创作之旅'}
           </p>
         </div>
 
-        {/* 标签切换 */}
+        {/* 标签切换 - 果冻感设计 */}
         <div className="mb-6">
-          <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+          <div className="flex bg-white/60 border border-mist-200/50 rounded-xl p-1 mb-4 backdrop-blur-sm shadow-lg shadow-mist-100/50">
             <button
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeTab === 'login'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'bg-gradient-to-r from-mist-400 to-sky-400 text-white shadow-lg shadow-mist-200/50 transform scale-105'
+                  : 'text-mist-600 hover:text-mist-800 hover:bg-white/50'
               }`}
               onClick={() => setActiveTab('login')}
             >
-              登录
+              <span className="flex items-center justify-center">
+                <span className="mr-1">🔑</span>
+                登录
+              </span>
             </button>
             <button
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeTab === 'register'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'bg-gradient-to-r from-mist-400 to-sky-400 text-white shadow-lg shadow-mist-200/50 transform scale-105'
+                  : 'text-mist-600 hover:text-mist-800 hover:bg-white/50'
               }`}
               onClick={() => setActiveTab('register')}
             >
-              注册
+              <span className="flex items-center justify-center">
+                <span className="mr-1">🌟</span>
+                注册
+              </span>
             </button>
           </div>
 
           {activeTab === 'login' ? (
             <div className="pt-4">
               <Form>
-                <Field
-                  name="email"
-                  label="邮箱"
-                  placeholder="请输入邮箱地址"
-                  value={loginForm.email}
-                  onChange={(value) => setLoginForm({ ...loginForm, email: value })}
-                  type="email"
-                  clearable
-                  required
-                  className="mb-4"
-                />
-                <Field
-                  name="password"
-                  label="密码"
-                  placeholder="请输入密码"
-                  value={loginForm.password}
-                  onChange={(value) => setLoginForm({ ...loginForm, password: value })}
-                  type="password"
-                  clearable
-                  required
-                  className="mb-6"
-                />
+                <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    name="email"
+                    label="邮箱"
+                    placeholder="请输入邮箱地址"
+                    value={loginForm.email}
+                    onChange={(value) => setLoginForm({ ...loginForm, email: value })}
+                    type="email"
+                    clearable
+                    required
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                </div>
+                <div className="mb-6 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    name="password"
+                    label="密码"
+                    placeholder="请输入密码"
+                    value={loginForm.password}
+                    onChange={(value) => setLoginForm({ ...loginForm, password: value })}
+                    type="password"
+                    clearable
+                    required
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                </div>
                 <Button
                   type="primary"
                   size="large"
                   block
                   loading={loading}
                   onClick={handleLogin}
-                  className="h-12 text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-500 border-none"
+                  className="h-12 text-lg font-semibold bg-gradient-to-r from-mist-500 to-sky-500 border-none shadow-lg shadow-mist-200/50 hover:shadow-xl hover:shadow-mist-300/50 transition-all duration-300 transform hover:scale-105"
                 >
-                  登录
+                  <span className="flex items-center justify-center">
+                    <span className="mr-2">🚀</span>
+                    登录
+                  </span>
                 </Button>
               </Form>
             </div>
           ) : (
             <div className="pt-4">
               <Form>
-                {/* 注册方式选择 */}
-                <div className="mb-4">
-                  <div className="text-sm text-gray-700 mb-2">注册方式</div>
+                {/* 注册方式选择 - 果冻感设计 */}
+                <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <div className="text-sm font-medium text-mist-700 mb-3">注册方式</div>
                   <RadioGroup 
                     value={registerType} 
                     onChange={(value) => setRegisterType(value as 'email' | 'phone')}
                     direction="horizontal"
+                    className="space-x-4"
                   >
-                    <Radio name="email" className="mr-6">邮箱注册</Radio>
-                    <Radio name="phone">手机注册</Radio>
+                    <Radio name="email" className="text-mist-600">
+                      <span className="flex items-center">
+                        <span className="mr-1">📧</span>
+                        邮箱注册
+                      </span>
+                    </Radio>
+                    <Radio name="phone" className="text-mist-600">
+                      <span className="flex items-center">
+                        <span className="mr-1">📱</span>
+                        手机注册
+                      </span>
+                    </Radio>
                   </RadioGroup>
                 </div>
 
-                <Field
-                  name="name"
-                  label="用户名"
-                  placeholder="请输入用户名（2-20个字符）"
-                  value={registerForm.name}
-                  onChange={(value: string) => setRegisterForm({ ...registerForm, name: value })}
-                  clearable
-                  required
-                  className="mb-4"
-                />
-
-                {registerType === 'email' ? (
+                <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
                   <Field
-                    name="email"
-                    label="邮箱"
-                    placeholder="请输入邮箱地址"
-                    value={registerForm.email}
-                    onChange={(value: string) => setRegisterForm({ ...registerForm, email: value })}
-                    type="email"
+                    name="name"
+                    label="用户名"
+                    placeholder="请输入用户名（2-20个字符）"
+                    value={registerForm.name}
+                    onChange={(value: string) => setRegisterForm({ ...registerForm, name: value })}
                     clearable
                     required
-                    className="mb-4"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
                   />
-                ) : (
-                  <>
+                </div>
+
+                {registerType === 'email' ? (
+                  <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
                     <Field
-                      name="phone"
-                      label="手机号"
-                      placeholder="请输入手机号码"
-                      value={registerForm.phone}
-                      onChange={(value: string) => setRegisterForm({ ...registerForm, phone: value })}
-                      type="tel"
+                      name="email"
+                      label="邮箱"
+                      placeholder="请输入邮箱地址"
+                      value={registerForm.email}
+                      onChange={(value: string) => setRegisterForm({ ...registerForm, email: value })}
+                      type="email"
                       clearable
                       required
-                      className="mb-4"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(177, 151, 252, 0.2)',
+                        borderRadius: '12px'
+                      }}
                     />
-                    <div className="mb-4">
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                      <Field
+                        name="phone"
+                        label="手机号"
+                        placeholder="请输入手机号码"
+                        value={registerForm.phone}
+                        onChange={(value: string) => setRegisterForm({ ...registerForm, phone: value })}
+                        type="tel"
+                        clearable
+                        required
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(177, 151, 252, 0.2)',
+                          borderRadius: '12px'
+                        }}
+                      />
+                    </div>
+                    <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
                       <Field
                         name="verificationCode"
                         label="验证码"
@@ -365,6 +425,12 @@ const AuthModal = ({ visible, onClose, onSuccess }: AuthModalProps) => {
                         onChange={(value: string) => setRegisterForm({ ...registerForm, verificationCode: value })}
                         clearable
                         required
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(177, 151, 252, 0.2)',
+                          borderRadius: '12px'
+                        }}
                         rightIcon={
                           <Button
                             size="small"
@@ -372,7 +438,7 @@ const AuthModal = ({ visible, onClose, onSuccess }: AuthModalProps) => {
                             loading={codeSending}
                             disabled={countdown > 0}
                             onClick={sendVerificationCode}
-                            className="text-xs"
+                            className="text-xs bg-gradient-to-r from-mist-400 to-sky-400 border-none text-white"
                           >
                             {countdown > 0 ? `${countdown}s` : '获取验证码'}
                           </Button>
@@ -382,54 +448,73 @@ const AuthModal = ({ visible, onClose, onSuccess }: AuthModalProps) => {
                   </>
                 )}
 
-                <Field
-                  name="password"
-                  label="密码"
-                  placeholder="请输入密码（至少6位）"
-                  value={registerForm.password}
-                  onChange={(value: string) => setRegisterForm({ ...registerForm, password: value })}
-                  type="password"
-                  clearable
-                  required
-                  className="mb-4"
-                />
-                <Field
-                  name="confirmPassword"
-                  label="确认密码"
-                  placeholder="请再次输入密码"
-                  value={registerForm.confirmPassword}
-                  onChange={(value: string) => setRegisterForm({ ...registerForm, confirmPassword: value })}
-                  type="password"
-                  clearable
-                  required
-                  className="mb-6"
-                />
+                <div className="mb-4 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    name="password"
+                    label="密码"
+                    placeholder="请输入密码（至少6位）"
+                    value={registerForm.password}
+                    onChange={(value: string) => setRegisterForm({ ...registerForm, password: value })}
+                    type="password"
+                    clearable
+                    required
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                </div>
+                <div className="mb-6 p-4 bg-white/60 border border-mist-200/50 rounded-xl backdrop-blur-sm">
+                  <Field
+                    name="confirmPassword"
+                    label="确认密码"
+                    placeholder="请再次输入密码"
+                    value={registerForm.confirmPassword}
+                    onChange={(value: string) => setRegisterForm({ ...registerForm, confirmPassword: value })}
+                    type="password"
+                    clearable
+                    required
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(177, 151, 252, 0.2)',
+                      borderRadius: '12px'
+                    }}
+                  />
+                </div>
                 <Button
                   type="primary"
                   size="large"
                   block
                   loading={loading}
                   onClick={handleRegister}
-                  className="h-12 text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-500 border-none"
+                  className="h-12 text-lg font-semibold bg-gradient-to-r from-mist-500 to-sky-500 border-none shadow-lg shadow-mist-200/50 hover:shadow-xl hover:shadow-mist-300/50 transition-all duration-300 transform hover:scale-105"
                 >
-                  注册
+                  <span className="flex items-center justify-center">
+                    <span className="mr-2">✨</span>
+                    注册
+                  </span>
                 </Button>
               </Form>
             </div>
           )}
         </div>
 
-        {/* 底部提示 */}
-        <div className="text-center text-sm text-gray-500 mt-6">
-          <p>
-            {activeTab === 'login' ? '还没有账户？' : '已有账户？'}
-            <button
-              className="text-purple-500 font-medium ml-1"
-              onClick={() => setActiveTab(activeTab === 'login' ? 'register' : 'login')}
-            >
-              {activeTab === 'login' ? '立即注册' : '立即登录'}
-            </button>
-          </p>
+        {/* 底部提示 - 果冻感设计 */}
+        <div className="text-center text-sm text-mist-500 mt-6">
+          <div className="p-3 bg-white/40 border border-mist-200/30 rounded-lg backdrop-blur-sm">
+            <p>
+              {activeTab === 'login' ? '还没有账户？' : '已有账户？'}
+              <button
+                className="text-mist-600 font-medium ml-1 hover:text-mist-800 transition-colors duration-200"
+                onClick={() => setActiveTab(activeTab === 'login' ? 'register' : 'login')}
+              >
+                {activeTab === 'login' ? '立即注册 →' : '立即登录 →'}
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </Popup>

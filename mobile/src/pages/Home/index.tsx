@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Toast } from 'react-vant'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store'
@@ -153,7 +153,7 @@ const Home = () => {
   }
 
   // 轮播自动切换
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length)
     }, 4000)
