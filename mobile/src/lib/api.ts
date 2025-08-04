@@ -1,5 +1,5 @@
 // API 基础配置和工具函数
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://223.72.35.202:8999/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8999/api';
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000');
 
 // 获取存储的 JWT token

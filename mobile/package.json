@@ -6,7 +6,6 @@
   "description": "文生视界移动端应用",
   "scripts": {
     "dev": "vite --port 5175",
-    "dev:mobile": "node scripts/dev-mobile.js",
     "build": "tsc && vite build",
     "build:analyze": "npm run build && npx vite-bundle-analyzer dist",
     "preview": "vite preview --port 5175",
@@ -20,7 +19,7 @@
     "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -32,7 +31,7 @@
     "terser": "^5.43.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^7.0.4",
+    "vite": "^5.4.10",
     "vite-bundle-analyzer": "^1.1.0",
     "vite-tsconfig-paths": "^5.1.4"
   },

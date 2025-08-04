@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { Button, Swiper, Grid, GridItem, Popup, Toast, Cell, CellGroup, Tag, Space } from 'react-vant'
+import { Toast } from 'react-vant'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store'
 import AuthModal from '../../components/common/AuthModal'
@@ -9,11 +9,10 @@ import { Sparkles, Zap, Heart, Users, Star, ArrowRight, Play, Image as ImageIcon
 const Home = () => {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useUserStore()
-  // @ts-ignore
+  // @ts-expect-error showAuthModal 在初始化时未使用，但在后续逻辑中会用到
   const [showAuthModal, setShowAuthModal] = React.useState(false)
-  // @ts-ignore
+  // @ts-expect-error currentBanner 在初始化时未使用，但在useEffect中会用到
   const [currentBanner, setCurrentBanner] = React.useState(0)
-
   // 产品介绍轮播数据
   const banners = [
     {
@@ -154,7 +153,6 @@ const Home = () => {
   }
 
   // 轮播自动切换
-  // @ts-ignore
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length)
@@ -169,7 +167,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-mist-100/80 via-sky-50/60 to-cream-100/80" />
         <div className="absolute top-8 right-8 w-32 h-32 bg-mist-200/30 rounded-full animate-float" />
         <div className="absolute bottom-12 left-8 w-20 h-20 bg-sky-200/40 rounded-full animate-float" style={{ animationDelay: '2s' }} />
-        
+
         <div className="relative z-10 px-6 py-12 text-center">
           <div className="mb-6">
             <div className="text-6xl mb-4 animate-bounce-soft">✨</div>
@@ -179,9 +177,9 @@ const Home = () => {
               让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品
             </p>
           </div>
-          
+
           {/* 快速体验按钮 */}
-          <button 
+          <button
             className="inline-flex items-center px-8 py-4 rounded-full font-semibold text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95 shadow-jelly"
             style={{
               background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)'
@@ -203,7 +201,7 @@ const Home = () => {
         </h2>
         <div className="grid grid-cols-1 gap-4">
           {highlights.map((highlight, index) => (
-            <div 
+            <div
               key={index}
               className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft hover:shadow-jelly transition-all duration-300 hover:scale-105"
             >
@@ -221,143 +219,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 核心功能展示区域 */}
-      <div className="px-4 py-8">
-        <h2 className="text-xl font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
-          <ImageIcon className="w-6 h-6 mr-2 text-sky-600" />
-          核心功能
-        </h2>
-        <div className="grid grid-cols-2 gap-4">
-          {features.map((feature, index) => (
-            <button
-              key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft hover:shadow-jelly transition-all duration-300 hover:scale-105 active:scale-95 text-left"
-              onClick={feature.action}
-            >
-              <div className="text-3xl mb-3 animate-bounce-soft">{feature.icon}</div>
-              <h3 className="font-semibold text-mist-800 mb-2 text-sm">{feature.title}</h3>
-              <p className="text-xs text-mist-600 leading-relaxed">{feature.description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 统计数据展示 */}
-      <div className="px-4 py-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft">
-          <h2 className="text-lg font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
-            <Users className="w-5 h-5 mr-2 text-mist-600" />
-            平台数据
-          </h2>
-          <div className="grid grid-cols-3 gap-4">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl font-bold text-mist-800 mb-1">{stat.number}</div>
-                <div className="text-xs text-mist-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 用户评价区域 */}
-      <div className="px-4 py-8">
-        <h2 className="text-xl font-bold text-center text-mist-800 mb-6 flex items-center justify-center">
-          <Star className="w-6 h-6 mr-2 text-yellow-500" />
-          用户评价
-        </h2>
-        <div className="space-y-4">
-          {testimonials.map((testimonial, index) => (
-            <div 
-              key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-mist-100 shadow-soft"
-            >
-              <div className="flex items-start space-x-4">
-                <div className="text-2xl">{testimonial.avatar}</div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-semibold text-mist-800 text-sm">{testimonial.name}</span>
-                    <span className="text-xs text-mist-500">{testimonial.role}</span>
-                    <div className="flex">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-sm text-mist-600 leading-relaxed">{testimonial.content}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="px-4">
-        {/* 用户登录注册入口 - 果冻感大按钮设计 */}
-        {!isAuthenticated ? (
-          <div className="mb-8">
-            <button 
-              className="w-full h-20 rounded-3xl font-semibold text-lg text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95"
-              style={{
-                background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
-                boxShadow: '0 12px 40px rgba(177, 151, 252, 0.4)'
-              }}
-              onClick={() => setShowAuthModal(true)}
-            >
-              {/* 背景动画装饰 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute top-2 right-4 w-8 h-8 bg-white/20 rounded-full animate-float" />
-              <div className="absolute bottom-3 left-6 w-4 h-4 bg-white/30 rounded-full animate-float" style={{ animationDelay: '1s' }} />
-              
-              <div className="relative z-10 flex items-center justify-center space-x-3">
-                <span className="text-2xl animate-bounce-soft">👋</span>
-                <span>登录 / 注册</span>
-              </div>
-            </button>
-            <p className="text-center text-sm text-mist-500 mt-3 font-medium">
-              登录后解锁全部功能
-            </p>
-          </div>
-        ) : (
-          <div className="mb-8">
-            <div className="mobile-card bg-gradient-to-r from-mist-50/80 to-sky-50/80 border-mist-200/50">
-              <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 bg-gradient-to-r from-mist-500 to-sky-400 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-jelly">
-                  {user?.name?.charAt(0) || '用'}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-mist-800 text-lg">
-                    欢迎回来，{user?.name || '用户'}！
-                  </h3>
-                  <p className="text-sm text-mist-600 mt-1">继续您的创作之旅</p>
-                </div>
-                <div className="w-6 h-6 bg-gradient-to-r from-mist-400 to-sky-400 rounded-full animate-pulse-soft" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 快速生成入口 - 果冻感设计 */}
-        <div className="mb-8">
-          <button 
-            className="w-full h-16 rounded-3xl font-semibold text-lg text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, #f87171 0%, #b197fc 50%, #7dd3fc 100%)',
-              boxShadow: '0 12px 40px rgba(248, 113, 113, 0.3)'
-            }}
-            onClick={handleQuickGenerate}
-          >
-            {/* 背景动画装饰 */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="absolute top-2 right-6 w-6 h-6 bg-white/20 rounded-full animate-float" />
-            <div className="absolute bottom-2 left-8 w-4 h-4 bg-white/30 rounded-full animate-float" style={{ animationDelay: '1.5s' }} />
-            
-            <div className="relative z-10 flex items-center justify-center space-x-3">
-              <span className="text-2xl animate-bounce-soft">🚀</span>
-              <span>开始创作</span>
-            </div>
-          </button>
-        </div>
 
         {/* 功能特色展示卡片 - 果冻感网格布局 */}
         <div className="mb-8">
@@ -379,10 +241,10 @@ const Home = () => {
                 }}
               >
                 {/* 背景渐变装饰 */}
-                <div 
+                <div
                   className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-br ${feature.color}`}
                 />
-                
+
                 <div className="relative z-10 text-center">
                   <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center text-2xl shadow-jelly`}>
                     {feature.icon}
@@ -394,41 +256,11 @@ const Home = () => {
                     {feature.description}
                   </p>
                 </div>
-                
+
                 {/* 悬浮装饰点 */}
                 <div className="absolute top-3 right-3 w-2 h-2 bg-gradient-to-r from-mist-400 to-sky-400 rounded-full animate-pulse-soft" />
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* 统计数据展示 - 果冻感设计 */}
-        <div className="mb-8">
-          <div 
-            className="mobile-card text-white relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
-              boxShadow: '0 12px 40px rgba(177, 151, 252, 0.3)'
-            }}
-          >
-            {/* 背景装饰 */}
-            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full animate-float" />
-            <div className="absolute bottom-6 left-6 w-12 h-12 bg-white/15 rounded-full animate-float" style={{ animationDelay: '2s' }} />
-            
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold mb-6 text-center flex items-center justify-center">
-                <span className="mr-2 text-2xl animate-bounce-soft">📊</span>
-                平台数据
-              </h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                {stats.map((stat, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="text-2xl font-bold drop-shadow-sm">{stat.number}</div>
-                    <div className="text-sm opacity-90 font-medium">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -461,7 +293,7 @@ const Home = () => {
         </div>
 
         {/* 底部CTA - 果冻感设计 */}
-        <div 
+        <div
           className="mobile-card text-center mb-8 relative overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, rgba(177, 151, 252, 0.1) 0%, rgba(125, 211, 252, 0.1) 100%)',
@@ -471,7 +303,7 @@ const Home = () => {
           {/* 背景装饰 */}
           <div className="absolute top-4 right-4 w-16 h-16 bg-mist-200/30 rounded-full animate-float" />
           <div className="absolute bottom-4 left-4 w-10 h-10 bg-sky-200/40 rounded-full animate-float" style={{ animationDelay: '1s' }} />
-          
+
           <div className="relative z-10">
             <div className="text-5xl mb-4 animate-bounce-soft">🎯</div>
             <h3 className="text-xl font-bold text-mist-800 mb-3">
@@ -480,22 +312,32 @@ const Home = () => {
             <p className="text-sm text-mist-600 mb-6 leading-relaxed">
               加入文生视界，开启您的AI创作之旅
             </p>
-            <button 
-              className="px-8 py-4 rounded-2xl font-semibold text-white transition-all duration-300 hover:scale-105 active:scale-95"
-              style={{
-                background: 'linear-gradient(135deg, #b197fc 0%, #7dd3fc 100%)',
-                boxShadow: '0 8px 32px rgba(177, 151, 252, 0.3)'
-              }}
-              onClick={handleQuickGenerate}
-            >
-              立即开始创作
-            </button>
+            <div className="mb-8">
+              <button
+                className="w-full h-16 rounded-3xl font-semibold text-lg text-white relative overflow-hidden group transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background: 'linear-gradient(135deg, #f87171 0%, #b197fc 50%, #7dd3fc 100%)',
+                  boxShadow: '0 12px 40px rgba(248, 113, 113, 0.3)'
+                }}
+                onClick={handleQuickGenerate}
+              >
+                {/* 背景动画装饰 */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute top-2 right-6 w-6 h-6 bg-white/20 rounded-full animate-float" />
+                <div className="absolute bottom-2 left-8 w-4 h-4 bg-white/30 rounded-full animate-float" style={{ animationDelay: '1.5s' }} />
+
+                <div className="relative z-10 flex items-center justify-center space-x-3">
+                  <span className="text-2xl animate-bounce-soft">🚀</span>
+                  <span>开始创作</span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 登录注册弹窗 */}
-      <AuthModal 
+      <AuthModal
         visible={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
