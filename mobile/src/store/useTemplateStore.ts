@@ -52,7 +52,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
       const response = await templateAPI.getTemplates(params)
 
       // 处理后端返回的数据结构 {code, message, data, success}
-      let templatesArray = []
+      let templatesArray: Template[] = []
       let total = 0
 
       if (response?.data) {
@@ -82,7 +82,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   loadPopularTemplates: async (limit = 10) => {
     try {
       const response = await templateAPI.getPopularTemplates(limit)
-      // 处理后端返回的数据结构 {code, message, data}
+      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
       const templates = response?.data || []
       // 确保templates是数组
       const templatesArray = Array.isArray(templates) ? templates : []
@@ -98,20 +98,8 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     try {
       const response = await templateCategoryAPI.getCategories()
 
-      // 处理后端返回的数据结构 {code, message, data, success}
-      let categoriesArray = []
-
-      if (response?.data) {
-        // 如果data是数组，直接使用
-        if (Array.isArray(response.data)) {
-          categoriesArray = response.data
-        }
-      }
-      // 兼容旧格式 - 如果response本身是数组
-      else if (Array.isArray(response)) {
-        categoriesArray = response
-      }
-
+      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
+      const categoriesArray = response?.data || []
       const enabledCategories = categoriesArray.filter(cat => cat.isEnabled !== false)
       set({ categories: enabledCategories })
     } catch (error: any) {
@@ -131,11 +119,13 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     try {
       const response = await templateAPI.searchTemplates(query)
 
-      // 处理后端返回的数据结构 {code, message, data, success}
-      let templatesArray = []
+      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
+      let templatesArray: Template[] = []
+      let total = 0
 
-      if (response?.data.records) {
-        templatesArray = response.data.list
+      if (response?.data) {
+        templatesArray = response.data.records || []
+        total = response.data.total || 0
       }
 
       set({
@@ -143,14 +133,14 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
         pagination: {
           ...get().pagination,
           page: 1,
-          total: templatesArray.length,
+          total: total,
         },
         isLoading: false
       })
     } catch (error: any) {
       console.error('[TemplateStore] 搜索模板失败:', error)
       set({
-        error: error.response?.data?.message || error.response?.data?.error || error.message || error.toString(),
+        error: error.response?.data?.message || error.message || error.toString(),
         isLoading: false,
         templates: [] // 设置为空数组
       })
@@ -176,22 +166,29 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   useTemplate: async (id: string | number) => {
     try {
       await templateAPI.useTemplate(String(id))
-      const template = await templateAPI.getTemplate(String(id))
+      const templateResponse = await templateAPI.getTemplate(String(id))
+      const template = templateResponse?.data
 
       // 更新使用次数
-      set(state => ({
-        templates: state.templates.map(t =>
-          t.id == id ? { ...t, usageCount: t.usageCount + 1 } : t
-        ),
-        popularTemplates: state.popularTemplates.map(t =>
-          t.id == id ? { ...t, usageCount: t.usageCount + 1 } : t
-        )
-      }))
-
-      toast.success('模板已应用')
+      if (template) {
+        set(state => ({
+          templates: state.templates.map(t => 
+            t.id === template.id 
+              ? { ...t, usageCount: (t.usageCount || 0) + 1 }
+              : t
+          ),
+          popularTemplates: state.popularTemplates.map(t => 
+            t.id === template.id 
+              ? { ...t, usageCount: (t.usageCount || 0) + 1 }
+              : t
+          )
+        }))
+      }
+      
       return template
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      console.error('使用模板失败:', error)
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
       return null
     }
@@ -200,10 +197,10 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   // 获取单个模板
   getTemplate: async (id: string | number) => {
     try {
-      const template = await templateAPI.getTemplate(String(id))
-      return template
+      const response = await templateAPI.getTemplate(String(id))
+      return response?.data
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
       return null
     }

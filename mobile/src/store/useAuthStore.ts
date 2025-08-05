@@ -125,7 +125,8 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     set({ isAuthenticated: true, isLoading: true })
     
     try {
-      const user = await authAPI.getUserInfo()
+      const response = await authAPI.getUserInfo()
+      const user = response?.data
       set({ 
         user, 
         isAuthenticated: true, 
@@ -160,14 +161,15 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
   updateUser: async (data: Partial<User>) => {
     set({ isLoading: true, error: null })
     try {
-      const updatedUser = await authAPI.updateUserInfo(data)
+      const response = await authAPI.updateUserInfo(data)
+      const updatedUser = response?.data
       set({
         user: updatedUser,
         isLoading: false
       })
       toast.success('用户信息更新成功')
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       set({ error: errorMessage, isLoading: false })
       toast.error(errorMessage)
     }
@@ -177,13 +179,14 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
   updateProfile: async (data: Partial<User>) => {
     set({ isLoading: true, error: null })
     try {
-      const updatedUser = await authAPI.updateUserInfo(data)
+      const response = await authAPI.updateUserInfo(data)
+      const updatedUser = response?.data
       set({
         user: updatedUser,
         isLoading: false
       })
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       set({ error: errorMessage, isLoading: false })
       throw new Error(errorMessage)
     }

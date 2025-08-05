@@ -62,27 +62,30 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
       }))
 
       // 调用API生成内容
-      const result = await contentAPI.generateContent(params)
+      const response = await contentAPI.generateContent(params)
+      const result = response?.data
       
-      // 替换临时项为真实结果
-      set(state => ({
-        history: state.history.map(item => 
-          item.id === tempGeneration.id ? result : item
-        ),
-        currentGeneration: result,
-        isGenerating: false
-      }))
+      if (result) {
+        // 替换临时项为真实结果
+        set(state => ({
+          history: state.history.map(item => 
+            item.id === tempGeneration.id ? result : item
+          ),
+          currentGeneration: result,
+          isGenerating: false
+        }))
 
-      // 如果状态为处理中，开始轮询
-      if (result.status === 'processing') {
-        get().startPolling(result.id)
+        // 如果状态为处理中，开始轮询
+        if (result.status === 'processing') {
+          get().startPolling(result.id)
+        }
       }
 
       toast.success('生成任务已提交')
       return result
     } catch (error: any) {
       // 移除临时项
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       set(state => ({
         history: state.history.filter(item => !item.id.startsWith('temp-')),
         currentGeneration: null,
@@ -99,13 +102,15 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
     set({ isLoading: true, error: null })
     try {
       const response = await contentAPI.getUserContents(params)
+      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
+      const historyData = response?.data?.records || []
       set({ 
-        history: response.contents,
+        history: historyData,
         isLoading: false 
       })
     } catch (error: any) {
       set({ 
-        error: error.response?.data?.message || error.response?.data?.error || error.message || error.toString(),
+        error: error.response?.data?.message || error.message || error.toString(),
         isLoading: false 
       })
     }
@@ -115,9 +120,11 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   refreshHistory: async () => {
     try {
       const response = await contentAPI.getUserContents({ limit: 20 })
-      set({ history: response.contents })
+      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
+      const historyData = response?.data?.records || []
+      set({ history: historyData })
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
     }
   },
@@ -131,7 +138,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
       }))
       toast.success('删除成功')
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
     }
   },
@@ -147,7 +154,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
         toast.success('历史记录已清空')
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
     }
   },
@@ -161,7 +168,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
       }))
       toast.success(`已删除 ${ids.length} 项记录`)
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()
+      const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)
     }
   },
@@ -192,23 +199,26 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   // 检查生成状态
   checkGenerationStatus: async (id: string) => {
     try {
-      const result = await contentAPI.checkGenerationStatus(id)
+      const response = await contentAPI.checkGenerationStatus(id)
+      const result = response?.data
       
-      // 更新历史记录中的对应项
-      set(state => ({
-        history: state.history.map(item => 
-          item.id === id ? result : item
-        ),
-        currentGeneration: state.currentGeneration?.id === id ? result : state.currentGeneration
-      }))
+      if (result) {
+        // 更新历史记录中的对应项
+        set(state => ({
+          history: state.history.map(item => 
+            item.id === id ? result : item
+          ),
+          currentGeneration: state.currentGeneration?.id === id ? result : state.currentGeneration
+        }))
 
-      // 如果生成完成或失败，停止轮询
-      if (result.status === 'completed' || result.status === 'failed') {
-        get().stopPolling()
-        if (result.status === 'completed') {
-          toast.success('生成完成')
-        } else {
-          toast.error('生成失败')
+        // 如果生成完成或失败，停止轮询
+        if (result.status === 'completed' || result.status === 'failed') {
+          get().stopPolling()
+          if (result.status === 'completed') {
+            toast.success('生成完成')
+          } else {
+            toast.error('生成失败')
+          }
         }
       }
     } catch (error: any) {
