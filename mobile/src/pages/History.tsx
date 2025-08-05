@@ -54,6 +54,10 @@ const History: React.FC = () => {
 
   // 过滤和排序历史记录
   const filteredHistory = React.useMemo(() => {
+    if (!history || !Array.isArray(history)) {
+      return []
+    }
+    
     let filtered = history.filter(item => {
       // 类型过滤
       if (filterType !== 'all' && item.type !== filterType) {
@@ -142,7 +146,6 @@ const History: React.FC = () => {
   // 处理查看详情
   const handleViewDetail = (item: GenerationContent) => {
     // 这里可以导航到详情页面或打开模态框
-    console.log('查看详情:', item)
   }
 
   // 切换选择模式
@@ -362,16 +365,20 @@ const History: React.FC = () => {
                   <div className={`flex space-x-3 ${isSelectionMode ? 'ml-8' : ''}`}>
                     {/* 缩略图 */}
                     <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                      {item.result ? (
+                      {(item.thumbnail || item.url) ? (
                         item.type === 'image' ? (
                           <img 
-                            src={item.result} 
+                            src={item.thumbnail || item.url} 
                             alt="Generated content"
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder-image.jpg'
+                            }}
                           />
                         ) : (
                           <video 
-                            src={item.result}
+                            src={item.url}
+                            poster={item.thumbnail}
                             className="w-full h-full object-cover"
                           />
                         )
@@ -455,7 +462,7 @@ const History: React.FC = () => {
                                     <Eye size={14} />
                                     <span>查看</span>
                                   </button>
-                                  {item.result && (
+                                  {item.url && (
                                     <>
                                       <button
                                         onClick={() => {

@@ -114,9 +114,9 @@ const Create: React.FC = () => {
 
   // 下载结果
   const handleDownload = () => {
-    if (currentGeneration?.result) {
+    if (currentGeneration?.url) {
       const link = document.createElement('a')
-      link.href = currentGeneration.result
+      link.href = currentGeneration.url
       link.download = `generated-${type}-${Date.now()}`
       link.click()
     }
@@ -124,12 +124,12 @@ const Create: React.FC = () => {
 
   // 分享结果
   const handleShare = async () => {
-    if (currentGeneration?.result && navigator.share) {
+    if (currentGeneration?.url && navigator.share) {
       try {
         await navigator.share({
           title: '我的AI创作',
           text: prompt,
-          url: currentGeneration.result,
+          url: currentGeneration.url,
         })
       } catch (error) {
         console.error('分享失败:', error)
@@ -525,18 +525,22 @@ const Create: React.FC = () => {
             >
               <h3 className="text-sm font-medium text-gray-700 mb-3">生成结果</h3>
               
-              {currentGeneration.status === 'completed' && currentGeneration.result ? (
+              {currentGeneration.status === 'completed' && currentGeneration.url ? (
                 <div>
                   <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-3">
                     {type === 'image' ? (
                       <img 
-                        src={currentGeneration.result} 
+                        src={currentGeneration.url} 
                         alt="Generated content"
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-image.jpg'
+                        }}
                       />
                     ) : (
                       <video 
-                        src={currentGeneration.result} 
+                        src={currentGeneration.url} 
+                        poster={currentGeneration.thumbnail}
                         controls
                         className="w-full h-full object-cover"
                       />

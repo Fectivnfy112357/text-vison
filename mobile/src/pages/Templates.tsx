@@ -52,19 +52,38 @@ const Templates: React.FC = () => {
 
   // 初始化
   useEffect(() => {
-    console.log('[Templates] Component mounted, loading templates and categories...')
-    loadTemplates()
-    loadCategories()
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          loadTemplates(),
+          loadCategories()
+        ])
+      } catch (error) {
+        console.error('[Templates] Failed to load data:', error)
+      }
+    }
+    loadData()
   }, [])
 
-  // 监听模板和分类状态变化
-  useEffect(() => {
-    console.log('[Templates] Templates updated:', templates)
-  }, [templates])
 
-  useEffect(() => {
-    console.log('[Templates] Categories updated:', categories)
-  }, [categories])
+  // 排序模板 - 移到useEffect之前
+  const sortedTemplates = React.useMemo(() => {
+    const sorted = [...templates]
+    
+    switch (sortType) {
+      case 'popular':
+        return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      case 'rating':
+        return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      case 'downloads':
+        return sorted.sort((a, b) => (b.downloadCount || 0) - (a.downloadCount || 0))
+      default:
+        return sorted
+    }
+  }, [templates, sortType])
+
 
   // 搜索防抖
   useEffect(() => {
@@ -121,24 +140,6 @@ const Templates: React.FC = () => {
     }
     setFavorites(newFavorites)
   }
-
-  // 排序模板
-  const sortedTemplates = React.useMemo(() => {
-    const sorted = [...templates]
-    
-    switch (sortType) {
-      case 'popular':
-        return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      case 'rating':
-        return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      case 'downloads':
-        return sorted.sort((a, b) => (b.downloadCount || 0) - (a.downloadCount || 0))
-      default:
-        return sorted
-    }
-  }, [templates, sortType])
 
   // 格式化数字
   const formatNumber = (num: number) => {
@@ -298,11 +299,14 @@ const Templates: React.FC = () => {
                   >
                     {/* 模板预览 */}
                     <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                      {template.previewImage ? (
+                      {template.imageUrl ? (
                         <img 
-                          src={template.previewImage} 
+                          src={template.imageUrl} 
                           alt={template.title}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-template.jpg'
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -319,13 +323,13 @@ const Templates: React.FC = () => {
                           <Play size={16} className="text-gray-700" />
                         </button>
                         <button
-                          onClick={() => handleToggleFavorite(template.id)}
+                          onClick={() => handleToggleFavorite(template.id.toString())}
                           className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
                         >
                           <Heart 
                             size={16} 
                             className={`${
-                              favorites.has(template.id) 
+                              favorites.has(template.id.toString()) 
                                 ? 'text-red-500 fill-current' 
                                 : 'text-gray-700'
                             }`} 
@@ -388,11 +392,14 @@ const Templates: React.FC = () => {
                     <div className="flex space-x-3">
                       {/* 缩略图 */}
                       <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                        {template.previewImage ? (
+                        {template.imageUrl ? (
                           <img 
-                            src={template.previewImage} 
+                            src={template.imageUrl} 
                             alt={template.title}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder-template.jpg'
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -435,13 +442,13 @@ const Templates: React.FC = () => {
                           {/* 操作按钮 */}
                           <div className="flex items-center space-x-2 ml-2">
                             <button
-                              onClick={() => handleToggleFavorite(template.id)}
+                              onClick={() => handleToggleFavorite(template.id.toString())}
                               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                             >
                               <Heart 
                                 size={16} 
                                 className={`${
-                                  favorites.has(template.id) 
+                                  favorites.has(template.id.toString()) 
                                     ? 'text-red-500 fill-current' 
                                     : 'text-gray-400'
                                 }`} 

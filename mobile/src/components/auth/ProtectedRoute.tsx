@@ -12,9 +12,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation()
   const token = getToken()
 
-  // 添加调试日志
-  console.log('[ProtectedRoute] Auth state:', { isAuthenticated, isLoading, hasToken: !!token, path: location.pathname })
-
   // 如果正在加载认证状态，显示加载界面
   if (isLoading) {
     return (
@@ -29,7 +26,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // 如果有token但认证状态还未确定（初始化阶段），显示加载状态而不是跳转到登录页
   if (token && !isAuthenticated && !isLoading) {
-    console.log('[ProtectedRoute] Token exists but not authenticated yet, showing loading...')
     return (
       <div className="h-full flex items-center justify-center bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
         <div className="text-center">
@@ -42,7 +38,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // 如果没有token且未认证，跳转到登录页
   if (!token && !isAuthenticated) {
-    console.log('[ProtectedRoute] No token and not authenticated, redirecting to login...')
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

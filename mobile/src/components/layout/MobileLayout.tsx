@@ -8,7 +8,7 @@ interface MobileLayoutProps {
 const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   return (
     <motion.div 
-      className="h-full flex flex-col relative overflow-hidden"
+      className="min-h-screen flex flex-col relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

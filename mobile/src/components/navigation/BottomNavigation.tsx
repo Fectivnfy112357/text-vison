@@ -28,7 +28,7 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <motion.div 
-      className="safe-area-bottom bg-white/80 backdrop-blur-md border-t border-white/60 px-2 py-2"
+      className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-white/80 backdrop-blur-md border-t border-white/60 px-2 py-2"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}

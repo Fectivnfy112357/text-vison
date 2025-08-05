@@ -186,6 +186,7 @@ export interface GenerationContent {
   type: 'image' | 'video'
   prompt: string
   result?: string
+  url?: string
   thumbnail?: string
   status: 'pending' | 'processing' | 'completed' | 'failed'
   progress?: number

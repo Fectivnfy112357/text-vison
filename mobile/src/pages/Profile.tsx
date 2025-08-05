@@ -51,18 +51,12 @@ const Profile: React.FC = () => {
 
   // 初始化
   useEffect(() => {
-    console.log('[Profile] Component mounted, auth state:', { isAuthenticated, isLoading, user: user?.username })
     if (!isAuthenticated && !isLoading) {
-      console.log('[Profile] User not authenticated, redirecting to login')
       navigate('/login')
       return
     }
   }, [isAuthenticated, isLoading])
 
-  // 监听用户状态变化
-  useEffect(() => {
-    console.log('[Profile] User state changed:', { user: user?.username, isAuthenticated, isLoading })
-  }, [user, isAuthenticated, isLoading])
 
   // 统计数据
   const stats = React.useMemo(() => {

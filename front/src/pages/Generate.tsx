@@ -191,7 +191,6 @@ export default function Generate() {
   };
 
   const handleGenerate = async () => {
-    console.log('开始生成 - 调试信息:', {
       prompt: prompt.trim(),
       isAuthenticated,
       user,

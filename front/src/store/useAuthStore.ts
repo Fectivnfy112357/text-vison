@@ -107,18 +107,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   checkAuth: async () => {
     const token = localStorage.getItem('auth_token');
-    console.log('checkAuth 开始执行:', { tokenExists: !!token, tokenLength: token?.length });
     
     if (!token) {
-      console.log('没有token，设置为未认证状态');
       set({ user: null, isAuthenticated: false });
       return;
     }
     
     try {
-      console.log('尝试获取用户信息...');
       const userProfile = await authAPI.getProfile();
-      console.log('获取用户信息成功:', userProfile);
       
       const user: User = {
         id: userProfile.id.toString(),
@@ -126,7 +122,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         name: userProfile.name,
         avatar: userProfile.avatar
       };
-      console.log('设置认证状态为已登录:', user);
       set({ user, isAuthenticated: true });
     } catch (error) {
       console.error('checkAuth 失败:', error);

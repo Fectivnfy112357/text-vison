@@ -61,7 +61,7 @@ function App() {
             <Route path="/*" element={
               <ProtectedRoute>
                 <MobileLayout>
-                  <div className="flex-1 overflow-hidden">
+                  <div className="flex-1 overflow-hidden pb-20">
                     <Routes>
                       <Route path="/" element={
                         <motion.div
@@ -122,8 +122,8 @@ function App() {
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </div>
-                  <BottomNavigation />
                 </MobileLayout>
+                <BottomNavigation />
               </ProtectedRoute>
             } />
           </Routes>
