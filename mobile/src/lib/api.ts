@@ -45,9 +45,18 @@ apiClient.interceptors.response.use(
     return response
   },
   (error: AxiosError) => {
+    // 只有认证相关接口的401错误才清空登录状态
     if (error.response?.status === 401) {
-      clearToken()
-      window.location.href = '/login'
+      const url = error.config?.url || ''
+      // 只有这些认证相关接口的401错误才清空登录状态
+      const authRelatedUrls = ['/users/profile', '/users/login', '/users/register']
+      const isAuthRelated = authRelatedUrls.some(authUrl => url.includes(authUrl))
+      
+      if (isAuthRelated) {
+        clearToken()
+        // 移除强制跳转，让React Router和ProtectedRoute处理页面跳转
+      }
+      // 其他接口的401错误直接返回，不清空登录状态
     }
     return Promise.reject(error)
   }
@@ -99,29 +108,38 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  user: User
-  token: string
+  code: number
+  message: string
+  data: {
+    user: User
+    token: string
+  }
+  success: boolean
 }
 
 export interface Template {
-  id: string
-  name: string
+  id: number
   title: string
   description: string
   prompt: string
-  thumbnail: string
-  previewImage?: string
   category: string
-  tags: string[]
-  isPopular: boolean
+  tags: string[] | null
+  imageUrl: string
+  type: 'image' | 'video'
   usageCount: number
+  status: number
+  createdAt: string
+  updatedAt: string
+  // 兼容字段
+  name?: string
+  thumbnail?: string
+  previewImage?: string
+  isPopular?: boolean
   rating?: number
   author?: string
-  type?: 'image' | 'video'
   downloadCount?: number
   isPremium?: boolean
   isHot?: boolean
-  createdAt: string
 }
 
 export interface TemplateCategory {
@@ -185,13 +203,13 @@ export const authAPI = {
     request('POST', '/users/register', data),
   
   getUserInfo: (): Promise<User> => 
-    request('GET', '/users/me'),
+    request('GET', '/users/profile'),
   
   updateUserInfo: (data: Partial<User>): Promise<User> => 
-    request('PUT', '/users/me', data),
+    request('PUT', '/users/profile', data),
   
   changePassword: (data: { oldPassword: string; newPassword: string }): Promise<void> => 
-    request('POST', '/users/change-password', data),
+    request('POST', '/users/password', data),
   
   logout: (): Promise<void> => 
     request('POST', '/users/logout'),
@@ -205,7 +223,7 @@ export const templateAPI = {
   getTemplate: (id: string): Promise<Template> => 
     request('GET', `/templates/${id}`),
   
-  getPopularTemplates: (limit?: number): Promise<Template[]> => 
+  getPopularTemplates: (limit?: number): Promise<{ code: number; message: string; data: Template[] }> => 
     request('GET', '/templates/popular', { params: { limit } }),
   
   getTemplatesByCategory: (category: string): Promise<Template[]> => 
@@ -237,28 +255,28 @@ export const contentAPI = {
     style?: string
     options?: ImageGenerationParams | VideoGenerationParams
   }): Promise<GenerationContent> => 
-    request('POST', '/content/generate', data),
+    request('POST', '/contents/generate', data),
   
   getArtStyles: (): Promise<ArtStyle[]> => 
-    request('GET', '/content/art-styles'),
+    request('GET', '/contents/art-styles'),
   
   getUserContents: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }): Promise<{ contents: GenerationContent[]; total: number }> => 
-    request('GET', '/content/user', { params }),
+    request('GET', '/contents', { params }),
   
   getContent: (id: string): Promise<GenerationContent> => 
-    request('GET', `/content/${id}`),
+    request('GET', `/contents/${id}`),
   
   getRecentContents: (limit?: number): Promise<GenerationContent[]> => 
-    request('GET', '/content/recent', { params: { limit } }),
+    request('GET', '/contents/recent', { params: { limit } }),
   
   deleteContent: (id: string): Promise<void> => 
-    request('DELETE', `/content/${id}`),
+    request('DELETE', `/contents/${id}`),
   
   batchDeleteContents: (ids: string[]): Promise<void> => 
-    request('POST', '/content/batch-delete', { ids }),
+    request('POST', '/contents/batch-delete', { ids }),
   
   checkGenerationStatus: (id: string): Promise<GenerationContent> => 
-    request('GET', `/content/${id}/status`),
+    request('GET', `/contents/${id}/status`),
 }
 
 export default apiClient

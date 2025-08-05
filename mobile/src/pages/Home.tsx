@@ -12,28 +12,18 @@ const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore()
 
   useEffect(() => {
-    console.log('[Home] Component mounted, loading popular templates...')
     loadPopularTemplates(4)
-  }, [loadPopularTemplates])
-
-  // 监听热门模板状态变化
-  useEffect(() => {
-    console.log('[Home] Popular templates updated:', popularTemplates)
-  }, [popularTemplates])
+  }, [])
 
   const handleCreateClick = () => {
     if (isAuthenticated) {
       navigate('/create')
-    } else {
-      navigate('/login')
     }
   }
 
   const handleTemplateClick = (template: Template) => {
     if (isAuthenticated) {
       navigate('/create', { state: { template } })
-    } else {
-      navigate('/login')
     }
   }
 
@@ -154,10 +144,10 @@ const Home: React.FC = () => {
                 onClick={() => handleTemplateClick(template)}
               >
                 <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                  {template.thumbnail ? (
+                  {template.imageUrl ? (
                     <img 
-                      src={template.thumbnail} 
-                      alt={template.name}
+                      src={template.imageUrl} 
+                      alt={template.title}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -165,7 +155,7 @@ const Home: React.FC = () => {
                       <Sparkles className="text-gray-400" size={32} />
                     </div>
                   )}
-                  {template.isPopular && (
+                  {template.usageCount > 5 && (
                     <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1">
                       <Star size={10} fill="currentColor" />
                       <span>热门</span>
@@ -173,7 +163,7 @@ const Home: React.FC = () => {
                   )}
                 </div>
                 <div className="p-3">
-                  <h3 className="font-medium text-gray-800 text-sm mb-1 line-clamp-1">{template.name}</h3>
+                  <h3 className="font-medium text-gray-800 text-sm mb-1 line-clamp-1">{template.title}</h3>
                   <p className="text-xs text-gray-500 line-clamp-2 mb-2">{template.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-full">

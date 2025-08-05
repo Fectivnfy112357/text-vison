@@ -24,8 +24,8 @@ interface TemplateActions {
   searchTemplates: (query: string) => Promise<void>
   setSelectedCategory: (category: TemplateCategory | null) => void
   setSearchQuery: (query: string) => void
-  useTemplate: (id: string) => Promise<Template | null>
-  getTemplate: (id: string) => Promise<Template | null>
+  useTemplate: (id: string | number) => Promise<Template | null>
+  getTemplate: (id: string | number) => Promise<Template | null>
   clearError: () => void
   resetPagination: () => void
 }
@@ -78,8 +78,10 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   loadPopularTemplates: async (limit = 10) => {
     console.log('[TemplateStore] Loading popular templates with limit:', limit)
     try {
-      const templates = await templateAPI.getPopularTemplates(limit)
-      console.log('[TemplateStore] API response for popular templates:', templates)
+      const response = await templateAPI.getPopularTemplates(limit)
+      console.log('[TemplateStore] API response for popular templates:', response)
+      // 处理后端返回的数据结构 {code, message, data}
+      const templates = response?.data || []
       // 确保templates是数组
       const templatesArray = Array.isArray(templates) ? templates : []
       console.log('[TemplateStore] Setting popular templates:', templatesArray)
@@ -153,18 +155,18 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   },
 
   // 使用模板
-  useTemplate: async (id: string) => {
+  useTemplate: async (id: string | number) => {
     try {
-      await templateAPI.useTemplate(id)
-      const template = await templateAPI.getTemplate(id)
+      await templateAPI.useTemplate(String(id))
+      const template = await templateAPI.getTemplate(String(id))
       
       // 更新使用次数
       set(state => ({
         templates: state.templates.map(t => 
-          t.id === id ? { ...t, usageCount: t.usageCount + 1 } : t
+          t.id == id ? { ...t, usageCount: t.usageCount + 1 } : t
         ),
         popularTemplates: state.popularTemplates.map(t => 
-          t.id === id ? { ...t, usageCount: t.usageCount + 1 } : t
+          t.id == id ? { ...t, usageCount: t.usageCount + 1 } : t
         )
       }))
       
@@ -178,9 +180,9 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   },
 
   // 获取单个模板
-  getTemplate: async (id: string) => {
+  getTemplate: async (id: string | number) => {
     try {
-      const template = await templateAPI.getTemplate(id)
+      const template = await templateAPI.getTemplate(String(id))
       return template
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || error.toString()

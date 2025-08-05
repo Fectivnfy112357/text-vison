@@ -108,7 +108,7 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout()
-      navigate('/login')
+      // 移除跳转到登录页的逻辑
       toast.success('已安全退出')
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message || error.toString())
