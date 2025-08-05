@@ -150,11 +150,14 @@ export interface TemplateCategory {
 }
 
 export interface ArtStyle {
-  id: string
+  id: number
   name: string
   description: string
-  thumbnail: string
-  prompt: string
+  applicableType: string
+  sortOrder: number
+  status: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ImageGenerationParams {
@@ -259,7 +262,7 @@ export const contentAPI = {
     request('POST', '/contents/generate', data),
   
   getArtStyles: (): Promise<ArtStyle[]> => 
-    request('GET', '/contents/art-styles'),
+    request('GET', '/art-styles'),
   
   getUserContents: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }): Promise<{ contents: GenerationContent[]; total: number }> => 
     request('GET', '/contents', { params }),

@@ -26,12 +26,16 @@ export const useArtStyleStore = create<ArtStyleState & ArtStyleActions>((set) =>
     set({ isLoading: true, error: null })
     try {
       const artStyles = await contentAPI.getArtStyles()
+      // 确保artStyles是数组
+      const validArtStyles = Array.isArray(artStyles) ? artStyles : []
       set({ 
-        artStyles,
+        artStyles: validArtStyles,
         isLoading: false 
       })
     } catch (error: any) {
+      console.error('加载艺术风格失败:', error)
       set({ 
+        artStyles: [], // 确保在错误时artStyles仍然是数组
         error: error.response?.data?.message || error.response?.data?.error || error.message || error.toString(),
         isLoading: false 
       })

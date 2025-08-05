@@ -1,7 +1,5 @@
 # TODO:
 
-- [x] fix-page-scroll: 修复所有页面无法上下滑动的问题 (priority: High)
-- [x] fix-history-error: 修复历史页面报错，处理history可能为undefined的情况 (priority: High)
-- [x] fix-template-library-rendering: 修复模板库页面数据渲染问题，参考首页的渲染方式 (priority: High)
-- [x] fix-bottom-navigation: 修复底部导航栏定位，使其在绝对位置的底部 (priority: Medium)
-- [x] fix-field-mapping: 检查并修正所有页面的字段映射，确保与后端API返回的字段一致 (priority: Medium)
+- [x] fix-profile-history: 修复Profile.tsx中第73行history为undefined导致的错误，在useMemo中添加安全检查 (priority: High)
+- [x] fix-template-dropdown: 修复Templates.tsx中模板分类下拉框被模板覆盖的问题，调整z-index确保分类菜单显示在最上层 (priority: High)
+- [x] fix-backend-art-styles: 检查并修复后端艺术风格查询报错问题，解决NumberFormatException路径参数解析错误 (priority: High)

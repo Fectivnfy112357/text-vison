@@ -59,7 +59,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
         templatesArray = response.data.records
         total = response.data.total
       }
-     
+
       set({
         templates: templatesArray,
         pagination: {

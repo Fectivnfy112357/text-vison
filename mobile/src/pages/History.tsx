@@ -144,7 +144,7 @@ const History: React.FC = () => {
   }
 
   // 处理查看详情
-  const handleViewDetail = (item: GenerationContent) => {
+  const handleViewDetail = (_item: GenerationContent) => {
     // 这里可以导航到详情页面或打开模态框
   }
 

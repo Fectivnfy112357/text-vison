@@ -60,6 +60,17 @@ const Profile: React.FC = () => {
 
   // 统计数据
   const stats = React.useMemo(() => {
+    // 添加安全检查，确保history不为undefined或null
+    if (!history || !Array.isArray(history)) {
+      return {
+        total: 0,
+        completed: 0,
+        images: 0,
+        videos: 0,
+        successRate: 0
+      }
+    }
+    
     const totalGenerations = history.length
     const completedGenerations = history.filter(item => item.status === 'completed').length
     const imageGenerations = history.filter(item => item.type === 'image').length

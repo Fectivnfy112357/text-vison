@@ -26,7 +26,7 @@ const Create: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { generateContent, isGenerating, currentGeneration } = useGenerationStore()
-  const { artStyles, selectedStyle, loadArtStyles, setSelectedStyle } = useArtStyleStore()
+  const { artStyles, selectedStyle, isLoading: stylesLoading, error: stylesError, loadArtStyles, setSelectedStyle, clearError } = useArtStyleStore()
   const { isAuthenticated } = useAuthStore()
 
   // 状态管理
@@ -68,6 +68,7 @@ const Create: React.FC = () => {
       return
     }
 
+    // 加载艺术风格数据
     loadArtStyles()
 
     // 处理路由状态
@@ -79,7 +80,7 @@ const Create: React.FC = () => {
       const template = state.template as Template
       setPrompt(template.prompt)
     }
-  }, [isAuthenticated, location.state])
+  }, [isAuthenticated, location.state, loadArtStyles])
 
   // 处理文件上传
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +108,7 @@ const Create: React.FC = () => {
     await generateContent({
       prompt,
       type,
-      style: selectedStyle?.id,
+      style: selectedStyle?.id?.toString(),
       options,
     })
   }
@@ -218,13 +219,22 @@ const Create: React.FC = () => {
           >
             <h2 className="text-sm font-medium text-gray-700 mb-3">艺术风格</h2>
             <button
-              onClick={() => setShowStylePicker(!showStylePicker)}
+              onClick={() => {
+                if (stylesError) {
+                  clearError()
+                  loadArtStyles()
+                }
+                setShowStylePicker(!showStylePicker)
+              }}
               className="w-full input-soft flex items-center justify-between p-3"
+              disabled={stylesLoading}
             >
               <div className="flex items-center space-x-2">
                 <Palette size={16} className="text-gray-400" />
                 <span className="text-gray-700">
-                  {selectedStyle ? selectedStyle.name : '选择风格'}
+                  {stylesLoading ? '加载中...' : 
+                   stylesError ? '加载失败，点击重试' :
+                   selectedStyle ? selectedStyle.name : '选择风格'}
                 </span>
               </div>
               <ChevronDown size={16} className="text-gray-400" />
@@ -238,23 +248,49 @@ const Create: React.FC = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-3 grid grid-cols-2 gap-2 max-h-40 overflow-y-auto scrollbar-hide"
                 >
-                  {artStyles.map((style) => (
-                    <button
-                      key={style.id}
-                      onClick={() => {
-                        setSelectedStyle(style)
-                        setShowStylePicker(false)
-                      }}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        selectedStyle?.id === style.id
-                          ? 'border-primary-300 bg-primary-50'
-                          : 'border-gray-200 bg-white/50'
-                      }`}
-                    >
-                      <div className="text-sm font-medium text-gray-800">{style.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">{style.description}</div>
-                    </button>
-                  ))}
+                  {stylesLoading ? (
+                    <div className="col-span-2 text-center py-4 text-gray-500 text-sm">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+                        <span>加载风格中...</span>
+                      </div>
+                    </div>
+                  ) : stylesError ? (
+                    <div className="col-span-2 text-center py-4">
+                      <div className="text-red-500 text-sm mb-2">加载失败</div>
+                      <button
+                        onClick={() => {
+                          clearError()
+                          loadArtStyles()
+                        }}
+                        className="text-primary-500 text-sm hover:text-primary-600"
+                      >
+                        点击重试
+                      </button>
+                    </div>
+                  ) : Array.isArray(artStyles) && artStyles.length > 0 ? (
+                    artStyles.map((style) => (
+                      <button
+                        key={style.id}
+                        onClick={() => {
+                          setSelectedStyle(style)
+                          setShowStylePicker(false)
+                        }}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          selectedStyle?.id === style.id
+                            ? 'border-primary-300 bg-primary-50'
+                            : 'border-gray-200 bg-white/50'
+                        }`}
+                      >
+                        <div className="text-sm font-medium text-gray-800">{style.name}</div>
+                        <div className="text-xs text-gray-500 mt-1">{style.description}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-4 text-gray-500 text-sm">
+                      暂无可用风格
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

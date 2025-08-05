@@ -155,7 +155,7 @@ const Templates: React.FC = () => {
     <div className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       {/* 头部 */}
       <motion.div 
-        className="safe-area-top px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-white/60"
+        className="relative safe-area-top px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-white/60"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -214,7 +214,7 @@ const Templates: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute left-6 right-6 top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20 max-h-60 overflow-y-auto scrollbar-hide"
+              className="absolute left-6 right-6 top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-60 overflow-y-auto scrollbar-hide"
             >
               <button
                 onClick={() => handleCategorySelect(null)}
