@@ -29,7 +29,7 @@ import { toast } from 'sonner'
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
-  const { user, isAuthenticated, logout, updateProfile } = useAuthStore()
+  const { user, isAuthenticated, isLoading, logout, updateProfile } = useAuthStore()
   const { history } = useGenerationStore()
 
   // 状态管理
@@ -51,11 +51,18 @@ const Profile: React.FC = () => {
 
   // 初始化
   useEffect(() => {
-    if (!isAuthenticated) {
+    console.log('[Profile] Component mounted, auth state:', { isAuthenticated, isLoading, user: user?.username })
+    if (!isAuthenticated && !isLoading) {
+      console.log('[Profile] User not authenticated, redirecting to login')
       navigate('/login')
       return
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, isLoading])
+
+  // 监听用户状态变化
+  useEffect(() => {
+    console.log('[Profile] User state changed:', { user: user?.username, isAuthenticated, isLoading })
+  }, [user, isAuthenticated, isLoading])
 
   // 统计数据
   const stats = React.useMemo(() => {
@@ -148,7 +155,8 @@ const Profile: React.FC = () => {
     </button>
   )
 
-  if (!user) {
+  // 如果正在加载认证状态，显示加载界面
+  if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
@@ -157,6 +165,12 @@ const Profile: React.FC = () => {
         </div>
       </div>
     )
+  }
+
+  // 如果未认证，重定向到登录页
+  if (!isAuthenticated || !user) {
+    navigate('/login')
+    return null
   }
 
   return (

@@ -19,6 +19,9 @@ import BottomNavigation from './components/navigation/BottomNavigation'
 // 状态管理
 import { useAuthStore } from './store/useAuthStore'
 
+// 认证组件
+import ProtectedRoute from './components/auth/ProtectedRoute'
+
 function App() {
   const { checkAuth } = useAuthStore()
 
@@ -56,68 +59,70 @@ function App() {
             
             {/* 主应用路由 */}
             <Route path="/*" element={
-              <MobileLayout>
-                <div className="flex-1 overflow-hidden">
-                  <Routes>
-                    <Route path="/" element={
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <Home />
-                      </motion.div>
-                    } />
-                    <Route path="/create" element={
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <Create />
-                      </motion.div>
-                    } />
-                    <Route path="/history" element={
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <History />
-                      </motion.div>
-                    } />
-                    <Route path="/templates" element={
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <Templates />
-                      </motion.div>
-                    } />
-                    <Route path="/profile" element={
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <Profile />
-                      </motion.div>
-                    } />
-                  </Routes>
-                </div>
-                <BottomNavigation />
-              </MobileLayout>
+              <ProtectedRoute>
+                <MobileLayout>
+                  <div className="flex-1 overflow-hidden">
+                    <Routes>
+                      <Route path="/" element={
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Home />
+                        </motion.div>
+                      } />
+                      <Route path="/create" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Create />
+                        </motion.div>
+                      } />
+                      <Route path="/history" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <History />
+                        </motion.div>
+                      } />
+                      <Route path="/templates" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Templates />
+                        </motion.div>
+                      } />
+                      <Route path="/profile" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Profile />
+                        </motion.div>
+                      } />
+                    </Routes>
+                  </div>
+                  <BottomNavigation />
+                </MobileLayout>
+              </ProtectedRoute>
             } />
           </Routes>
         </AnimatePresence>

@@ -1,6 +1,6 @@
 # TODO:
 
-- [x] fix-register-interface: 修改移动端RegisterRequest接口，将username改为name字段 (priority: High)
-- [x] fix-register-submit: 修改注册表单提交逻辑，确保发送name和confirmPassword参数 (priority: High)
-- [x] fix-login-response: 修复登录响应处理逻辑，正确处理后端错误信息 (priority: High)
-- [x] test-auth-functions: 测试登录和注册功能，确保参数正确传递 (priority: Medium)
+- [ ] auth-fix: 修复useAuthStore.ts中checkAuth方法的认证状态逻辑错误 (priority: High)
+- [ ] template-display-fix: 检查并修复热门模板数据显示问题 (priority: High)
+- [ ] test-auth: 测试修复后的认证状态持久化 (priority: Medium)
+- [ ] test-templates: 测试修复后的热门模板显示 (priority: Medium)

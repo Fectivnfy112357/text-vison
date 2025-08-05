@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
@@ -7,6 +7,7 @@ import { LoginRequest } from '../lib/api'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, isLoading, error } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState<LoginRequest>({
@@ -22,7 +23,9 @@ const Login: React.FC = () => {
     e.preventDefault()
     const success = await login(formData)
     if (success) {
-      navigate('/', { replace: true })
+      // 获取重定向路径，如果没有则默认跳转到首页
+      const from = location.state?.from?.pathname || '/'
+      navigate(from, { replace: true })
     }
   }
 

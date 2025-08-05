@@ -33,9 +33,18 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await authAPI.login(credentials)
-      setToken(response.token)
+      console.log('[Auth] Login response:', response)
+      // 根据API响应结构，token在data.token中
+      const token = response.data?.token || response.token
+      const user = response.data?.user || response.user
+      
+      if (!token) {
+        throw new Error('登录响应中未找到token')
+      }
+      
+      setToken(token)
       set({ 
-        user: response.user, 
+        user: user, 
         isAuthenticated: true, 
         isLoading: false 
       })
@@ -54,9 +63,18 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await authAPI.register(data)
-      setToken(response.token)
+      console.log('[Auth] Register response:', response)
+      // 根据API响应结构，token在data.token中
+      const token = response.data?.token || response.token
+      const user = response.data?.user || response.user
+      
+      if (!token) {
+        throw new Error('注册响应中未找到token')
+      }
+      
+      setToken(token)
       set({ 
-        user: response.user, 
+        user: user, 
         isAuthenticated: true, 
         isLoading: false 
       })
@@ -89,25 +107,40 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   checkAuth: async () => {
     const token = getToken()
     if (!token) {
-      set({ isAuthenticated: false, user: null })
+      console.log('[Auth] No token found, setting unauthenticated')
+      set({ isAuthenticated: false, user: null, isLoading: false })
       return
     }
 
+    console.log('[Auth] Token found, checking user info...')
     set({ isLoading: true })
     try {
       const user = await authAPI.getUserInfo()
+      console.log('[Auth] User info retrieved successfully:', user)
       set({ 
         user, 
         isAuthenticated: true, 
         isLoading: false 
       })
-    } catch (error) {
-      clearToken()
-      set({ 
-        user: null, 
-        isAuthenticated: false, 
-        isLoading: false 
-      })
+    } catch (error: any) {
+      console.error('[Auth] Failed to get user info:', error)
+      // 只有在401错误时才清除token，其他错误保持当前状态
+      if (error.response?.status === 401) {
+        console.log('[Auth] Token expired, clearing auth state')
+        clearToken()
+        set({ 
+          user: null, 
+          isAuthenticated: false, 
+          isLoading: false 
+        })
+      } else {
+        console.log('[Auth] Network error, keeping current auth state')
+        // 网络错误时，如果有token就假设用户已认证
+        set({ 
+          isAuthenticated: true, 
+          isLoading: false 
+        })
+      }
     }
   },
 

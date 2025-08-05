@@ -52,9 +52,19 @@ const Templates: React.FC = () => {
 
   // 初始化
   useEffect(() => {
+    console.log('[Templates] Component mounted, loading templates and categories...')
     loadTemplates()
     loadCategories()
   }, [])
+
+  // 监听模板和分类状态变化
+  useEffect(() => {
+    console.log('[Templates] Templates updated:', templates)
+  }, [templates])
+
+  useEffect(() => {
+    console.log('[Templates] Categories updated:', categories)
+  }, [categories])
 
   // 搜索防抖
   useEffect(() => {

@@ -12,8 +12,14 @@ const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore()
 
   useEffect(() => {
-    loadPopularTemplates(6)
-  }, [])
+    console.log('[Home] Component mounted, loading popular templates...')
+    loadPopularTemplates(4)
+  }, [loadPopularTemplates])
+
+  // 监听热门模板状态变化
+  useEffect(() => {
+    console.log('[Home] Popular templates updated:', popularTemplates)
+  }, [popularTemplates])
 
   const handleCreateClick = () => {
     if (isAuthenticated) {
