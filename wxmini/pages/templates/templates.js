@@ -75,9 +75,6 @@ Page({
     
     // 加载数据
     this.loadTemplates();
-    
-    // 数据分析
-    this.trackPageView();
   },
 
   onShow() {
@@ -271,9 +268,6 @@ Page({
     
     this.saveSearchHistory(keyword);
     this.loadTemplates();
-    
-    // 数据分析
-    this.trackSearch(keyword);
   },
 
   // 清空搜索
@@ -328,9 +322,6 @@ Page({
     });
     
     this.loadTemplates();
-    
-    // 数据分析
-    this.trackCategorySelect(category);
   },
 
   // 排序选择
@@ -362,12 +353,9 @@ Page({
   onTemplateTap(e) {
     const template = e.currentTarget.dataset.template;
     
-    // 数据分析
-    this.trackTemplateClick(template);
-    
     // 跳转到创作页面
     wx.navigateTo({
-      url: `/pages/create/create?templateId=${template.id}&type=${template.type}`
+      url: `/pages/create/create?template_id=${template.id}&type=${template.type}`
     });
   },
 
@@ -399,9 +387,6 @@ Page({
         this.setData(updateData);
         
         utils.showToast(template.is_favorited ? '已取消收藏' : '已收藏');
-        
-        // 数据分析
-        this.trackTemplateFavorite(template, !template.is_favorited);
       } else {
         throw new Error(response.message || '操作失败');
       }
@@ -427,58 +412,5 @@ Page({
     });
   },
 
-  // 数据分析 - 页面访问
-  trackPageView() {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('page_view', {
-        page_name: 'templates',
-        category: this.data.selectedCategory,
-        sort: this.data.selectedSort
-      });
-    }
-  },
 
-  // 数据分析 - 搜索
-  trackSearch(keyword) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('template_search', {
-        keyword,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 分类选择
-  trackCategorySelect(category) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('category_select', {
-        category,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 模板点击
-  trackTemplateClick(template) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('template_click', {
-        template_id: template.id,
-        template_name: template.name,
-        category: template.category,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 模板收藏
-  trackTemplateFavorite(template, favorited) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('template_favorite', {
-        template_id: template.id,
-        template_name: template.name,
-        action: favorited ? 'favorite' : 'unfavorite',
-        timestamp: Date.now()
-      });
-    }
-  }
 });

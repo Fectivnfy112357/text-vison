@@ -1,10 +1,6 @@
 # TODO:
 
-- [x] analyze_api_diff: 分析后端Controller接口与小程序API的差异 (priority: High)
-- [x] fix_user_apis: 修正用户相关接口路径和参数 (priority: High)
-- [x] fix_template_apis: 修正模板相关接口路径 (priority: High)
-- [x] fix_content_apis: 修正内容生成接口，统一为/api/contents/generate (priority: High)
-- [x] fix_history_apis: 修正历史记录接口路径 (priority: High)
-- [x] add_missing_apis: 添加缺失的用户统计和会员信息接口 (priority: Medium)
-- [x] add_category_style_apis: 添加模板分类和艺术风格接口 (priority: Medium)
-- [x] verify_apis: 验证修正后的API调用 (priority: Low)
+- [x] fix_create_params: 修正创作页参数以匹配GenerateContentRequest.java：添加缺失参数，移除不匹配参数，更新buildGenerateData方法 (priority: High)
+- [x] fix_template_click: 修复模板点击接口调用：修正跳转参数名从templateId改为template_id (priority: High)
+- [x] fix_history_login: 修复历史页登录检查：使用正确的存储key 'user_info'而不是'userInfo' (priority: High)
+- [ ] remove_analytics: 删除所有analytics相关代码：删除utils/analytics.js，从api/index.js删除analytics导出，从所有页面删除analytics调用，删除后端AnalyticsController (**IN PROGRESS**) (priority: Medium)

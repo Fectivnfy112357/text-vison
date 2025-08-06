@@ -36,24 +36,24 @@ Page({
       return
     }
 
+    // 1. 首先在同步上下文中获取用户信息（可选）
+    let userInfo = null
+    try {
+      if (this.data.canIUseGetUserProfile) {
+        const userRes = await this.getUserProfile()
+        userInfo = userRes.userInfo
+      }
+    } catch (error) {
+      console.log('用户取消授权或获取用户信息失败:', error)
+      // 不阻断登录流程，继续使用code登录
+    }
+
     try {
       this.setData({ isLogging: true })
       showLoading('登录中...')
 
-      // 1. 获取微信登录code
+      // 2. 获取微信登录code
       const loginRes = await this.getWxLoginCode()
-      
-      // 2. 获取用户信息（可选）
-      let userInfo = null
-      try {
-        if (this.data.canIUseGetUserProfile) {
-          const userRes = await this.getUserProfile()
-          userInfo = userRes.userInfo
-        }
-      } catch (error) {
-        console.log('用户取消授权或获取用户信息失败:', error)
-        // 不阻断登录流程，继续使用code登录
-      }
 
       // 3. 调用后端登录接口
       const response = await auth.wxLogin({
@@ -73,6 +73,7 @@ Page({
           this.navigateBack()
         }, 1500)
       } else {
+        console.error("登录失败", response)
         showToast(response.message || '登录失败')
       }
 

@@ -618,38 +618,7 @@ const config = {
   }
 }
 
-/**
- * 统计分析相关接口
- */
-const analytics = {
-  /**
-   * 获取用户统计数据
-   */
-  getUserStats() {
-    return get('/api/analytics/user-stats')
-  },
 
-  /**
-   * 记录用户行为
-   * @param {object} data 行为数据
-   * @param {string} data.action 行为类型
-   * @param {object} data.params 行为参数
-   */
-  trackUserAction(data) {
-    return post('/api/analytics/track', data, {
-      silent: true
-    })
-  },
-
-  /**
-   * 获取使用报告
-   * @param {object} params 查询参数
-   * @param {string} params.period 时间周期
-   */
-  getUsageReport(params = {}) {
-    return get('/api/analytics/usage-report', params)
-  }
-}
 
 /**
  * 反馈相关接口
@@ -775,7 +744,6 @@ module.exports = {
   history,
   file,
   config,
-  analytics,
   feedback,
   share,
   notification

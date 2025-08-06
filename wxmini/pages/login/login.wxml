@@ -23,12 +23,7 @@
       <image class="wx-icon" src="/assets/icons/wechat.svg" wx:if="{{!isLogging}}"></image>
       <text class="btn-text">{{isLogging ? '登录中...' : '微信快速登录'}}</text>
     </button>
-
-    <!-- 跳过登录 -->
-    <view class="skip-section">
-      <text class="skip-btn" bindtap="onSkipLogin">暂不登录，先体验</text>
-    </view>
-
+    
     <!-- 用户协议 -->
     <view class="agreement-section">
       <text class="agreement-text">登录即表示同意</text>

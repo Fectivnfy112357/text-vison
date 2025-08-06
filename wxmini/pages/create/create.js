@@ -4,7 +4,7 @@
  */
 
 const app = getApp()
-const { content, file, analytics } = require('../../api/index.js')
+const { content, file } = require('../../api/index.js')
 const { showToast, showLoading, hideLoading, showConfirm, navigateTo, navigateBack, storage } = require('../../utils/utils.js')
 
 Page({
@@ -23,24 +23,36 @@ Page({
     selectedTemplate: null,
     templateId: '',
     
-    // 生成参数
+    // 生成参数 - 匹配GenerateContentRequest.java
     params: {
-      // 图片参数
-      width: 512,
-      height: 512,
-      steps: 20,
-      cfg_scale: 7,
-      sampler: 'DPM++ 2M Karras',
+      // 基础参数
+      type: 'image', // image, video
+      prompt: '',
+      size: '1:1', // 尺寸比例
+      style: '', // 艺术风格
+      styleId: null, // 艺术风格ID
+      referenceImage: '', // 参考图片URL
+      templateId: null, // 使用的模板ID
+      quality: 'standard', // 图片质量
       
-      // 视频参数
-      duration: 3,
-      fps: 24,
-      motion_strength: 0.5,
+      // 图片生成参数
+      responseFormat: 'url', // url, b64_json
+      seed: -1, // 随机数种子 [-1, 2147483647]
+      guidanceScale: 2.5, // 引导比例 [1, 10]
       
-      // 通用参数
-      seed: -1,
-      batch_count: 1,
-      negative_prompt: ''
+      // 视频生成参数
+      model: 'doubao-seedance-pronew', // 视频生成模型
+      resolution: '720p', // 480p, 720p, 1080p
+      duration: 5, // 视频时长（秒）[5, 10]
+      ratio: '16:9', // 视频比例 1:1, 3:4, 4:3, 16:9, 9:16, 21:9
+      fps: 24, // 帧率
+      cameraFixed: false, // 是否固定摄像头
+      cfgScale: 7, // CFG Scale参数 [1, 20]
+      count: 1, // 生成数量 [1, 4]
+      firstFrameImage: '', // 首帧图片URL
+      lastFrameImage: '', // 尾帧图片URL
+      hd: false, // 是否高清
+      watermark: false // 是否添加水印
     },
     
     // 高级设置
@@ -65,32 +77,41 @@ Page({
     showParams: false,
     
     // 预设配置
-    aspectRatios: [
-      { label: '1:1', value: '1:1', width: 512, height: 512 },
-      { label: '4:3', value: '4:3', width: 512, height: 384 },
-      { label: '3:4', value: '3:4', width: 384, height: 512 },
-      { label: '16:9', value: '16:9', width: 512, height: 288 },
-      { label: '9:16', value: '9:16', width: 288, height: 512 }
+    sizeOptions: [
+      { label: '1:1 正方形', value: '1:1' },
+      { label: '4:3 横向', value: '4:3' },
+      { label: '3:4 竖向', value: '3:4' },
+      { label: '16:9 宽屏', value: '16:9' },
+      { label: '9:16 竖屏', value: '9:16' },
+      { label: '21:9 超宽', value: '21:9' }
     ],
-    selectedAspectRatio: '1:1',
+    selectedSize: '1:1',
     
-    samplers: [
-      'DPM++ 2M Karras',
-      'DPM++ SDE Karras',
-      'Euler a',
-      'Euler',
-      'LMS',
-      'Heun',
-      'DPM2',
-      'DPM2 a'
+    qualityOptions: [
+      { label: '标准', value: 'standard' },
+      { label: '高清', value: 'hd' }
     ],
     
-    videoDurations: [
-      { label: '3秒', value: 3 },
-      { label: '5秒', value: 5 },
-      { label: '10秒', value: 10 },
-      { label: '15秒', value: 15 }
+    videoModels: [
+      { label: 'Seedance Pro', value: 'doubao-seedance-pronew' },
+      { label: 'Seedance Lite T2V', value: 'doubao-seedance-1-0-lite-t2v' },
+      { label: 'Seedance Lite I2V', value: 'doubao-seedance-1-0-lite-i2v' },
+      { label: 'Seaweed', value: 'doubao-seaweed' },
+      { label: 'Wan2 T2V', value: 'wan2-1-14b-t2v' },
+      { label: 'Wan2 I2V', value: 'wan2-1-14b-i2v' },
+      { label: 'Wan2 FLF2V', value: 'wan2-1-14b-flf2v' }
     ],
+    
+    resolutionOptions: [
+       { label: '480p', value: '480p' },
+       { label: '720p', value: '720p' },
+       { label: '1080p', value: '1080p' }
+     ],
+     
+     videoDurations: [
+       { label: '5秒', value: 5 },
+       { label: '10秒', value: 10 }
+     ],
     
     // 提示词建议
     promptSuggestions: [
@@ -123,7 +144,9 @@ Page({
     
     this.setData({
       createType,
-      templateId
+      templateId,
+      'params.type': createType,
+      'params.templateId': templateId
     })
     
     // 初始化页面
@@ -133,9 +156,6 @@ Page({
     if (templateId) {
       this.loadTemplateInfo(templateId)
     }
-    
-    // 记录页面访问
-    this.trackPageView()
   },
 
   /**
@@ -303,19 +323,7 @@ Page({
     })
   },
 
-  /**
-   * 记录页面访问
-   */
-  trackPageView() {
-    analytics.trackUserAction({
-      action: 'create_page_view',
-      params: {
-        create_type: this.data.createType,
-        template_id: this.data.templateId,
-        timestamp: Date.now()
-      }
-    }).catch(console.error)
-  },
+
 
   /**
    * 提示词输入
@@ -348,16 +356,15 @@ Page({
   },
 
   /**
-   * 宽高比选择
+   * 尺寸选择
    */
-  onAspectRatioChange(e) {
+  onSizeChange(e) {
     const value = e.detail.value
-    const ratio = this.data.aspectRatios[value]
+    const size = this.data.sizeOptions[value]
     
     this.setData({
-      selectedAspectRatio: ratio.value,
-      'params.width': ratio.width,
-      'params.height': ratio.height
+      selectedSize: size.value,
+      'params.size': size.value
     })
   },
 
@@ -374,14 +381,50 @@ Page({
   },
 
   /**
-   * 采样器选择
+   * 视频模型选择
    */
-  onSamplerChange(e) {
+  onVideoModelChange(e) {
     const value = e.detail.value
-    const sampler = this.data.samplers[value]
+    const model = this.data.videoModels[value]
     
     this.setData({
-      'params.sampler': sampler
+      'params.model': model.value
+    })
+  },
+  
+  /**
+   * 分辨率选择
+   */
+  onResolutionChange(e) {
+    const value = e.detail.value
+    const resolution = this.data.resolutionOptions[value]
+    
+    this.setData({
+      'params.resolution': resolution.value
+    })
+  },
+  
+  /**
+   * 视频时长选择
+   */
+  onDurationChange(e) {
+    const value = e.detail.value
+    const duration = this.data.videoDurations[value]
+    
+    this.setData({
+      'params.duration': duration.value
+    })
+  },
+  
+  /**
+   * 质量选择
+   */
+  onQualityChange(e) {
+    const value = e.detail.value
+    const quality = this.data.qualityOptions[value]
+    
+    this.setData({
+      'params.quality': quality.value
     })
   },
 
@@ -468,8 +511,7 @@ Page({
       // 开始检查进度
       this.startProgressCheck(result.task_id)
       
-      // 记录生成行为
-      this.trackGeneration(generateData)
+
       
     } catch (error) {
       console.error('Generate error:', error)
@@ -511,18 +553,41 @@ Page({
     const { prompt, params, createType, uploadedImage, templateId } = this.data
     
     const data = {
+      type: createType,
       prompt: prompt.trim(),
-      params,
-      type: createType
+      size: params.size,
+      style: params.style,
+      styleId: params.styleId,
+      referenceImage: params.referenceImage || uploadedImage,
+      templateId: templateId || params.templateId,
+      quality: params.quality,
+      
+      // 图片生成参数
+      responseFormat: params.responseFormat,
+      seed: params.seed,
+      guidanceScale: params.guidanceScale,
+      
+      // 视频生成参数
+      model: params.model,
+      resolution: params.resolution,
+      duration: params.duration,
+      ratio: params.ratio,
+      fps: params.fps,
+      cameraFixed: params.cameraFixed,
+      cfgScale: params.cfgScale,
+      count: params.count,
+      firstFrameImage: params.firstFrameImage,
+      lastFrameImage: params.lastFrameImage,
+      hd: params.hd,
+      watermark: params.watermark
     }
     
-    if (templateId) {
-      data.template_id = templateId
-    }
-    
-    if (uploadedImage) {
-      data.image_url = uploadedImage
-    }
+    // 移除空值和undefined值
+    Object.keys(data).forEach(key => {
+      if (data[key] === '' || data[key] === null || data[key] === undefined) {
+        delete data[key]
+      }
+    })
     
     return data
   },
@@ -608,8 +673,7 @@ Page({
       
       showToast('生成完成！')
       
-      // 记录生成成功
-      this.trackGenerationComplete(result)
+
       
     } catch (error) {
       console.error('Get result error:', error)
@@ -711,33 +775,5 @@ Page({
     this.onStartGenerate()
   },
 
-  /**
-   * 记录生成行为
-   */
-  trackGeneration(data) {
-    analytics.trackUserAction({
-      action: 'generation_start',
-      params: {
-        create_type: this.data.createType,
-        template_id: this.data.templateId,
-        prompt_length: data.prompt.length,
-        has_image: !!data.image_url,
-        params: data.params
-      }
-    }).catch(console.error)
-  },
 
-  /**
-   * 记录生成完成
-   */
-  trackGenerationComplete(result) {
-    analytics.trackUserAction({
-      action: 'generation_complete',
-      params: {
-        create_type: this.data.createType,
-        result_count: result.results?.length || 0,
-        task_id: this.data.taskId
-      }
-    }).catch(console.error)
-  }
 })

@@ -1,9 +1,9 @@
 // pages/profile/profile.js
 const app = getApp()
 const { auth, user } = require('../../api/index.js')
-const { analytics } = require('../../utils/analytics')
+
 const { storage } = require('../../utils/storage')
-const { utils } = require('../../utils/utils')
+const utils = require('../../utils/utils')
 
 Page({
   /**
@@ -142,10 +142,7 @@ Page({
     this.loadThemeSettings()
     this.calculateCacheSize()
     
-    // 记录页面访问
-    analytics.trackPageView('profile', {
-      source: options.source || 'direct'
-    })
+
   },
 
   /**
@@ -288,7 +285,7 @@ Page({
       }
     })
     
-    analytics.trackEvent('profile_avatar_tap')
+
   },
 
   /**
@@ -340,7 +337,7 @@ Page({
           app.globalData.userInfo.avatarUrl = uploadRes.data.url
           
           utils.showToast('头像更新成功')
-          analytics.trackEvent('profile_avatar_update')
+
         }
       }
       
@@ -365,7 +362,7 @@ Page({
       url: '/pages/member/member'
     })
     
-    analytics.trackEvent('profile_member_tap')
+
   },
 
   /**
@@ -385,10 +382,7 @@ Page({
       })
     }
     
-    analytics.trackEvent('profile_menu_tap', {
-      menu_id: item.id,
-      menu_title: item.title
-    })
+
   },
 
   /**
@@ -405,10 +399,7 @@ Page({
       })
     }
     
-    analytics.trackEvent('profile_setting_tap', {
-      setting_id: item.id,
-      setting_title: item.title
-    })
+
   },
 
   /**
@@ -439,9 +430,7 @@ Page({
     
     utils.showToast(isDarkMode ? '已切换到深色模式' : '已切换到浅色模式')
     
-    analytics.trackEvent('profile_theme_toggle', {
-      theme: isDarkMode ? 'dark' : 'light'
-    })
+
   },
 
   /**
@@ -478,7 +467,7 @@ Page({
           this.setData({ cacheSize: '0MB' })
           utils.showToast('缓存清理完成')
           
-          analytics.trackEvent('profile_cache_clear')
+
         },
         fail: () => {
           utils.showToast('清理失败，请重试')
@@ -503,7 +492,7 @@ Page({
       url: '/pages/login/login?source=profile'
     })
     
-    analytics.trackEvent('profile_login_tap')
+
   },
 
   /**
@@ -526,7 +515,7 @@ Page({
    * 分享页面
    */
   onShareAppMessage() {
-    analytics.trackEvent('profile_share')
+
     
     return {
       title: 'AI创作神器 - 让创意无限可能',
@@ -539,7 +528,7 @@ Page({
    * 分享到朋友圈
    */
   onShareTimeline() {
-    analytics.trackEvent('profile_share_timeline')
+
     
     return {
       title: 'AI创作神器 - 让创意无限可能',

@@ -28,7 +28,7 @@ public class TextVisionApplication {
         System.out.println("     ██║   ███████╗██╔╝ ██╗   ██║        ╚████╔╝ ██║███████║██║╚██████╔╝██║ ╚████║");
         System.out.println("     ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝         ╚═══╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝");
         System.out.println("");
-        System.out.println("  :: 文生视界后端服务启动成功 :: 访问地址: http://localhost:8080/swagger-ui/index.html");
+        System.out.println("  :: 文生视界后端服务启动成功 :: 访问地址: http://localhost:8991/swagger-ui/index.html");
         System.out.println("");
     }
 }

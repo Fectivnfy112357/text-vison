@@ -512,6 +512,11 @@ module.exports = {
   formatNumber,
   hexToRgba,
   storage,
+  // 存储方法的直接导出，兼容旧代码
+  getStorageSync: storage.get.bind(storage),
+  setStorageSync: storage.set.bind(storage),
+  removeStorageSync: storage.remove.bind(storage),
+  clearStorageSync: storage.clear.bind(storage),
   showToast,
   showLoading,
   hideLoading,

@@ -2,7 +2,7 @@
 const app = getApp()
 const { auth } = require('../../api/index.js')
 const { utils } = require('../../utils/utils.js')
-const { analytics } = require('../../utils/analytics.js')
+
 
 Page({
   /**
@@ -70,10 +70,7 @@ Page({
   onLoad(options) {
     this.loadUserInfo()
     
-    // 记录页面访问
-    analytics.trackPageView('account', {
-      source: options.source || 'direct'
-    })
+
   },
 
   /**
@@ -123,10 +120,7 @@ Page({
       this.handleAccountAction(item.action)
     }
     
-    analytics.trackEvent('account_item_tap', {
-      item_id: item.id,
-      item_title: item.title
-    })
+
   },
 
   /**
@@ -239,8 +233,7 @@ Page({
         utils.showToast('密码修改成功')
         this.hideChangePasswordModal()
         
-        // 记录操作
-        analytics.trackEvent('password_change_success')
+
         
         // 提示重新登录
         setTimeout(() => {
@@ -266,9 +259,7 @@ Page({
       console.error('修改密码失败:', error)
       utils.showToast(error.message || '修改失败，请重试')
       
-      analytics.trackEvent('password_change_error', {
-        error: error.message
-      })
+
     }
   },
 

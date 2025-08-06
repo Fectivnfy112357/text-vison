@@ -110,7 +110,7 @@ app:
   wechat:
     miniprogram:
       app-id: wx9aac4b6197f80059
-      app-secret: your-app-secret-here  # 请替换为实际的AppSecret
+      app-secret: d5111bdbb1be5c83a150191eda378a9d  # 请替换为实际的AppSecret
       session-timeout: 7200000  # 2小时（毫秒）
   
   # 文件存储配置

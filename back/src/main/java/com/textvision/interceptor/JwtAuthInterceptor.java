@@ -58,15 +58,15 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             Long userId = jwtUtil.getUserIdFromToken(token);
             String email = jwtUtil.getEmailFromToken(token);
             
-            if (userId == null || email == null) {
-                log.warn("Token中缺少用户信息: {}", request.getRequestURI());
+            if (userId == null) {
+                log.warn("Token中缺少用户ID: {}", request.getRequestURI());
                 writeErrorResponse(response, ResultCode.TOKEN_INVALID);
                 return false;
             }
             
             // 将用户信息设置到请求属性中
             request.setAttribute("userId", userId);
-            request.setAttribute("userEmail", email);
+            request.setAttribute("userEmail", email); // email可能为null，这是允许的
             
             log.debug("JWT认证成功: userId={}, email={}, uri={}", userId, email, request.getRequestURI());
             return true;

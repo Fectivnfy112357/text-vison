@@ -4,7 +4,7 @@
  */
 
 const app = getApp()
-const { content, analytics } = require('../../api/index.js')
+const { content } = require('../../api/index.js')
 const { formatTime, showToast, navigateTo, storage } = require('../../utils/utils.js')
 
 Page({
@@ -318,8 +318,8 @@ Page({
         return
       }
       
-      const stats = await analytics.getUserStats()
-      this.setData({ stats })
+      // 用户统计数据已移除
+      this.setData({ stats: {} })
     } catch (error) {
       console.error('Load user stats error:', error)
     }
@@ -341,20 +341,7 @@ Page({
     }
   },
 
-  /**
-   * 记录页面访问
-   */
-  trackPageView() {
-    analytics.trackUserAction({
-      action: 'page_view',
-      params: {
-        page: 'index',
-        timestamp: Date.now()
-      }
-    }).catch(error => {
-      console.error('Track page view error:', error)
-    })
-  },
+
 
   /**
    * 轮播图切换
@@ -363,14 +350,7 @@ Page({
     const current = e.detail.current
     console.log('Banner change:', current)
     
-    // 记录轮播图查看
-    analytics.trackUserAction({
-      action: 'banner_view',
-      params: {
-        banner_id: this.data.banners[current]?.id,
-        index: current
-      }
-    }).catch(console.error)
+
   },
 
   /**
@@ -381,14 +361,7 @@ Page({
     const banner = this.data.banners[index]
     
     if (banner && banner.url) {
-      // 记录轮播图点击
-      analytics.trackUserAction({
-        action: 'banner_click',
-        params: {
-          banner_id: banner.id,
-          url: banner.url
-        }
-      }).catch(console.error)
+
       
       navigateTo(banner.url)
     }
@@ -408,14 +381,7 @@ Page({
         return
       }
       
-      // 记录菜单点击
-      analytics.trackUserAction({
-        action: 'menu_click',
-        params: {
-          menu_id: menuItem.id,
-          menu_title: menuItem.title
-        }
-      }).catch(console.error)
+
       
       navigateTo(menuItem.url)
     }
@@ -429,14 +395,7 @@ Page({
     const template = this.data.hotTemplates[index]
     
     if (template) {
-      // 记录模板点击
-      analytics.trackUserAction({
-        action: 'template_click',
-        params: {
-          template_id: template.id,
-          template_name: template.name
-        }
-      }).catch(console.error)
+
       
       navigateTo('/pages/create/create', {
         template_id: template.id

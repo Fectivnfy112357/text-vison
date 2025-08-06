@@ -104,7 +104,7 @@ Page({
 
   // 检查用户登录状态
   checkUserLogin() {
-    const userInfo = utils.getStorageSync('userInfo');
+    const userInfo = utils.getStorageSync('user_info') || app.globalData.userInfo;
     const isLoggedIn = !!userInfo && !!userInfo.openid;
     
     this.setData({
@@ -394,8 +394,7 @@ Page({
         // 重新加载统计信息
         this.loadStatistics();
         
-        // 数据分析
-        this.trackBatchDelete(this.data.selectedItems.length);
+
       } else {
         throw new Error(response.message || '删除失败');
       }
@@ -446,8 +445,7 @@ Page({
         // 重新加载统计信息
         this.loadStatistics();
         
-        // 数据分析
-        this.trackSingleDelete(item);
+
       } else {
         throw new Error(response.message || '删除失败');
       }
@@ -483,8 +481,7 @@ Page({
       url: `/pages/create/create?${queryString}`
     });
     
-    // 数据分析
-    this.trackRegenerate(item);
+
   },
 
   // 分享记录
@@ -493,8 +490,7 @@ Page({
     
     const item = e.currentTarget.dataset.item;
     
-    // 数据分析
-    this.trackShareHistory(item);
+
     
     return {
       title: `我用AI生成了这个${item.type === 'image' ? '图片' : '视频'}`,
@@ -510,79 +506,5 @@ Page({
     });
   },
 
-  // 数据分析 - 页面访问
-  trackPageView() {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('page_view', {
-        page_name: 'history',
-        filter: this.data.selectedFilter,
-        sort: this.data.selectedSort
-      });
-    }
-  },
 
-  // 数据分析 - 筛选选择
-  trackFilterSelect(filter) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_filter', {
-        filter,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 历史记录点击
-  trackHistoryItemClick(item) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_item_click', {
-        item_id: item.id,
-        item_type: item.type,
-        status: item.status,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 批量删除
-  trackBatchDelete(count) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_batch_delete', {
-        count,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 单个删除
-  trackSingleDelete(item) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_single_delete', {
-        item_id: item.id,
-        item_type: item.type,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 重新生成
-  trackRegenerate(item) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_regenerate', {
-        item_id: item.id,
-        item_type: item.type,
-        timestamp: Date.now()
-      });
-    }
-  },
-
-  // 数据分析 - 分享历史
-  trackShareHistory(item) {
-    if (typeof wx.reportAnalytics === 'function') {
-      wx.reportAnalytics('history_share', {
-        item_id: item.id,
-        item_type: item.type,
-        timestamp: Date.now()
-      });
-    }
-  }
 });

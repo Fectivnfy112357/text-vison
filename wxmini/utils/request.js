@@ -74,7 +74,7 @@ class RequestInterceptor {
     }
 
     // 添加认证token
-    const token = wx.getStorageSync('access_token')
+    const token = wx.getStorageSync('user_token')
     if (token) {
       options.header.Authorization = `Bearer ${token}`
     }
@@ -107,9 +107,15 @@ class RequestInterceptor {
       }, options)
     }
 
-    // 处理业务状态码
+    // 处理业务状态码 - 支持后端Result结构
     if (data && data.code !== undefined) {
       if (data.code === 0 || data.code === 200) {
+        // 如果后端返回的是Result结构，保持完整的Result结构
+        // 包含success、data、message等字段
+        if (data.success !== undefined) {
+          return Promise.resolve(data)
+        }
+        // 兼容其他格式，返回data字段内容
         return Promise.resolve(data.data || data)
       } else {
         return this.handleError({
@@ -152,7 +158,7 @@ class RequestInterceptor {
    */
   handleUnauthorized() {
     // 清除本地存储的用户信息
-    wx.removeStorageSync('access_token')
+    wx.removeStorageSync('user_token')
     wx.removeStorageSync('refresh_token')
     wx.removeStorageSync('user_info')
 
@@ -311,7 +317,7 @@ function upload(url, filePath, options = {}) {
     }
 
     // 获取认证token
-    const token = wx.getStorageSync('access_token')
+    const token = wx.getStorageSync('user_token')
     const header = {
       ...options.header
     }

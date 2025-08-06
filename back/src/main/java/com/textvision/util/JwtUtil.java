@@ -11,10 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * JWT工具类
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -38,9 +39,9 @@ public class JwtUtil {
 
     /**
      * 生成JWT令牌
-     * 
+     *
      * @param userId 用户ID
-     * @param email 用户邮箱
+     * @param email  用户邮箱
      * @return JWT令牌
      */
     public String generateToken(Long userId, String email) {
@@ -52,7 +53,7 @@ public class JwtUtil {
 
     /**
      * 生成JWT令牌（仅用户ID）
-     * 
+     *
      * @param userId 用户ID字符串
      * @return JWT令牌
      */
@@ -64,8 +65,8 @@ public class JwtUtil {
 
     /**
      * 创建JWT令牌
-     * 
-     * @param claims 声明
+     *
+     * @param claims  声明
      * @param subject 主题
      * @return JWT令牌
      */
@@ -84,7 +85,7 @@ public class JwtUtil {
 
     /**
      * 从令牌中获取用户ID
-     * 
+     *
      * @param token JWT令牌
      * @return 用户ID
      */
@@ -95,18 +96,18 @@ public class JwtUtil {
 
     /**
      * 从令牌中获取用户邮箱
-     * 
+     *
      * @param token JWT令牌
      * @return 用户邮箱
      */
     public String getEmailFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
-        return claims != null ? claims.get("email").toString() : null;
+        return claims != null ? Optional.ofNullable(claims.get("email")).map(Object::toString).orElse(null) : null;
     }
 
     /**
      * 从令牌中获取主题
-     * 
+     *
      * @param token JWT令牌
      * @return 主题
      */
@@ -117,7 +118,7 @@ public class JwtUtil {
 
     /**
      * 从令牌中获取过期时间
-     * 
+     *
      * @param token JWT令牌
      * @return 过期时间
      */
@@ -128,7 +129,7 @@ public class JwtUtil {
 
     /**
      * 从令牌中获取声明
-     * 
+     *
      * @param token JWT令牌
      * @return 声明
      */
@@ -147,7 +148,7 @@ public class JwtUtil {
 
     /**
      * 验证令牌是否过期
-     * 
+     *
      * @param token JWT令牌
      * @return 是否过期
      */
@@ -158,7 +159,7 @@ public class JwtUtil {
 
     /**
      * 验证令牌
-     * 
+     *
      * @param token JWT令牌
      * @param email 用户邮箱
      * @return 是否有效
@@ -170,7 +171,7 @@ public class JwtUtil {
 
     /**
      * 验证令牌格式
-     * 
+     *
      * @param token JWT令牌
      * @return 是否有效
      */
@@ -189,7 +190,7 @@ public class JwtUtil {
 
     /**
      * 获取令牌过期时间（秒）
-     * 
+     *
      * @return 过期时间
      */
     public Long getExpirationSeconds() {
