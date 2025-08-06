@@ -30,7 +30,7 @@ const Home: React.FC = () => {
   return (
     <div className="h-full overflow-y-auto scrollbar-hide">
       {/* 头部区域 */}
-      <motion.div 
+      <motion.div
         className="relative px-6 pt-8 pb-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -38,15 +38,15 @@ const Home: React.FC = () => {
       >
         {/* 问候语 */}
         <div className="mb-6">
-          <motion.h1 
+          <motion.h1
             className="text-2xl font-bold text-gradient mb-2"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            {isAuthenticated ? `你好，${user?.username || '用户'}` : '欢迎来到文生视界'}
+            {isAuthenticated ? `你好，${user?.name || '用户'}` : '欢迎来到文生视界'}
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-gray-600 text-sm"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -74,14 +74,14 @@ const Home: React.FC = () => {
       </motion.div>
 
       {/* 功能卡片 */}
-      <motion.div 
+      <motion.div
         className="px-6 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
         <div className="grid grid-cols-2 gap-4">
-          <motion.div 
+          <motion.div
             className="card-soft p-4 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -94,7 +94,7 @@ const Home: React.FC = () => {
             <p className="text-xs text-gray-500">AI智能图片创作</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="card-soft p-4 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -110,7 +110,7 @@ const Home: React.FC = () => {
       </motion.div>
 
       {/* 热门模板 */}
-      <motion.div 
+      <motion.div
         className="px-6 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ const Home: React.FC = () => {
             <TrendingUp className="text-primary-600" size={20} />
             <h2 className="text-lg font-semibold text-gray-800">热门模板</h2>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/templates')}
             className="text-primary-600 text-sm font-medium flex items-center space-x-1"
           >
@@ -145,8 +145,8 @@ const Home: React.FC = () => {
               >
                 <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
                   {template.imageUrl ? (
-                    <img 
-                      src={template.imageUrl} 
+                    <img
+                      src={template.imageUrl}
                       alt={template.title}
                       className="w-full h-full object-cover"
                     />

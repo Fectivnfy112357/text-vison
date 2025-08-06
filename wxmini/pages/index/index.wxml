@@ -1,0 +1,222 @@
+<!--文生视界微信小程序 - 首页模板-->
+<view class="index-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <!-- 用户头像 -->
+      <view class="user-avatar" bindtap="onAvatarTap">
+        <image 
+          class="avatar-image" 
+          src="{{hasUserInfo ? userInfo.avatarUrl : '/images/default-avatar.png'}}"
+          mode="aspectFill"
+        />
+      </view>
+      
+      <!-- 搜索框 -->
+      <view class="search-container" bindtap="onSearchTap">
+        <view class="search-box">
+          <image class="search-icon" src="/images/icons/search.png" />
+          <text class="search-placeholder">搜索模板、作品...</text>
+        </view>
+      </view>
+      
+      <!-- 通知图标 -->
+      <view class="notification-icon" bindtap="onNotificationTap">
+        <image class="icon" src="/images/icons/notification.png" />
+        <view class="badge" wx:if="{{unreadCount > 0}}">{{unreadCount > 99 ? '99+' : unreadCount}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view 
+    class="page-content" 
+    scroll-y="{{true}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    bindscrolltolower="onReachBottom"
+  >
+    <!-- 加载状态 -->
+    <view class="loading-container" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 页面内容 -->
+    <view class="content-wrapper" wx:else>
+      <!-- 轮播图 -->
+      <view class="banner-section">
+        <swiper 
+          class="banner-swiper"
+          indicator-dots="{{true}}"
+          indicator-color="rgba(255,255,255,0.5)"
+          indicator-active-color="#ffffff"
+          autoplay="{{true}}"
+          interval="{{5000}}"
+          duration="{{500}}"
+          circular="{{true}}"
+          bindchange="onBannerChange"
+        >
+          <swiper-item 
+            wx:for="{{banners}}" 
+            wx:key="id"
+            bindtap="onBannerTap"
+            data-index="{{index}}"
+          >
+            <view class="banner-item">
+              <image class="banner-image" src="{{item.image}}" mode="aspectFill" />
+              <view class="banner-overlay">
+                <view class="banner-content">
+                  <text class="banner-title">{{item.title}}</text>
+                  <text class="banner-desc">{{item.desc}}</text>
+                </view>
+              </view>
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+
+      <!-- 功能菜单 -->
+      <view class="menu-section">
+        <view class="section-header">
+          <text class="section-title">创作工具</text>
+          <text class="section-subtitle">AI助力，创意无限</text>
+        </view>
+        
+        <view class="menu-grid">
+          <view 
+            class="menu-item"
+            wx:for="{{menuItems}}"
+            wx:key="id"
+            bindtap="onMenuTap"
+            data-index="{{index}}"
+          >
+            <view class="menu-icon-wrapper" style="background-color: {{item.color}}20;">
+              <image class="menu-icon" src="{{item.icon}}" style="tint-color: {{item.color}};" />
+            </view>
+            <text class="menu-title">{{item.title}}</text>
+            <text class="menu-desc">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 用户统计 -->
+      <view class="stats-section" wx:if="{{hasUserInfo}}">
+        <view class="stats-card">
+          <view class="stats-item">
+            <text class="stats-number">{{stats.totalGenerated}}</text>
+            <text class="stats-label">总生成数</text>
+          </view>
+          <view class="stats-divider"></view>
+          <view class="stats-item">
+            <text class="stats-number">{{stats.todayGenerated}}</text>
+            <text class="stats-label">今日生成</text>
+          </view>
+          <view class="stats-divider"></view>
+          <view class="stats-item">
+            <text class="stats-number">{{stats.favoriteCount}}</text>
+            <text class="stats-label">收藏作品</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 热门模板 -->
+      <view class="templates-section" wx:if="{{hotTemplates.length > 0}}">
+        <view class="section-header">
+          <text class="section-title">热门模板</text>
+          <view class="section-action" bindtap="onViewMoreTemplates">
+            <text class="action-text">查看更多</text>
+            <image class="action-icon" src="/images/icons/arrow-right.png" />
+          </view>
+        </view>
+        
+        <scroll-view class="templates-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}">
+          <view class="templates-list">
+            <view 
+              class="template-item"
+              wx:for="{{hotTemplates}}"
+              wx:key="id"
+              bindtap="onTemplateTap"
+              data-index="{{index}}"
+            >
+              <view class="template-image-wrapper">
+                <image class="template-image" src="{{item.preview_image}}" mode="aspectFill" />
+                <view class="template-overlay">
+                  <view class="template-tag">{{item.category_name}}</view>
+                </view>
+              </view>
+              <view class="template-info">
+                <text class="template-name">{{item.name}}</text>
+                <view class="template-meta">
+                  <text class="template-usage">{{item.usage_count}}次使用</text>
+                  <view class="template-rating">
+                    <image class="star-icon" src="/images/icons/star.png" />
+                    <text class="rating-text">{{item.rating}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <!-- 最近作品 -->
+      <view class="works-section" wx:if="{{hasUserInfo && recentWorks.length > 0}}">
+        <view class="section-header">
+          <text class="section-title">最近作品</text>
+          <view class="section-action" bindtap="onViewMoreWorks">
+            <text class="action-text">查看全部</text>
+            <image class="action-icon" src="/images/icons/arrow-right.png" />
+          </view>
+        </view>
+        
+        <view class="works-grid">
+          <view 
+            class="work-item"
+            wx:for="{{recentWorks}}"
+            wx:key="id"
+            bindtap="onWorkTap"
+            data-index="{{index}}"
+          >
+            <view class="work-image-wrapper">
+              <image class="work-image" src="{{item.preview_url}}" mode="aspectFill" />
+              <view class="work-type-tag">
+                <image class="type-icon" src="/images/icons/{{item.type}}.png" />
+              </view>
+              <view class="work-duration" wx:if="{{item.type === 'video'}}">
+                <text>{{item.duration}}s</text>
+              </view>
+            </view>
+            <view class="work-info">
+              <text class="work-title">{{item.title || item.prompt}}</text>
+              <text class="work-time">{{item.created_at}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 未登录提示 -->
+      <view class="login-prompt" wx:if="{{!hasUserInfo}}">
+        <view class="prompt-card">
+          <image class="prompt-icon" src="/images/icons/user.png" />
+          <text class="prompt-title">登录后体验更多功能</text>
+          <text class="prompt-desc">保存作品、查看历史、个性化推荐</text>
+          <button class="login-btn" bindtap="onAvatarTap">
+            立即登录
+          </button>
+        </view>
+      </view>
+
+      <!-- 底部间距 -->
+      <view class="bottom-spacing"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 快速创作悬浮按钮 -->
+  <view class="fab-container">
+    <view class="fab-button" bindtap="onMenuTap" data-index="0">
+      <image class="fab-icon" src="/images/icons/add.png" />
+    </view>
+  </view>
+</view>

@@ -1,0 +1,147 @@
+<!--pages/account/account.wxml-->
+<view class="account-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <view class="navbar-left" bindtap="navigateBack">
+        <image class="back-icon" src="/images/icons/back.png" />
+      </view>
+      <view class="navbar-title">
+        <text>账号设置</text>
+      </view>
+      <view class="navbar-right">
+        <!-- 预留位置 -->
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="page-content" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="loading-container">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 账号设置列表 -->
+    <view wx:else class="account-section">
+      <view class="section-title">账号安全</view>
+      <view class="account-list">
+        <view 
+          wx:for="{{accountItems}}" 
+          wx:key="id" 
+          class="account-item" 
+          data-item="{{item}}" 
+          bindtap="onAccountItemTap"
+        >
+          <view class="item-icon">
+            <text class="iconfont icon-{{item.icon}}"></text>
+          </view>
+          <view class="item-content">
+            <view class="item-header">
+              <text class="item-title">{{item.title}}</text>
+              <text wx:if="{{item.value}}" class="item-value">{{item.value}}</text>
+            </view>
+            <text class="item-desc">{{item.desc}}</text>
+          </view>
+          <view class="item-arrow">
+            <text class="iconfont icon-arrow-right"></text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 修改密码弹窗 -->
+  <view wx:if="{{showPasswordModal}}" class="modal-overlay" bindtap="hideChangePasswordModal">
+    <view class="password-modal" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">修改密码</text>
+        <view class="modal-close" bindtap="hideChangePasswordModal">
+          <text class="iconfont icon-close"></text>
+        </view>
+      </view>
+      
+      <view class="modal-content">
+        <!-- 当前密码 -->
+        <view class="form-group">
+          <text class="form-label">当前密码</text>
+          <view class="form-input-wrapper">
+            <input 
+              class="form-input"
+              type="{{showOldPassword ? 'text' : 'password'}}"
+              placeholder="请输入当前密码"
+              value="{{passwordForm.oldPassword}}"
+              data-field="oldPassword"
+              bindinput="onPasswordInput"
+            />
+            <view 
+              class="password-toggle"
+              data-field="oldPassword"
+              bindtap="togglePasswordShow"
+            >
+              <text class="iconfont {{showOldPassword ? 'icon-eye-off' : 'icon-eye'}}"></text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 新密码 -->
+        <view class="form-group">
+          <text class="form-label">新密码</text>
+          <view class="form-input-wrapper">
+            <input 
+              class="form-input"
+              type="{{showNewPassword ? 'text' : 'password'}}"
+              placeholder="请输入新密码（至少6位）"
+              value="{{passwordForm.newPassword}}"
+              data-field="newPassword"
+              bindinput="onPasswordInput"
+            />
+            <view 
+              class="password-toggle"
+              data-field="newPassword"
+              bindtap="togglePasswordShow"
+            >
+              <text class="iconfont {{showNewPassword ? 'icon-eye-off' : 'icon-eye'}}"></text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 确认密码 -->
+        <view class="form-group">
+          <text class="form-label">确认新密码</text>
+          <view class="form-input-wrapper">
+            <input 
+              class="form-input"
+              type="{{showConfirmPassword ? 'text' : 'password'}}"
+              placeholder="请再次输入新密码"
+              value="{{passwordForm.confirmPassword}}"
+              data-field="confirmPassword"
+              bindinput="onPasswordInput"
+            />
+            <view 
+              class="password-toggle"
+              data-field="confirmPassword"
+              bindtap="togglePasswordShow"
+            >
+              <text class="iconfont {{showConfirmPassword ? 'icon-eye-off' : 'icon-eye'}}"></text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 密码强度提示 -->
+        <view class="password-tips">
+          <text class="tips-title">密码要求：</text>
+          <text class="tips-item">• 至少6位字符</text>
+          <text class="tips-item">• 建议包含字母和数字</text>
+          <text class="tips-item">• 不能与当前密码相同</text>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="hideChangePasswordModal">取消</button>
+        <button class="btn-confirm" bindtap="submitPasswordChange">确认修改</button>
+      </view>
+    </view>
+  </view>
+</view>

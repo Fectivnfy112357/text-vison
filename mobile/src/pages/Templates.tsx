@@ -13,9 +13,7 @@ import {
   Sparkles,
   TrendingUp,
   Clock,
-  User,
-  Tag,
-  ChevronDown
+  User
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
@@ -46,7 +44,6 @@ const Templates: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortType, setSortType] = useState<SortType>('popular')
   const [showFilters, setShowFilters] = useState(false)
-  const [showCategoryFilter, setShowCategoryFilter] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [localSearchQuery, setLocalSearchQuery] = useState('')
 
@@ -104,8 +101,7 @@ const Templates: React.FC = () => {
   // 处理分类选择
   const handleCategorySelect = (category: TemplateCategory | null) => {
     setSelectedCategory(category)
-    setShowCategoryFilter(false)
-    loadTemplates()
+    // setSelectedCategory内部已经会调用loadTemplates，无需重复调用
   }
 
   // 处理模板使用
@@ -193,51 +189,34 @@ const Templates: React.FC = () => {
           />
         </div>
 
-        {/* 分类筛选 */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-            className="flex items-center space-x-2 px-3 py-2 bg-white/60 rounded-xl border border-white/60"
-          >
-            <Tag size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-600">
-              {selectedCategory ? selectedCategory.name : '全部分类'}
-            </span>
-            <ChevronDown size={14} className="text-gray-400" />
-          </button>
-        </div>
-
-        {/* 分类下拉菜单 */}
-        <AnimatePresence>
-          {showCategoryFilter && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute left-6 right-6 top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-60 overflow-y-auto scrollbar-hide"
+        {/* 分类筛选标签 */}
+        <div className="px-6 mt-4">
+          <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-2">
+            <button
+              onClick={() => handleCategorySelect(null)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !selectedCategory 
+                  ? 'bg-primary-500 text-white' 
+                  : 'bg-white/60 text-gray-600 border border-white/60 hover:bg-white/80'
+              }`}
             >
+              全部分类
+            </button>
+            {categories.map((category) => (
               <button
-                onClick={() => handleCategorySelect(null)}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
-                  !selectedCategory ? 'text-primary-600 bg-primary-50' : 'text-gray-700'
+                key={category.id}
+                onClick={() => handleCategorySelect(category)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory?.id === category.id
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white/60 text-gray-600 border border-white/60 hover:bg-white/80'
                 }`}
               >
-                全部分类
+                {category.name}
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category)}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
-                    selectedCategory?.id === category.id ? 'text-primary-600 bg-primary-50' : 'text-gray-700'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ))}
+          </div>
+        </div>
 
         {/* 展开的过滤器 */}
         <AnimatePresence>
@@ -472,13 +451,7 @@ const Templates: React.FC = () => {
         )}
       </div>
 
-      {/* 点击外部关闭分类菜单 */}
-      {showCategoryFilter && (
-        <div 
-          className="fixed inset-0 z-10" 
-          onClick={() => setShowCategoryFilter(false)}
-        />
-      )}
+
     </div>
   )
 }

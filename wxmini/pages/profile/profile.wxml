@@ -1,0 +1,129 @@
+<!--pages/profile/profile.wxml-->
+<view class="profile-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <view class="navbar-title">个人中心</view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="page-content" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="loading-container">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 用户信息区域 -->
+    <view class="user-section">
+      <view wx:if="{{isLoggedIn}}" class="user-info">
+        <!-- 用户头像和基本信息 -->
+        <view class="user-header" bindtap="onAvatarTap">
+          <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+          <view class="user-details">
+            <text class="user-name">{{userInfo.nickName || '用户'}}</text>
+            <view class="user-level">
+              <text class="level-text">Lv.{{userStats.level}}</text>
+              <view class="level-progress">
+                <view class="level-progress-bar" style="width: {{userStats.exp / userStats.nextLevelExp * 100}}%"></view>
+              </view>
+              <text class="level-exp">{{userStats.exp}}/{{userStats.nextLevelExp}}</text>
+            </view>
+          </view>
+          <view class="user-arrow">
+            <text class="iconfont icon-arrow-right"></text>
+          </view>
+        </view>
+
+        <!-- 用户统计 -->
+        <view class="user-stats">
+          <view class="stat-item">
+            <text class="stat-number">{{userStats.totalWorks}}</text>
+            <text class="stat-label">作品</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-number">{{userStats.totalViews}}</text>
+            <text class="stat-label">浏览</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-number">{{userStats.totalLikes}}</text>
+            <text class="stat-label">点赞</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-number">{{userStats.memberDays}}</text>
+            <text class="stat-label">天数</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 未登录状态 -->
+      <view wx:else class="login-prompt">
+        <image class="login-avatar" src="/images/default-avatar.png" mode="aspectFill"></image>
+        <text class="login-text">登录后享受更多功能</text>
+        <button class="login-btn" bindtap="onLoginTap">立即登录</button>
+      </view>
+    </view>
+
+    <!-- 会员信息 -->
+    <view wx:if="{{isLoggedIn}}" class="member-section">
+      <view class="member-card {{memberInfo.isMember ? 'member-active' : 'member-inactive'}}" bindtap="onMemberCardTap">
+        <view class="member-info">
+          <view class="member-status">
+            <text class="member-title">{{memberInfo.isMember ? memberInfo.memberType : '普通用户'}}</text>
+            <text wx:if="{{memberInfo.isMember}}" class="member-expire">{{memberInfo.remainingDays}}天后到期</text>
+          </view>
+          <view class="member-benefits">
+            <text wx:if="{{memberInfo.isMember}}" class="benefit-text">享受会员专属权益</text>
+            <text wx:else class="benefit-text">开通会员享受更多权益</text>
+          </view>
+        </view>
+        <view class="member-arrow">
+          <text class="iconfont icon-arrow-right"></text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能菜单 -->
+    <view wx:if="{{isLoggedIn}}" class="menu-section">
+      <view class="section-title">我的内容</view>
+      <view class="menu-list">
+        <view wx:for="{{menuItems}}" wx:key="id" class="menu-item" data-item="{{item}}" bindtap="onMenuItemTap">
+          <view class="menu-icon">
+            <text class="iconfont icon-{{item.icon}}"></text>
+          </view>
+          <view class="menu-content">
+            <text class="menu-title">{{item.title}}</text>
+            <text wx:if="{{item.count > 0}}" class="menu-count">{{item.count}}</text>
+          </view>
+          <view class="menu-arrow">
+            <text class="iconfont icon-arrow-right"></text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 设置选项 -->
+    <view class="setting-section">
+      <view class="section-title">设置</view>
+      <view class="setting-list">
+        <view wx:for="{{settingItems}}" wx:key="id" class="setting-item" data-item="{{item}}" bindtap="onSettingItemTap">
+          <view class="setting-icon">
+            <text class="iconfont icon-{{item.icon}}"></text>
+          </view>
+          <view class="setting-content">
+            <text class="setting-title">{{item.title}}</text>
+            <text wx:if="{{item.id === 'theme'}}" class="setting-value">{{isDarkMode ? '深色模式' : '浅色模式'}}</text>
+            <text wx:if="{{item.id === 'cache'}}" class="setting-value">{{cacheSize}}</text>
+          </view>
+          <view class="setting-arrow">
+            <text class="iconfont icon-arrow-right"></text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

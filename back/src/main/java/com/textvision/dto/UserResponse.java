@@ -26,12 +26,42 @@ public class UserResponse {
     /**
      * 用户名
      */
-    private String name;
+    private String username;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 手机号
+     */
+    private String phone;
 
     /**
      * 头像URL
      */
     private String avatar;
+
+    /**
+     * 性别：0-未知，1-男，2-女
+     */
+    private Integer gender;
+
+    /**
+     * 国家
+     */
+    private String country;
+
+    /**
+     * 省份
+     */
+    private String province;
+
+    /**
+     * 城市
+     */
+    private String city;
 
     /**
      * 状态：0-禁用，1-启用

@@ -24,19 +24,18 @@ import {
   X
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
-import { useGenerationStore } from '../store/useGenerationStore'
+import { contentAPI } from '../lib/api'
 import { toast } from 'sonner'
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated, isLoading, logout, updateProfile } = useAuthStore()
-  const { history } = useGenerationStore()
 
   // 状态管理
   const [showSettings, setShowSettings] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
-    username: user?.username || '',
+    name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     bio: user?.bio || ''
@@ -48,6 +47,14 @@ const Profile: React.FC = () => {
     sms: false
   })
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    images: 0,
+    videos: 0,
+    successRate: 0
+  })
+  const [statsLoading, setStatsLoading] = useState(true)
 
   // 初始化
   useEffect(() => {
@@ -57,33 +64,37 @@ const Profile: React.FC = () => {
     }
   }, [isAuthenticated, isLoading])
 
+  // 获取统计数据
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true)
+      const response = await contentAPI.getUserStats()
+      const data = response.data
+      
+      setStats({
+        total: data.totalCount,
+        completed: data.completedCount,
+        images: data.imageCount,
+        videos: data.videoCount,
+        successRate: data.totalCount > 0 ? Math.round((data.completedCount / data.totalCount) * 100) : 0
+      })
+    } catch (error: any) {
+      console.error('获取统计数据失败:', error)
+      toast.error('获取统计数据失败')
+    } finally {
+      setStatsLoading(false)
+    }
+  }
 
-  // 统计数据
-  const stats = React.useMemo(() => {
-    // 添加安全检查，确保history不为undefined或null
-    if (!history || !Array.isArray(history)) {
-      return {
-        total: 0,
-        completed: 0,
-        images: 0,
-        videos: 0,
-        successRate: 0
-      }
+  // 在用户认证后获取统计数据
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchStats()
     }
-    
-    const totalGenerations = history.length
-    const completedGenerations = history.filter(item => item.status === 'completed').length
-    const imageGenerations = history.filter(item => item.type === 'image').length
-    const videoGenerations = history.filter(item => item.type === 'video').length
-    
-    return {
-      total: totalGenerations,
-      completed: completedGenerations,
-      images: imageGenerations,
-      videos: videoGenerations,
-      successRate: totalGenerations > 0 ? Math.round((completedGenerations / totalGenerations) * 100) : 0
-    }
-  }, [history])
+  }, [isAuthenticated, user])
+
+
+
 
   // 处理头像上传
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,7 +221,7 @@ const Profile: React.FC = () => {
                 {user.avatar ? (
                   <img 
                     src={user.avatar} 
-                    alt={user.username}
+                    alt={user.name}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
@@ -236,8 +247,8 @@ const Profile: React.FC = () => {
                 <div className="space-y-2">
                   <input
                     type="text"
-                    value={editForm.username}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, username: e.target.value }))}
+                    value={editForm.name}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                     placeholder="用户名"
                   />
@@ -252,7 +263,7 @@ const Profile: React.FC = () => {
               ) : (
                 <div>
                   <div className="flex items-center space-x-2">
-                    <h2 className="text-lg font-semibold text-gray-900">{user.username}</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">{user.name}</h2>
                     {user.isPremium && (
                       <Crown className="text-yellow-500" size={16} />
                     )}
@@ -279,25 +290,7 @@ const Profile: React.FC = () => {
               <Edit3 size={16} />
             </button>
           </div>
-
-          {/* 会员状态 */}
-          {user.isPremium ? (
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
-              <div className="flex items-center space-x-2">
-                <Crown className="text-yellow-500" size={16} />
-                <span className="text-sm font-medium text-yellow-700">高级会员</span>
-              </div>
-              <span className="text-xs text-yellow-600">有效期至 2024-12-31</span>
-            </div>
-          ) : (
-            <button
-              onClick={() => navigate('/premium')}
-              className="w-full p-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium flex items-center justify-center space-x-2"
-            >
-              <Crown size={16} />
-              <span>升级高级会员</span>
-            </button>
-          )}
+         
         </motion.div>
       </motion.div>
 
@@ -310,25 +303,49 @@ const Profile: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h3 className="text-sm font-medium text-gray-700 mb-3">创作统计</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="card-soft p-4 text-center">
-                <div className="text-2xl font-bold text-primary-600 mb-1">{stats.total}</div>
-                <div className="text-xs text-gray-500">总创作数</div>
-              </div>
-              <div className="card-soft p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{stats.successRate}%</div>
-                <div className="text-xs text-gray-500">成功率</div>
-              </div>
-              <div className="card-soft p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">{stats.images}</div>
-                <div className="text-xs text-gray-500">图片生成</div>
-              </div>
-              <div className="card-soft p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">{stats.videos}</div>
-                <div className="text-xs text-gray-500">视频生成</div>
-              </div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-700">创作统计</h3>
+              <button
+                onClick={fetchStats}
+                disabled={statsLoading}
+                className="p-1 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                <div className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M23 4v6h-6M1 20v-6h6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4a9 9 0 0 1-14.85 8.36L13 18" />
+                  </svg>
+                </div>
+              </button>
             </div>
+            {statsLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="card-soft p-4 text-center">
+                    <div className="w-8 h-8 bg-gray-200 rounded animate-pulse mx-auto mb-2"></div>
+                    <div className="w-12 h-3 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="card-soft p-4 text-center">
+                  <div className="text-2xl font-bold text-primary-600 mb-1">{stats.total}</div>
+                  <div className="text-xs text-gray-500">总创作数</div>
+                </div>
+                <div className="card-soft p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600 mb-1">{stats.successRate}%</div>
+                  <div className="text-xs text-gray-500">成功率</div>
+                </div>
+                <div className="card-soft p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">{stats.images}</div>
+                  <div className="text-xs text-gray-500">图片生成</div>
+                </div>
+                <div className="card-soft p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">{stats.videos}</div>
+                  <div className="text-xs text-gray-500">视频生成</div>
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* 快捷操作 */}

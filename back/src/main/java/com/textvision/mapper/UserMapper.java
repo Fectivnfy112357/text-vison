@@ -36,4 +36,12 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 是否存在
      */
     boolean existsByName(String name);
+
+    /**
+     * 根据微信openId查找用户
+     * 
+     * @param openId 微信openId
+     * @return 用户信息
+     */
+    User findByWxOpenId(String openId);
 }

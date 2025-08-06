@@ -1,0 +1,211 @@
+<!--文生视界微信小程序 - 模板页面模板-->
+<view class="templates-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <view class="navbar-left" bindtap="navigateBack">
+        <image class="back-icon" src="/images/icons/back.png" />
+      </view>
+      <view class="navbar-title">
+        <text>创作模板</text>
+      </view>
+      <view class="navbar-right">
+        <!-- 预留位置 -->
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <view class="search-input-wrapper">
+        <image class="search-icon" src="/images/icons/search.png" />
+        <input 
+          class="search-input"
+          placeholder="搜索模板..."
+          value="{{searchKeyword}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
+          confirm-type="search"
+        />
+        <view class="clear-btn" wx:if="{{searchKeyword}}" bindtap="onClearSearch">
+          <image class="clear-icon" src="/images/icons/close.png" />
+        </view>
+      </view>
+    </view>
+    
+    <!-- 搜索建议 -->
+    <view class="search-suggestions" wx:if="{{searchKeyword && !showSearchResult}}">
+      <!-- 搜索历史 -->
+      <view class="suggestion-section" wx:if="{{searchHistory.length > 0}}">
+        <view class="suggestion-header">
+          <text class="suggestion-title">搜索历史</text>
+          <text class="clear-history" bindtap="onClearHistory">清空</text>
+        </view>
+        <view class="suggestion-list">
+          <text 
+            class="suggestion-item"
+            wx:for="{{searchHistory}}"
+            wx:key="*this"
+            bindtap="onHistoryTap"
+            data-keyword="{{item}}"
+          >
+            {{item}}
+          </text>
+        </view>
+      </view>
+      
+      <!-- 热门关键词 -->
+      <view class="suggestion-section">
+        <view class="suggestion-header">
+          <text class="suggestion-title">热门搜索</text>
+        </view>
+        <view class="suggestion-list">
+          <text 
+            class="suggestion-item hot"
+            wx:for="{{hotKeywords}}"
+            wx:key="*this"
+            bindtap="onHotKeywordTap"
+            data-keyword="{{item}}"
+          >
+            {{item}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="page-content" scroll-y="{{true}}" bindscrolltolower="onReachBottom">
+    <!-- 分类筛选 -->
+    <view class="filter-section" wx:if="{{!showSearchResult}}">
+      <scroll-view class="category-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}">
+        <view class="category-list">
+          <view 
+            class="category-item {{selectedCategory === item.id ? 'active' : ''}}"
+            wx:for="{{categories}}"
+            wx:key="id"
+            bindtap="onCategoryTap"
+            data-category="{{item.id}}"
+          >
+            <image class="category-icon" src="{{item.icon}}" />
+            <text class="category-name">{{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    
+    <!-- 排序和筛选 -->
+    <view class="sort-section">
+      <view class="sort-left">
+        <text class="result-count">
+          {{showSearchResult ? '搜索结果' : '全部模板'}} 
+          <text class="count">{{templates.length}}</text>
+        </text>
+      </view>
+      <view class="sort-right">
+        <view class="sort-btn" bindtap="onSortTap">
+          <text class="sort-text">{{selectedSort === 'hot' ? '热门' : selectedSort === 'new' ? '最新' : '评分'}}</text>
+          <image class="sort-arrow" src="/images/icons/arrow-down.png" />
+        </view>
+      </view>
+    </view>
+    
+    <!-- 模板列表 -->
+    <view class="templates-list">
+      <!-- 加载状态 -->
+      <view class="loading-container" wx:if="{{loading}}">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">加载中...</text>
+      </view>
+      
+      <!-- 模板网格 -->
+      <view class="templates-grid" wx:else>
+        <view 
+          class="template-card"
+          wx:for="{{showSearchResult ? searchResults : templates}}"
+          wx:key="id"
+          bindtap="onTemplateTap"
+          data-template="{{item}}"
+        >
+          <!-- 模板预览图 -->
+          <view class="template-preview">
+            <image class="preview-image" src="{{item.preview_image}}" mode="aspectFill" />
+            
+            <!-- 模板标签 -->
+            <view class="template-tags">
+              <text class="tag type-tag">{{item.type === 'image' ? '图片' : item.type === 'video' ? '视频' : '转换'}}</text>
+              <text class="tag category-tag" wx:if="{{item.category}}">{{item.category}}</text>
+            </view>
+            
+            <!-- 收藏按钮 -->
+            <view 
+              class="favorite-btn {{item.is_favorited ? 'favorited' : ''}}"
+              bindtap="onTemplateFavorite"
+              data-index="{{index}}"
+            >
+              <image class="favorite-icon" src="{{item.is_favorited ? '/images/icons/heart-filled.png' : '/images/icons/heart.png'}}" />
+            </view>
+          </view>
+          
+          <!-- 模板信息 -->
+          <view class="template-info">
+            <text class="template-name">{{item.name}}</text>
+            <text class="template-desc">{{item.description}}</text>
+            
+            <!-- 模板统计 -->
+            <view class="template-stats">
+              <view class="stat-item">
+                <image class="stat-icon" src="/images/icons/eye.png" />
+                <text class="stat-text">{{item.view_count}}</text>
+              </view>
+              <view class="stat-item">
+                <image class="stat-icon" src="/images/icons/heart.png" />
+                <text class="stat-text">{{item.favorite_count}}</text>
+              </view>
+              <view class="stat-item" wx:if="{{item.rating}}">
+                <image class="stat-icon" src="/images/icons/star.png" />
+                <text class="stat-text">{{item.rating}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{!loading && templates.length > 0}}">
+        <view class="load-more-content" wx:if="{{loadingMore}}">
+          <view class="loading-spinner small"></view>
+          <text class="load-more-text">加载中...</text>
+        </view>
+        <text class="load-more-text" wx:elif="{{!hasMore}}">没有更多了</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!loading && templates.length === 0}}">
+        <image class="empty-icon" src="/images/empty/templates.png" />
+        <text class="empty-title">{{showSearchResult ? '没有找到相关模板' : '暂无模板'}}</text>
+        <text class="empty-desc">{{showSearchResult ? '试试其他关键词' : '敬请期待更多精彩模板'}}</text>
+        <button class="empty-btn" wx:if="{{showSearchResult}}" bindtap="onClearSearch">
+          查看全部模板
+        </button>
+      </view>
+    </view>
+    
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+  
+  <!-- 排序选择器 -->
+  <picker 
+    class="sort-picker"
+    mode="selector"
+    range="{{sortOptions}}"
+    range-key="name"
+    value="{{selectedSort}}"
+    bindchange="onSortPickerChange"
+    bindcancel="onSortPickerCancel"
+    hidden="{{!showSortPicker}}"
+  >
+  </picker>
+</view>

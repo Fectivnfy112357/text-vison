@@ -1,9 +1,10 @@
 # TODO:
 
-- [x] fix-template-store-popular: 修复useTemplateStore.ts中loadPopularTemplates方法，使用response?.data而不是response?.data?.data (priority: High)
-- [x] fix-template-store-search: 修复useTemplateStore.ts中searchTemplates方法，使用response.data.records而不是response.data.list (priority: High)
-- [x] fix-template-store-categories: 简化useTemplateStore.ts中loadCategories方法，直接使用response?.data移除复杂兼容逻辑 (priority: High)
-- [x] fix-generation-store-history: 修复useGenerationStore.ts中loadHistory方法，使用response?.data?.records而不是response.contents (priority: High)
-- [x] fix-art-style-store: 修复useArtStyleStore.ts中loadArtStyles方法，使用response?.data而不是直接使用artStyles (priority: High)
-- [x] fix-api-types: 修复api.ts中API方法返回类型，确保返回统一的后端格式 (priority: Medium)
-- [x] test-api-fixes: 运行npm run check测试所有API修复是否正确 (priority: Medium)
+- [x] analyze_api_diff: 分析后端Controller接口与小程序API的差异 (priority: High)
+- [x] fix_user_apis: 修正用户相关接口路径和参数 (priority: High)
+- [x] fix_template_apis: 修正模板相关接口路径 (priority: High)
+- [x] fix_content_apis: 修正内容生成接口，统一为/api/contents/generate (priority: High)
+- [x] fix_history_apis: 修正历史记录接口路径 (priority: High)
+- [x] add_missing_apis: 添加缺失的用户统计和会员信息接口 (priority: Medium)
+- [x] add_category_style_apis: 添加模板分类和艺术风格接口 (priority: Medium)
+- [x] verify_apis: 验证修正后的API调用 (priority: Low)

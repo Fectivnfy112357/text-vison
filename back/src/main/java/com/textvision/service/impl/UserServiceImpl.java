@@ -58,7 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 创建用户
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setName(request.getName());
+        user.setUsername(request.getName());
         user.setPassword(PasswordUtil.encode(request.getPassword()));
         user.setStatus(1);
         user.setCreatedAt(LocalDateTime.now());
@@ -127,14 +127,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 检查用户名是否已被其他用户使用
-        if (name != null && !name.equals(user.getName()) && existsByName(name)) {
+        if (name != null && !name.equals(user.getUsername()) && existsByName(name)) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS, "用户名已存在");
         }
 
         // 更新用户信息
         boolean updated = false;
-        if (name != null && !name.equals(user.getName())) {
-            user.setName(name);
+        if (name != null && !name.equals(user.getUsername())) {
+            user.setUsername(name);
             updated = true;
         }
         if (avatar != null && !avatar.equals(user.getAvatar())) {
@@ -193,7 +193,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean existsByName(String name) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getName, name)
+        wrapper.eq(User::getUsername, name)
                .eq(User::getDeleted, 0);
         return count(wrapper) > 0;
     }

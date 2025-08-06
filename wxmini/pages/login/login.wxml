@@ -1,0 +1,47 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <!-- 顶部logo区域 -->
+  <view class="logo-section">
+    <image class="logo" src="/assets/icons/logo.svg" mode="aspectFit"></image>
+    <text class="app-name">文生视界</text>
+    <text class="app-desc">AI创作，让想象成为现实</text>
+  </view>
+
+  <!-- 登录内容区域 -->
+  <view class="login-content">
+    <view class="login-title">
+      <text class="title">欢迎使用</text>
+      <text class="subtitle">请使用微信账号登录</text>
+    </view>
+
+    <!-- 微信登录按钮 -->
+    <button 
+      class="wx-login-btn {{isLogging ? 'loading' : ''}}" 
+      bindtap="onWxLogin"
+      disabled="{{isLogging}}"
+      hover-class="btn-hover">
+      <image class="wx-icon" src="/assets/icons/wechat.svg" wx:if="{{!isLogging}}"></image>
+      <text class="btn-text">{{isLogging ? '登录中...' : '微信快速登录'}}</text>
+    </button>
+
+    <!-- 跳过登录 -->
+    <view class="skip-section">
+      <text class="skip-btn" bindtap="onSkipLogin">暂不登录，先体验</text>
+    </view>
+
+    <!-- 用户协议 -->
+    <view class="agreement-section">
+      <text class="agreement-text">登录即表示同意</text>
+      <text class="agreement-link">《用户协议》</text>
+      <text class="agreement-text">和</text>
+      <text class="agreement-link">《隐私政策》</text>
+    </view>
+  </view>
+
+  <!-- 底部装饰 -->
+  <view class="bottom-decoration">
+    <view class="decoration-circle circle-1"></view>
+    <view class="decoration-circle circle-2"></view>
+    <view class="decoration-circle circle-3"></view>
+  </view>
+</view>

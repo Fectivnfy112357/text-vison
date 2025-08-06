@@ -106,13 +106,19 @@ app:
     secret: textVisionSecretKey2024ForJwtTokenGeneration
     expiration: 86400000  # 24小时（毫秒）
   
+  # 微信小程序配置
+  wechat:
+    miniprogram:
+      app-id: wx9aac4b6197f80059
+      app-secret: your-app-secret-here  # 请替换为实际的AppSecret
+      session-timeout: 7200000  # 2小时（毫秒）
+  
   # 文件存储配置
   file:
     upload-path: /uploads
     max-size: 10485760  # 10MB
     allowed-types: jpg,jpeg,png,gif,mp4,avi,mov
   
-  # 业务限制配置
   limits:
     daily-generation: 100  # 每日生成限制
     max-prompt-length: 1000  # 提示词最大长度

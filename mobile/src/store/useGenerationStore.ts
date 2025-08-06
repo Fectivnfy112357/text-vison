@@ -199,7 +199,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   // 检查生成状态
   checkGenerationStatus: async (id: string) => {
     try {
-      const response = await contentAPI.checkGenerationStatus(id)
+      const response = await contentAPI.getContent(id)
       const result = response?.data
       
       if (result) {

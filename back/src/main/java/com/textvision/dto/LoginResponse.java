@@ -31,6 +31,14 @@ public class LoginResponse {
      */
     private UserResponse user;
 
+    /**
+     * 无参构造函数
+     */
+    public LoginResponse() {}
+
+    /**
+     * 有参构造函数
+     */
     public LoginResponse(String token, Long expiresIn, UserResponse user) {
         this.token = token;
         this.expiresIn = expiresIn;

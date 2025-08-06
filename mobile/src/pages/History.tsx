@@ -438,8 +438,11 @@ const History: React.FC = () => {
                         {!isSelectionMode && (
                           <div className="relative">
                             <button
-                              onClick={() => setShowActionMenu(showActionMenu === item.id ? null : item.id)}
-                              className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setShowActionMenu(showActionMenu === item.id ? null : item.id)
+                              }}
+                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation"
                             >
                               <MoreVertical size={16} className="text-gray-400" />
                             </button>
@@ -450,50 +453,56 @@ const History: React.FC = () => {
                                   initial={{ opacity: 0, scale: 0.95 }}
                                   animate={{ opacity: 1, scale: 1 }}
                                   exit={{ opacity: 0, scale: 0.95 }}
-                                  className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-20"
+                                  className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                                  style={{ zIndex: 9999 }}
                                 >
                                   <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation()
                                       handleViewDetail(item)
                                       setShowActionMenu(null)
                                     }}
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
                                   >
-                                    <Eye size={14} />
-                                    <span>查看</span>
+                                    <Eye size={16} />
+                                    <span>查看详情</span>
                                   </button>
                                   {item.url && (
                                     <>
                                       <button
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation()
                                           handleDownload(item)
                                           setShowActionMenu(null)
                                         }}
-                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                        className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
                                       >
-                                        <Download size={14} />
+                                        <Download size={16} />
                                         <span>下载</span>
                                       </button>
                                       <button
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation()
                                           handleShare(item)
                                           setShowActionMenu(null)
                                         }}
-                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                        className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
                                       >
-                                        <Share2 size={14} />
+                                        <Share2 size={16} />
                                         <span>分享</span>
                                       </button>
                                     </>
                                   )}
+                                  <div className="border-t border-gray-100 my-1"></div>
                                   <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation()
                                       handleDelete(item.id)
                                       setShowActionMenu(null)
                                     }}
-                                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-3 touch-manipulation"
                                   >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                     <span>删除</span>
                                   </button>
                                 </motion.div>

@@ -51,6 +51,18 @@ public class JwtUtil {
     }
 
     /**
+     * 生成JWT令牌（仅用户ID）
+     * 
+     * @param userId 用户ID字符串
+     * @return JWT令牌
+     */
+    public String generateToken(String userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", Long.valueOf(userId));
+        return createToken(claims, userId);
+    }
+
+    /**
      * 创建JWT令牌
      * 
      * @param claims 声明

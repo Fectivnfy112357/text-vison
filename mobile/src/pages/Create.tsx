@@ -46,12 +46,16 @@ const Create: React.FC = () => {
     seed: undefined,
     guidanceScale: 7.5,
     watermark: true,
+    type: 'image',
+    style: undefined,
+    styleId: undefined,
+    templateId: undefined,
   })
 
   // 视频参数
   const [videoParams, setVideoParams] = useState<VideoGenerationParams>({
     prompt: '',
-    resolution: '1280x720',
+    resolution: '720p',
     duration: 5,
     ratio: '16:9',
     fps: 24,
@@ -59,6 +63,14 @@ const Create: React.FC = () => {
     cfgScale: 7.5,
     count: 1,
     watermark: true,
+    type: 'video',
+    style: undefined,
+    styleId: undefined,
+    templateId: undefined,
+    model: 'doubao-seedance-pronew',
+    firstFrameImage: undefined,
+    lastFrameImage: undefined,
+    hd: false,
   })
 
   // 初始化
@@ -102,8 +114,22 @@ const Create: React.FC = () => {
     }
 
     const options = type === 'image' 
-      ? { ...imageParams, prompt, watermark, referenceImage: referenceImage?.name }
-      : { ...videoParams, prompt, watermark, referenceImage: referenceImage?.name }
+      ? { 
+          ...imageParams, 
+          prompt, 
+          watermark, 
+          referenceImage: referenceImage?.name,
+          styleId: selectedStyle?.id,
+          style: selectedStyle?.name
+        }
+      : { 
+          ...videoParams, 
+          prompt, 
+          watermark, 
+          referenceImage: referenceImage?.name,
+          styleId: selectedStyle?.id,
+          style: selectedStyle?.name
+        }
 
     await generateContent({
       prompt,
@@ -393,21 +419,6 @@ const Create: React.FC = () => {
                         </select>
                       </div>
                       
-                      {/* 随机种子 */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">随机种子</label>
-                        <input
-                          type="number"
-                          value={imageParams.seed || ''}
-                          onChange={(e) => setImageParams(prev => ({ 
-                            ...prev, 
-                            seed: e.target.value ? parseInt(e.target.value) : undefined 
-                          }))}
-                          placeholder="留空为随机"
-                          className="input-soft w-full"
-                        />
-                      </div>
-                      
                       {/* 引导比例 */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -501,6 +512,40 @@ const Create: React.FC = () => {
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                               videoParams.cameraFixed ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      
+                      {/* 视频模型 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">生成模型</label>
+                        <select
+                          value={videoParams.model}
+                          onChange={(e) => setVideoParams(prev => ({ ...prev, model: e.target.value }))}
+                          className="input-soft w-full"
+                        >
+                          <option value="doubao-seedance-pronew">豆包-Seedance Pro</option>
+                          <option value="doubao-seedance-1-0-lite-t2v">豆包-Seedance Lite T2V</option>
+                          <option value="doubao-seedance-1-0-lite-i2v">豆包-Seedance Lite I2V</option>
+                          <option value="doubao-seaweed">豆包-Seaweed</option>
+                          <option value="wan2-1-14b-t2v">Wan2 T2V</option>
+                          <option value="wan2-1-14b-i2v">Wan2 I2V</option>
+                        </select>
+                      </div>
+                      
+                      {/* 高清模式 */}
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">高清模式</label>
+                        <button
+                          onClick={() => setVideoParams(prev => ({ ...prev, hd: !prev.hd }))}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            videoParams.hd ? 'bg-primary-500' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              videoParams.hd ? 'translate-x-6' : 'translate-x-1'
                             }`}
                           />
                         </button>

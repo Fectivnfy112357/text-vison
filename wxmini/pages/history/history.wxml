@@ -1,0 +1,233 @@
+<!--文生视界微信小程序 - 历史记录页面模板-->
+<view class="history-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <view class="navbar-left" bindtap="navigateBack">
+        <image class="back-icon" src="/images/icons/back.png" />
+      </view>
+      <view class="navbar-title">
+        <text>{{selectionMode ? '已选择' + selectedItems.length + '项' : '创作历史'}}</text>
+      </view>
+      <view class="navbar-right">
+        <view class="selection-btn" wx:if="{{historyList.length > 0 && isLoggedIn}}" bindtap="toggleSelectionMode">
+          <text class="selection-text">{{selectionMode ? '取消' : '选择'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="page-content" scroll-y="{{true}}" bindscrolltolower="onReachBottom">
+    <!-- 统计信息 -->
+    <view class="statistics-section" wx:if="{{isLoggedIn && !selectionMode}}">
+      <view class="stats-card">
+        <view class="stat-item">
+          <text class="stat-number">{{statistics.total}}</text>
+          <text class="stat-label">总计</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{statistics.image}}</text>
+          <text class="stat-label">图片</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{statistics.video}}</text>
+          <text class="stat-label">视频</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{statistics.transform}}</text>
+          <text class="stat-label">转换</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 筛选和排序 -->
+    <view class="filter-section" wx:if="{{isLoggedIn && !selectionMode}}">
+      <view class="filter-left">
+        <view class="filter-btn" bindtap="onFilterTap">
+          <text class="filter-text">{{selectedFilter === 'all' ? '全部' : selectedFilter === 'image' ? '图片' : selectedFilter === 'video' ? '视频' : '转换'}}</text>
+          <image class="filter-arrow" src="/images/icons/arrow-down.png" />
+        </view>
+      </view>
+      <view class="filter-right">
+        <view class="sort-btn" bindtap="onSortTap">
+          <text class="sort-text">{{selectedSort === 'time' ? '时间' : selectedSort === 'type' ? '类型' : '状态'}}</text>
+          <image class="sort-arrow" src="/images/icons/arrow-down.png" />
+        </view>
+      </view>
+    </view>
+    
+    <!-- 选择模式操作栏 -->
+    <view class="selection-actions" wx:if="{{selectionMode && isLoggedIn}}">
+      <view class="action-left">
+        <view class="select-all-btn" bindtap="toggleSelectAll">
+          <text class="select-all-text">{{selectedItems.length === historyList.length ? '取消全选' : '全选'}}</text>
+        </view>
+      </view>
+      <view class="action-right">
+        <button class="delete-btn" bindtap="batchDelete" disabled="{{selectedItems.length === 0}}">
+          <image class="btn-icon" src="/images/icons/delete.png" />
+          <text>删除</text>
+        </button>
+      </view>
+    </view>
+    
+    <!-- 历史记录列表 -->
+    <view class="history-list">
+      <!-- 加载状态 -->
+      <view class="loading-container" wx:if="{{loading}}">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">加载中...</text>
+      </view>
+      
+      <!-- 未登录提示 -->
+      <view class="login-prompt" wx:elif="{{!isLoggedIn}}">
+        <image class="prompt-icon" src="/images/empty/login.png" />
+        <text class="prompt-title">请先登录</text>
+        <text class="prompt-desc">登录后可查看您的创作历史记录</text>
+        <button class="login-btn" bindtap="navigateToLogin">
+          立即登录
+        </button>
+      </view>
+      
+      <!-- 历史记录项 -->
+      <view class="history-items" wx:elif="{{historyList.length > 0}}">
+        <view 
+          class="history-item {{selectedItems.includes(item.id) ? 'selected' : ''}}"
+          wx:for="{{historyList}}"
+          wx:key="id"
+          bindtap="onHistoryItemTap"
+          bindlongpress="onHistoryItemLongPress"
+          data-item="{{item}}"
+        >
+          <!-- 选择框 -->
+          <view class="selection-checkbox" wx:if="{{selectionMode}}">
+            <view class="checkbox {{selectedItems.includes(item.id) ? 'checked' : ''}}">
+              <image class="check-icon" src="/images/icons/check.png" wx:if="{{selectedItems.includes(item.id)}}" />
+            </view>
+          </view>
+          
+          <!-- 内容预览 -->
+          <view class="item-preview">
+            <image 
+              wx:if="{{item.type !== 'video'}}"
+              class="preview-image" 
+              src="{{item.result_url || item.thumbnail_url}}" 
+              mode="aspectFill"
+            />
+            <video 
+              wx:else
+              class="preview-video"
+              src="{{item.result_url}}"
+              poster="{{item.thumbnail_url}}"
+              controls="{{false}}"
+              autoplay="{{false}}"
+            />
+            
+            <!-- 状态标识 -->
+            <view class="status-badge {{item.status}}">
+              <text class="status-text">
+                {{item.status === 'completed' ? '完成' : item.status === 'processing' ? '生成中' : item.status === 'failed' ? '失败' : '等待中'}}
+              </text>
+            </view>
+            
+            <!-- 类型标识 -->
+            <view class="type-badge">
+              <text class="type-text">{{item.type === 'image' ? '图片' : item.type === 'video' ? '视频' : '转换'}}</text>
+            </view>
+          </view>
+          
+          <!-- 内容信息 -->
+          <view class="item-info">
+            <view class="info-header">
+              <text class="item-prompt">{{item.prompt}}</text>
+              <text class="item-time">{{item.created_at}}</text>
+            </view>
+            
+            <view class="info-details">
+              <view class="detail-item" wx:if="{{item.template_name}}">
+                <text class="detail-label">模板:</text>
+                <text class="detail-value">{{item.template_name}}</text>
+              </view>
+              <view class="detail-item" wx:if="{{item.dimensions}}">
+                <text class="detail-label">尺寸:</text>
+                <text class="detail-value">{{item.dimensions}}</text>
+              </view>
+              <view class="detail-item" wx:if="{{item.duration}}">
+                <text class="detail-label">时长:</text>
+                <text class="detail-value">{{item.duration}}s</text>
+              </view>
+            </view>
+            
+            <!-- 操作按钮 -->
+            <view class="item-actions" wx:if="{{!selectionMode}}">
+              <view class="action-btn" wx:if="{{item.status === 'completed'}}" bindtap="onRegenerate" data-item="{{item}}">
+                <image class="action-icon" src="/images/icons/refresh.png" />
+                <text class="action-text">重新生成</text>
+              </view>
+              <view class="action-btn" wx:if="{{item.status === 'completed'}}" bindtap="onShareHistory" data-item="{{item}}">
+                <image class="action-icon" src="/images/icons/share.png" />
+                <text class="action-text">分享</text>
+              </view>
+              <view class="action-btn delete" bindtap="deleteHistoryItem" data-item="{{item}}">
+                <image class="action-icon" src="/images/icons/delete.png" />
+                <text class="action-text">删除</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{!loading && historyList.length > 0}}">
+        <view class="load-more-content" wx:if="{{loadingMore}}">
+          <view class="loading-spinner small"></view>
+          <text class="load-more-text">加载中...</text>
+        </view>
+        <text class="load-more-text" wx:elif="{{!hasMore}}">没有更多了</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!loading && historyList.length === 0 && isLoggedIn}}">
+        <image class="empty-icon" src="/images/empty/history.png" />
+        <text class="empty-title">暂无创作记录</text>
+        <text class="empty-desc">快去创作您的第一个AI作品吧</text>
+        <button class="empty-btn" bindtap="navigateToCreate">
+          开始创作
+        </button>
+      </view>
+    </view>
+    
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+  
+  <!-- 筛选选择器 -->
+  <picker 
+    class="filter-picker"
+    mode="selector"
+    range="{{filterOptions}}"
+    range-key="name"
+    value="{{selectedFilter}}"
+    bindchange="onFilterPickerChange"
+    bindcancel="onFilterPickerCancel"
+    hidden="{{!showFilterPicker}}"
+  >
+  </picker>
+  
+  <!-- 排序选择器 -->
+  <picker 
+    class="sort-picker"
+    mode="selector"
+    range="{{sortOptions}}"
+    range-key="name"
+    value="{{selectedSort}}"
+    bindchange="onSortPickerChange"
+    bindcancel="onSortPickerCancel"
+    hidden="{{!showSortPicker}}"
+  >
+  </picker>
+</view>

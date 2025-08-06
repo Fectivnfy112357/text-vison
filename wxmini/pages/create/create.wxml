@@ -1,0 +1,331 @@
+<!--文生视界微信小程序 - 创作页面模板-->
+<view class="create-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-content">
+      <view class="navbar-left" bindtap="navigateBack">
+        <image class="back-icon" src="/images/icons/back.png" />
+      </view>
+      <view class="navbar-title">
+        <text wx:if="{{createType === 'image'}}">AI图片生成</text>
+        <text wx:elif="{{createType === 'video'}}">AI视频生成</text>
+        <text wx:else>图像转换</text>
+      </view>
+      <view class="navbar-right">
+        <view class="help-icon" bindtap="onShowHelp">
+          <image class="icon" src="/images/icons/help.png" />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="page-content" scroll-y="{{true}}">
+    <!-- 模板信息 -->
+    <view class="template-info" wx:if="{{selectedTemplate}}">
+      <view class="template-card">
+        <image class="template-preview" src="{{selectedTemplate.preview_image}}" mode="aspectFill" />
+        <view class="template-details">
+          <text class="template-name">{{selectedTemplate.name}}</text>
+          <text class="template-desc">{{selectedTemplate.description}}</text>
+          <view class="template-tags">
+            <text class="tag" wx:for="{{selectedTemplate.tags}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提示词输入 -->
+    <view class="prompt-section">
+      <view class="section-title">
+        <text class="title-text">创作描述</text>
+        <text class="title-required">*</text>
+      </view>
+      
+      <view class="prompt-input-wrapper">
+        <textarea 
+          class="prompt-input"
+          placeholder="{{promptPlaceholder}}"
+          value="{{prompt}}"
+          bindinput="onPromptInput"
+          maxlength="500"
+          auto-height="{{true}}"
+          show-confirm-bar="{{false}}"
+        />
+        <view class="input-counter">
+          <text>{{prompt.length}}/500</text>
+        </view>
+      </view>
+      
+      <!-- 提示词建议 -->
+      <view class="prompt-suggestions" wx:if="{{promptSuggestions.length > 0}}">
+        <text class="suggestions-title">建议词汇：</text>
+        <view class="suggestions-list">
+          <text 
+            class="suggestion-item"
+            wx:for="{{promptSuggestions}}"
+            wx:key="*this"
+            bindtap="onSuggestionTap"
+            data-index="{{index}}"
+          >
+            {{item}}
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 图片上传（图生图模式） -->
+    <view class="upload-section" wx:if="{{createType === 'transform'}}">
+      <view class="section-title">
+        <text class="title-text">上传图片</text>
+        <text class="title-required">*</text>
+      </view>
+      
+      <view class="upload-area" wx:if="{{!uploadedImage}}" bindtap="onUploadImage">
+        <image class="upload-icon" src="/images/icons/upload.png" />
+        <text class="upload-text">点击上传图片</text>
+        <text class="upload-tips">支持JPG、PNG格式，建议尺寸512x512</text>
+      </view>
+      
+      <view class="uploaded-image" wx:else>
+        <image class="image-preview" src="{{uploadedImagePath}}" mode="aspectFill" />
+        <view class="image-actions">
+          <view class="action-btn" bindtap="onUploadImage">
+            <image class="action-icon" src="/images/icons/replace.png" />
+            <text>更换</text>
+          </view>
+          <view class="action-btn" bindtap="onRemoveImage">
+            <image class="action-icon" src="/images/icons/delete.png" />
+            <text>删除</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 基础参数 -->
+    <view class="params-section">
+      <view class="section-title">
+        <text class="title-text">生成参数</text>
+        <view class="title-action" bindtap="onToggleAdvanced">
+          <text class="action-text">{{showAdvanced ? '收起' : '高级设置'}}</text>
+          <image class="action-icon {{showAdvanced ? 'rotated' : ''}}" src="/images/icons/arrow-down.png" />
+        </view>
+      </view>
+      
+      <!-- 宽高比选择（图片模式） -->
+      <view class="param-item" wx:if="{{createType === 'image'}}">
+        <text class="param-label">宽高比</text>
+        <picker 
+          class="param-picker"
+          mode="selector"
+          range="{{aspectRatios}}"
+          range-key="label"
+          value="{{selectedAspectRatio}}"
+          bindchange="onAspectRatioChange"
+        >
+          <view class="picker-display">
+            <text>{{selectedAspectRatio}}</text>
+            <image class="picker-arrow" src="/images/icons/arrow-down.png" />
+          </view>
+        </picker>
+      </view>
+      
+      <!-- 视频时长（视频模式） -->
+      <view class="param-item" wx:if="{{createType === 'video'}}">
+        <text class="param-label">视频时长</text>
+        <picker 
+          class="param-picker"
+          mode="selector"
+          range="{{videoDurations}}"
+          range-key="label"
+          value="{{params.duration}}"
+          bindchange="onDurationChange"
+        >
+          <view class="picker-display">
+            <text>{{params.duration}}秒</text>
+            <image class="picker-arrow" src="/images/icons/arrow-down.png" />
+          </view>
+        </picker>
+      </view>
+      
+      <!-- 高级参数 -->
+      <view class="advanced-params" wx:if="{{showAdvanced}}">
+        <!-- 生成步数 -->
+        <view class="param-item">
+          <view class="param-header">
+            <text class="param-label">生成步数</text>
+            <text class="param-value">{{params.steps}}</text>
+          </view>
+          <slider 
+            class="param-slider"
+            min="10"
+            max="50"
+            value="{{params.steps}}"
+            bindchange="onParamSliderChange"
+            data-param="steps"
+            activeColor="var(--color-primary)"
+            backgroundColor="var(--border-color-light)"
+          />
+          <view class="param-tips">
+            <text>步数越多质量越高，但生成时间更长</text>
+          </view>
+        </view>
+        
+        <!-- CFG Scale -->
+        <view class="param-item">
+          <view class="param-header">
+            <text class="param-label">引导强度</text>
+            <text class="param-value">{{params.cfg_scale}}</text>
+          </view>
+          <slider 
+            class="param-slider"
+            min="1"
+            max="20"
+            value="{{params.cfg_scale}}"
+            bindchange="onParamSliderChange"
+            data-param="cfg_scale"
+            activeColor="var(--color-primary)"
+            backgroundColor="var(--border-color-light)"
+          />
+          <view class="param-tips">
+            <text>控制AI对提示词的遵循程度</text>
+          </view>
+        </view>
+        
+        <!-- 采样器 -->
+        <view class="param-item">
+          <text class="param-label">采样器</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{samplers}}"
+            value="{{params.sampler}}"
+            bindchange="onSamplerChange"
+          >
+            <view class="picker-display">
+              <text>{{params.sampler}}</text>
+              <image class="picker-arrow" src="/images/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 负面提示词 -->
+        <view class="param-item">
+          <text class="param-label">负面提示词</text>
+          <textarea 
+            class="negative-prompt-input"
+            placeholder="描述不希望出现的内容..."
+            value="{{params.negative_prompt}}"
+            bindinput="onNegativePromptInput"
+            maxlength="200"
+            auto-height="{{true}}"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 生成按钮 -->
+    <view class="generate-section">
+      <button 
+        class="generate-btn {{generating ? 'generating' : ''}}"
+        bindtap="onStartGenerate"
+        disabled="{{generating}}"
+      >
+        <view wx:if="{{!generating}}" class="btn-content">
+          <image class="btn-icon" src="/images/icons/magic.png" />
+          <text class="btn-text">开始生成</text>
+        </view>
+        <view wx:else class="btn-content">
+          <view class="loading-spinner"></view>
+          <text class="btn-text">{{generationStatus}}</text>
+        </view>
+      </button>
+      
+      <!-- 生成进度 -->
+      <view class="progress-section" wx:if="{{generating}}">
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{generationProgress}}%"></view>
+        </view>
+        <view class="progress-text">
+          <text>{{generationProgress}}%</text>
+          <text class="cancel-btn" bindtap="cancelGeneration">取消</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+
+  <!-- 生成结果弹窗 -->
+  <view class="result-modal {{showResults ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+    <view class="modal-backdrop" bindtap="onCloseResults"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">生成结果</text>
+        <view class="modal-close" bindtap="onCloseResults">
+          <image class="close-icon" src="/images/icons/close.png" />
+        </view>
+      </view>
+      
+      <view class="modal-body">
+        <!-- 结果展示 -->
+        <view class="result-display" wx:if="{{generatedResults.length > 0}}">
+          <swiper 
+            class="result-swiper"
+            indicator-dots="{{generatedResults.length > 1}}"
+            indicator-color="rgba(255,255,255,0.5)"
+            indicator-active-color="#ffffff"
+            bindchange="onResultSwiper"
+          >
+            <swiper-item wx:for="{{generatedResults}}" wx:key="id">
+              <view class="result-item">
+                <image 
+                  wx:if="{{createType !== 'video'}}"
+                  class="result-image" 
+                  src="{{item.url}}" 
+                  mode="aspectFit"
+                  bindlongpress="onSaveResult"
+                />
+                <video 
+                  wx:else
+                  class="result-video"
+                  src="{{item.url}}"
+                  controls="{{true}}"
+                  autoplay="{{false}}"
+                  loop="{{true}}"
+                />
+              </view>
+            </swiper-item>
+          </swiper>
+          
+          <!-- 结果信息 -->
+          <view class="result-info" wx:if="{{generatedResults[currentResultIndex]}}">
+            <text class="result-prompt">{{prompt}}</text>
+            <view class="result-meta">
+              <text class="meta-item">尺寸: {{generatedResults[currentResultIndex].width}}x{{generatedResults[currentResultIndex].height}}</text>
+              <text class="meta-item" wx:if="{{createType === 'video'}}">时长: {{generatedResults[currentResultIndex].duration}}s</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <view class="action-buttons">
+          <button class="action-btn secondary" bindtap="onRegenerate">
+            <image class="btn-icon" src="/images/icons/refresh.png" />
+            <text>重新生成</text>
+          </button>
+          <button class="action-btn secondary" bindtap="onSaveResult">
+            <image class="btn-icon" src="/images/icons/download.png" />
+            <text>保存</text>
+          </button>
+          <button class="action-btn primary" bindtap="onShareResult">
+            <image class="btn-icon" src="/images/icons/share.png" />
+            <text>分享</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

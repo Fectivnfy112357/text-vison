@@ -28,6 +28,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/users/login",
                         "/api/users/check-email",
                         "/api/users/check-username",
+                        "/api/auth/wx-login",
+                        "/api/auth/wx-status",
                         "/api/templates",
                         "/api/templates/*",
                         "/api/templates/categories",

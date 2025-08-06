@@ -34,8 +34,20 @@ public class User {
     /**
      * 用户名
      */
-    @TableField("name")
-    private String name;
+    @TableField("username")
+    private String username;
+
+    /**
+     * 昵称
+     */
+    @TableField("nickname")
+    private String nickname;
+
+    /**
+     * 手机号
+     */
+    @TableField("phone")
+    private String phone;
 
     /**
      * 密码
@@ -48,6 +60,42 @@ public class User {
      */
     @TableField("avatar")
     private String avatar;
+
+    /**
+     * 性别：0-未知，1-男，2-女
+     */
+    @TableField("gender")
+    private Integer gender;
+
+    /**
+     * 国家
+     */
+    @TableField("country")
+    private String country;
+
+    /**
+     * 省份
+     */
+    @TableField("province")
+    private String province;
+
+    /**
+     * 城市
+     */
+    @TableField("city")
+    private String city;
+
+    /**
+     * 微信openId
+     */
+    @TableField("wx_open_id")
+    private String wxOpenId;
+
+    /**
+     * 微信unionId
+     */
+    @TableField("wx_union_id")
+    private String wxUnionId;
 
     /**
      * 状态：0-禁用，1-启用

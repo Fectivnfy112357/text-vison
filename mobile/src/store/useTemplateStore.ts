@@ -18,7 +18,7 @@ interface TemplateState {
 }
 
 interface TemplateActions {
-  loadTemplates: (params?: { category?: string; search?: string; page?: number; limit?: number }) => Promise<void>
+  loadTemplates: (params?: { categoryId?: string; search?: string; page?: number; limit?: number }) => Promise<void>
   loadPopularTemplates: (limit?: number) => Promise<void>
   loadCategories: () => Promise<void>
   searchTemplates: (query: string) => Promise<void>
@@ -151,7 +151,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   setSelectedCategory: (category: TemplateCategory | null) => {
     set({ selectedCategory: category })
     if (category) {
-      get().loadTemplates({ category: category.id, page: 1 })
+      get().loadTemplates({ categoryId: category.id, page: 1 })
     } else {
       get().loadTemplates({ page: 1 })
     }

@@ -17,4 +17,9 @@
         SELECT COUNT(*) > 0 FROM user WHERE name = #{name} AND deleted = 0
     </select>
 
+    <!-- 根据微信openId查找用户 -->
+    <select id="findByWxOpenId" parameterType="string" resultType="com.textvision.entity.User">
+        SELECT * FROM user WHERE wx_open_id = #{openId} AND deleted = 0
+    </select>
+
 </mapper>

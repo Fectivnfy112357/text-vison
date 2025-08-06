@@ -70,12 +70,23 @@ export const request = async <T = any>(
   config?: any
 ): Promise<T> => {
   try {
-    const response = await apiClient.request({
+    const requestConfig: any = {
       method,
       url,
-      data,
       ...config,
-    })
+    }
+    
+    // 对于GET和DELETE请求，将data作为params传递
+    if (method === 'GET' || method === 'DELETE') {
+      if (data) {
+        requestConfig.params = data
+      }
+    } else {
+      // 对于POST和PUT请求，将data作为请求体传递
+      requestConfig.data = data
+    }
+    
+    const response = await apiClient.request(requestConfig)
     return response.data
   } catch (error) {
     throw error
@@ -85,7 +96,7 @@ export const request = async <T = any>(
 // 类型定义
 export interface User {
   id: string
-  username: string
+  name: string
   email: string
   avatar?: string
   phone?: string
@@ -197,6 +208,11 @@ export interface ImageGenerationParams {
   guidanceScale?: number
   watermark?: boolean
   referenceImage?: string
+  // 新增参数以匹配后端
+  type?: string
+  style?: string
+  styleId?: number
+  templateId?: number
 }
 
 export interface VideoGenerationParams {
@@ -210,6 +226,15 @@ export interface VideoGenerationParams {
   count?: number
   watermark?: boolean
   referenceImage?: string
+  // 新增参数以匹配后端
+  type?: string
+  style?: string
+  styleId?: number
+  templateId?: number
+  model?: string
+  firstFrameImage?: string
+  lastFrameImage?: string
+  hd?: boolean
 }
 
 export interface GenerationContent {
@@ -249,20 +274,20 @@ export const authAPI = {
 
 // 模板API
 export const templateAPI = {
-  getTemplates: (params?: { category?: string; search?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Template>> => 
-    request('GET', '/templates', { params }),
+  getTemplates: (params?: { categoryId?: string; search?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Template>> => 
+    request('GET', '/templates', params),
   
   getTemplate: (id: string): Promise<ApiResponse<Template>> => 
     request('GET', `/templates/${id}`),
   
   getPopularTemplates: (limit?: number): Promise<ApiResponse<Template[]>> => 
-    request('GET', '/templates/popular', { params: { limit } }),
+    request('GET', '/templates/popular', { limit }),
   
   getTemplatesByCategory: (category: string): Promise<ApiResponse<Template[]>> => 
     request('GET', `/templates/category/${category}`),
   
   searchTemplates: (query: string): Promise<PaginatedResponse<Template>> => 
-    request('GET', '/templates/search', { params: { q: query } }),
+    request('GET', '/templates/search', { q: query }),
   
   useTemplate: (id: string): Promise<ApiResponse<void>> => 
     request('POST', `/templates/${id}/use`),
@@ -293,13 +318,13 @@ export const contentAPI = {
     request('GET', '/art-styles'),
   
   getUserContents: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }): Promise<PaginatedResponse<GenerationContent>> => 
-    request('GET', '/contents', { params }),
+    request('GET', '/contents', params),
   
   getContent: (id: string): Promise<ApiResponse<GenerationContent>> => 
     request('GET', `/contents/${id}`),
   
   getRecentContents: (limit?: number): Promise<ApiResponse<GenerationContent[]>> => 
-    request('GET', '/contents/recent', { params: { limit } }),
+    request('GET', '/contents/recent', { limit }),
   
   deleteContent: (id: string): Promise<ApiResponse<void>> => 
     request('DELETE', `/contents/${id}`),
@@ -307,8 +332,18 @@ export const contentAPI = {
   batchDeleteContents: (ids: string[]): Promise<ApiResponse<void>> => 
     request('POST', '/contents/batch-delete', { ids }),
   
-  checkGenerationStatus: (id: string): Promise<ApiResponse<GenerationContent>> => 
-    request('GET', `/contents/${id}/status`),
+
+  
+  getUserStats: (): Promise<ApiResponse<{
+    totalCount: number
+    imageCount: number
+    videoCount: number
+    completedCount: number
+    failedCount: number
+    processingCount: number
+    todayCount: number
+  }>> => 
+    request('GET', '/contents/stats'),
 }
 
 export default apiClient
