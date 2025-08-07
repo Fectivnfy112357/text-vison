@@ -132,12 +132,12 @@ class RequestInterceptor {
    * 错误处理
    */
   handleError(error, options) {
-    console.error('Request error:', error, options)
-
+      console.log("异常信息",error)
     // 处理登录过期
     if (error.statusCode === STATUS_CODE.UNAUTHORIZED) {
+        console.log("处理过期");
       this.handleUnauthorized()
-      return Promise.reject(error)
+    //   return Promise.reject(error)
     }
 
     // 处理网络错误重试
@@ -161,6 +161,17 @@ class RequestInterceptor {
     wx.removeStorageSync('user_token')
     wx.removeStorageSync('refresh_token')
     wx.removeStorageSync('user_info')
+
+    // 获取当前页面路径
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const currentRoute = currentPage ? currentPage.route : ''
+    
+    // 如果当前已经在登录页，则不重复跳转，避免循环跳转导致白屏
+    if (currentRoute === 'pages/login/login') {
+      console.log('当前已在登录页，跳过重复跳转')
+      return
+    }
 
     // 跳转到登录页
     wx.reLaunch({

@@ -23,14 +23,6 @@
       <image class="wx-icon" src="/assets/icons/wechat.svg" wx:if="{{!isLogging}}"></image>
       <text class="btn-text">{{isLogging ? '登录中...' : '微信快速登录'}}</text>
     </button>
-    
-    <!-- 用户协议 -->
-    <view class="agreement-section">
-      <text class="agreement-text">登录即表示同意</text>
-      <text class="agreement-link">《用户协议》</text>
-      <text class="agreement-text">和</text>
-      <text class="agreement-link">《隐私政策》</text>
-    </view>
   </view>
 
   <!-- 底部装饰 -->

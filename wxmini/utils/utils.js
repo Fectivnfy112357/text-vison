@@ -178,10 +178,18 @@ function validateIdCard(idCard) {
  */
 function getUrlParams(url) {
   const params = {}
-  const urlObj = new URL(url)
-  urlObj.searchParams.forEach((value, key) => {
-    params[key] = value
+  if (!url) return params
+  
+  const queryString = url.split('?')[1]
+  if (!queryString) return params
+  
+  queryString.split('&').forEach(param => {
+    const [key, value] = param.split('=')
+    if (key) {
+      params[decodeURIComponent(key)] = value ? decodeURIComponent(value) : ''
+    }
   })
+  
   return params
 }
 
@@ -191,13 +199,16 @@ function getUrlParams(url) {
  * @returns {string} URL参数字符串
  */
 function buildUrlParams(params) {
-  const searchParams = new URLSearchParams()
+  if (!params || typeof params !== 'object') return ''
+  
+  const paramArray = []
   Object.keys(params).forEach(key => {
     if (params[key] !== null && params[key] !== undefined) {
-      searchParams.append(key, params[key])
+      paramArray.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
     }
   })
-  return searchParams.toString()
+  
+  return paramArray.join('&')
 }
 
 /**
@@ -300,14 +311,21 @@ const storage = {
    * @param {number} expire 过期时间(秒)
    */
   set(key, value, expire) {
-    const data = {
-      value,
-      expire: expire ? Date.now() + expire * 1000 : null
-    }
     try {
+      const data = {
+        value,
+        expire: expire ? Date.now() + expire * 1000 : null
+      }
       wx.setStorageSync(key, JSON.stringify(data))
     } catch (error) {
-      console.error('Storage set error:', error)
+      console.error(`Storage set error for key '${key}':`, error)
+      // 如果JSON序列化失败，尝试直接存储
+      try {
+        wx.setStorageSync(key, value)
+        console.warn(`Stored raw value for key '${key}' due to JSON stringify error`)
+      } catch (rawError) {
+        console.error(`Failed to store raw value for key '${key}':`, rawError)
+      }
     }
   },
   
@@ -321,17 +339,43 @@ const storage = {
       const dataStr = wx.getStorageSync(key)
       if (!dataStr) return null
       
-      const data = JSON.parse(dataStr)
-      
-      // 检查是否过期
-      if (data.expire && Date.now() > data.expire) {
-        this.remove(key)
-        return null
+      // 检查数据类型，如果不是字符串，直接返回
+      if (typeof dataStr !== 'string') {
+        console.warn(`Storage data for key '${key}' is not a string:`, typeof dataStr)
+        return dataStr
       }
       
-      return data.value
+      // 尝试解析JSON
+      let data
+      try {
+        data = JSON.parse(dataStr)
+      } catch (parseError) {
+        console.warn(`Storage data for key '${key}' is not valid JSON, treating as raw data:`, parseError.message)
+        // 如果不是JSON格式，可能是旧版本直接存储的数据，直接返回
+        return dataStr
+      }
+      
+      // 检查是否是新格式的数据（包含value和expire字段）
+      if (data && typeof data === 'object' && data.hasOwnProperty('value')) {
+        // 检查是否过期
+        if (data.expire && Date.now() > data.expire) {
+          this.remove(key)
+          return null
+        }
+        return data.value
+      }
+      
+      // 如果是旧格式的数据，直接返回
+      return data
     } catch (error) {
-      console.error('Storage get error:', error)
+      console.error(`Storage get error for key '${key}':`, error)
+      // 如果出现错误，尝试清除可能损坏的数据
+      try {
+        this.remove(key)
+        console.log(`Removed corrupted storage data for key '${key}'`)
+      } catch (removeError) {
+        console.error(`Failed to remove corrupted storage data for key '${key}':`, removeError)
+      }
       return null
     }
   },

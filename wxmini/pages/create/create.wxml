@@ -112,114 +112,279 @@
         </view>
       </view>
       
-      <!-- 宽高比选择（图片模式） -->
-      <view class="param-item" wx:if="{{createType === 'image'}}">
-        <text class="param-label">宽高比</text>
-        <picker 
-          class="param-picker"
-          mode="selector"
-          range="{{aspectRatios}}"
-          range-key="label"
-          value="{{selectedAspectRatio}}"
-          bindchange="onAspectRatioChange"
-        >
-          <view class="picker-display">
-            <text>{{selectedAspectRatio}}</text>
-            <image class="picker-arrow" src="/images/icons/arrow-down.png" />
-          </view>
-        </picker>
-      </view>
-      
-      <!-- 视频时长（视频模式） -->
-      <view class="param-item" wx:if="{{createType === 'video'}}">
-        <text class="param-label">视频时长</text>
-        <picker 
-          class="param-picker"
-          mode="selector"
-          range="{{videoDurations}}"
-          range-key="label"
-          value="{{params.duration}}"
-          bindchange="onDurationChange"
-        >
-          <view class="picker-display">
-            <text>{{params.duration}}秒</text>
-            <image class="picker-arrow" src="/images/icons/arrow-down.png" />
-          </view>
-        </picker>
-      </view>
-      
-      <!-- 高级参数 -->
-      <view class="advanced-params" wx:if="{{showAdvanced}}">
-        <!-- 生成步数 -->
+      <!-- 图片生成参数 -->
+      <view wx:if="{{createType === 'image'}}">
+        <!-- 尺寸比例 -->
         <view class="param-item">
-          <view class="param-header">
-            <text class="param-label">生成步数</text>
-            <text class="param-value">{{params.steps}}</text>
-          </view>
-          <slider 
-            class="param-slider"
-            min="10"
-            max="50"
-            value="{{params.steps}}"
-            bindchange="onParamSliderChange"
-            data-param="steps"
-            activeColor="var(--color-primary)"
-            backgroundColor="var(--border-color-light)"
-          />
-          <view class="param-tips">
-            <text>步数越多质量越高，但生成时间更长</text>
-          </view>
-        </view>
-        
-        <!-- CFG Scale -->
-        <view class="param-item">
-          <view class="param-header">
-            <text class="param-label">引导强度</text>
-            <text class="param-value">{{params.cfg_scale}}</text>
-          </view>
-          <slider 
-            class="param-slider"
-            min="1"
-            max="20"
-            value="{{params.cfg_scale}}"
-            bindchange="onParamSliderChange"
-            data-param="cfg_scale"
-            activeColor="var(--color-primary)"
-            backgroundColor="var(--border-color-light)"
-          />
-          <view class="param-tips">
-            <text>控制AI对提示词的遵循程度</text>
-          </view>
-        </view>
-        
-        <!-- 采样器 -->
-        <view class="param-item">
-          <text class="param-label">采样器</text>
+          <text class="param-label">尺寸比例</text>
           <picker 
             class="param-picker"
             mode="selector"
-            range="{{samplers}}"
-            value="{{params.sampler}}"
-            bindchange="onSamplerChange"
+            range="{{sizeOptions}}"
+            range-key="label"
+            value="{{selectedSizeIndex}}"
+            bindchange="onSizeChange"
           >
             <view class="picker-display">
-              <text>{{params.sampler}}</text>
-              <image class="picker-arrow" src="/images/icons/arrow-down.png" />
+              <text>{{sizeOptions[selectedSizeIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
             </view>
           </picker>
         </view>
         
-        <!-- 负面提示词 -->
+        <!-- 图片质量 -->
         <view class="param-item">
-          <text class="param-label">负面提示词</text>
-          <textarea 
-            class="negative-prompt-input"
-            placeholder="描述不希望出现的内容..."
-            value="{{params.negative_prompt}}"
-            bindinput="onNegativePromptInput"
-            maxlength="200"
-            auto-height="{{true}}"
-          />
+          <text class="param-label">图片质量</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{qualityOptions}}"
+            range-key="label"
+            value="{{selectedQualityIndex}}"
+            bindchange="onQualityChange"
+          >
+            <view class="picker-display">
+              <text>{{qualityOptions[selectedQualityIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+      </view>
+      
+      <!-- 视频生成参数 -->
+      <view wx:if="{{createType === 'video'}}">
+        <!-- 视频模型 -->
+        <view class="param-item">
+          <text class="param-label">生成模型</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{videoModels}}"
+            range-key="label"
+            value="{{selectedModelIndex}}"
+            bindchange="onVideoModelChange"
+          >
+            <view class="picker-display">
+              <text>{{videoModels[selectedModelIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 视频分辨率 -->
+        <view class="param-item">
+          <text class="param-label">分辨率</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{resolutionOptions}}"
+            range-key="label"
+            value="{{selectedResolutionIndex}}"
+            bindchange="onResolutionChange"
+          >
+            <view class="picker-display">
+              <text>{{resolutionOptions[selectedResolutionIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 视频时长 -->
+        <view class="param-item">
+          <text class="param-label">视频时长</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{videoDurations}}"
+            range-key="label"
+            value="{{selectedDurationIndex}}"
+            bindchange="onDurationChange"
+          >
+            <view class="picker-display">
+              <text>{{videoDurations[selectedDurationIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 视频比例 -->
+        <view class="param-item">
+          <text class="param-label">视频比例</text>
+          <picker 
+            class="param-picker"
+            mode="selector"
+            range="{{videoRatios}}"
+            range-key="label"
+            value="{{selectedRatioIndex}}"
+            bindchange="onRatioChange"
+          >
+            <view class="picker-display">
+              <text>{{videoRatios[selectedRatioIndex].label}}</text>
+              <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+            </view>
+          </picker>
+        </view>
+      </view>
+      
+      <!-- 高级参数 -->
+      <view class="advanced-params" wx:if="{{showAdvanced}}">
+        <!-- 图片高级参数 -->
+        <view wx:if="{{createType === 'image'}}">
+          <!-- 随机数种子 -->
+          <view class="param-item">
+            <view class="param-header">
+              <text class="param-label">随机数种子</text>
+              <text class="param-value">{{params.seed === -1 ? '自动' : params.seed}}</text>
+            </view>
+            <view class="param-input-row">
+              <input 
+                class="param-input"
+                type="number"
+                placeholder="-1 (自动生成)"
+                value="{{params.seed === -1 ? '' : params.seed}}"
+                bindinput="onSeedInput"
+              />
+              <button class="param-btn" bindtap="onRandomSeed">随机</button>
+            </view>
+            <view class="param-tips">
+              <text>控制生成结果的随机性，相同种子产生相似结果</text>
+            </view>
+          </view>
+          
+          <!-- 引导比例 -->
+          <view class="param-item">
+            <view class="param-header">
+              <text class="param-label">引导比例</text>
+              <text class="param-value">{{params.guidanceScale}}</text>
+            </view>
+            <slider 
+              class="param-slider"
+              min="1"
+              max="10"
+              step="0.1"
+              value="{{params.guidanceScale}}"
+              bindchange="onParamSliderChange"
+              data-param="guidanceScale"
+              activeColor="var(--color-primary)"
+              backgroundColor="var(--border-color-light)"
+            />
+            <view class="param-tips">
+              <text>控制模型输出结果与提示词的一致程度</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 视频高级参数 -->
+        <view wx:if="{{createType === 'video'}}">
+          <!-- 帧率 -->
+          <view class="param-item">
+            <text class="param-label">帧率</text>
+            <picker 
+              class="param-picker"
+              mode="selector"
+              range="{{fpsOptions}}"
+              range-key="label"
+              value="{{selectedFpsIndex}}"
+              bindchange="onFpsChange"
+            >
+              <view class="picker-display">
+                <text>{{fpsOptions[selectedFpsIndex].label}}</text>
+                <image class="picker-arrow" src="/assets/icons/arrow-down.png" />
+              </view>
+            </picker>
+          </view>
+          
+          <!-- CFG Scale -->
+          <view class="param-item">
+            <view class="param-header">
+              <text class="param-label">CFG Scale</text>
+              <text class="param-value">{{params.cfgScale}}</text>
+            </view>
+            <slider 
+              class="param-slider"
+              min="1"
+              max="20"
+              step="0.1"
+              value="{{params.cfgScale}}"
+              bindchange="onParamSliderChange"
+              data-param="cfgScale"
+              activeColor="var(--color-primary)"
+              backgroundColor="var(--border-color-light)"
+            />
+            <view class="param-tips">
+              <text>控制生成内容与提示词的匹配程度</text>
+            </view>
+          </view>
+          
+          <!-- 生成数量 -->
+          <view class="param-item">
+            <view class="param-header">
+              <text class="param-label">生成数量</text>
+              <text class="param-value">{{params.count}}</text>
+            </view>
+            <slider 
+              class="param-slider"
+              min="1"
+              max="4"
+              step="1"
+              value="{{params.count}}"
+              bindchange="onParamSliderChange"
+              data-param="count"
+              activeColor="var(--color-primary)"
+              backgroundColor="var(--border-color-light)"
+            />
+            <view class="param-tips">
+              <text>同时生成多个视频，最多4个</text>
+            </view>
+          </view>
+          
+          <!-- 摄像头设置 -->
+          <view class="param-item">
+            <view class="param-row">
+              <text class="param-label">固定摄像头</text>
+              <switch 
+                class="param-switch"
+                checked="{{params.cameraFixed}}"
+                bindchange="onCameraFixedChange"
+                color="var(--color-primary)"
+              />
+            </view>
+            <view class="param-tips">
+              <text>开启后摄像头保持静止，关闭后允许摄像头运动</text>
+            </view>
+          </view>
+          
+          <!-- 高清模式 -->
+          <view class="param-item">
+            <view class="param-row">
+              <text class="param-label">高清模式</text>
+              <switch 
+                class="param-switch"
+                checked="{{params.hd}}"
+                bindchange="onHdChange"
+                color="var(--color-primary)"
+              />
+            </view>
+            <view class="param-tips">
+              <text>启用高清模式，提升视频质量但增加生成时间</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 通用高级参数 -->
+        <view class="param-item">
+          <view class="param-row">
+            <text class="param-label">添加水印</text>
+            <switch 
+              class="param-switch"
+              checked="{{params.watermark}}"
+              bindchange="onWatermarkChange"
+              color="var(--color-primary)"
+            />
+          </view>
+          <view class="param-tips">
+            <text>在生成内容上添加平台水印</text>
+          </view>
         </view>
       </view>
     </view>

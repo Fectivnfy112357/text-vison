@@ -1,6 +1,11 @@
 # TODO:
 
-- [x] fix_create_params: 修正创作页参数以匹配GenerateContentRequest.java：添加缺失参数，移除不匹配参数，更新buildGenerateData方法 (priority: High)
-- [x] fix_template_click: 修复模板点击接口调用：修正跳转参数名从templateId改为template_id (priority: High)
-- [x] fix_history_login: 修复历史页登录检查：使用正确的存储key 'user_info'而不是'userInfo' (priority: High)
-- [ ] remove_analytics: 删除所有analytics相关代码：删除utils/analytics.js，从api/index.js删除analytics导出，从所有页面删除analytics调用，删除后端AnalyticsController (**IN PROGRESS**) (priority: Medium)
+- [x] fix_tabbar_icons: 检查并修复底部菜单栏图标显示问题(app.json中的图标路径) (priority: High)
+- [x] fix_template_images: 修复模板页面图片显示问题 (priority: High)
+- [x] update_create_params: 根据GenerateContentRequest.java更新创作页面的参数选项 (priority: High)
+- [x] optimize_create_page: 优化创作页布局和样式，应用新的设计风格 (priority: Medium)
+- [x] optimize_index_page: 优化首页布局和样式，应用新的设计风格(奶白、雾紫、淡蓝色调) (priority: Medium)
+- [ ] optimize_templates_page: 优化模板页布局和样式，应用新的设计风格 (**IN PROGRESS**) (priority: Medium)
+- [ ] optimize_history_page: 优化历史页布局和样式，应用新的设计风格 (priority: Medium)
+- [ ] optimize_profile_page: 优化我的页布局和样式，应用新的设计风格 (priority: Medium)
+- [ ] add_animations: 添加柔和自然的动效到所有页面 (priority: Low)

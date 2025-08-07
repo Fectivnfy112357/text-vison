@@ -4,7 +4,7 @@
  */
 
 const app = getApp()
-const { content } = require('../../api/index.js')
+const { template, history } = require('../../api/index.js')
 const { formatTime, showToast, navigateTo, storage } = require('../../utils/utils.js')
 
 Page({
@@ -116,8 +116,7 @@ Page({
     // 检查用户登录状态
     this.checkUserLogin()
     
-    // 记录页面访问
-    this.trackPageView()
+    // 页面访问记录已移除
   },
 
   /**
@@ -264,7 +263,7 @@ Page({
    */
   async loadHotTemplates() {
     try {
-      const templates = await content.getTemplates({
+      const templates = await template.getTemplates({
         category: 'hot',
         limit: 6
       })
@@ -287,7 +286,6 @@ Page({
         return
       }
       
-      const { history } = require('../../api/index.js')
       const works = await history.getHistoryList({
         limit: 10,
         page: 1

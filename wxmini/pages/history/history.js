@@ -1,4 +1,5 @@
 // 文生视界微信小程序 - 历史记录页面
+const app = getApp();
 const api = require('../../api/index');
 const utils = require('../../utils/utils');
 
@@ -71,15 +72,25 @@ Page({
     this.loadStatistics();
     
     // 数据分析
-    this.trackPageView();
+    // 页面访问记录已移除
   },
 
   onShow() {
-    // 检查登录状态变化
-    this.checkUserLogin();
+    console.log('历史页面 onShow 调用');
     
-    // 刷新数据（可能有新的生成记录）
-    if (this.data.isLoggedIn) {
+    // 检查登录状态变化
+    const wasLoggedIn = this.data.isLoggedIn;
+    const isLoggedIn = this.checkUserLogin();
+    
+    console.log('登录状态变化:', { wasLoggedIn, isLoggedIn });
+    
+    // 如果登录状态发生变化，重新加载数据
+    if (isLoggedIn && (!wasLoggedIn || this.data.historyList.length === 0)) {
+      console.log('登录状态变化，重新加载数据');
+      this.loadHistoryData();
+      this.loadStatistics();
+    } else if (isLoggedIn) {
+      // 已登录状态下刷新数据（可能有新的生成记录）
       this.refreshData();
     }
   },
@@ -104,8 +115,21 @@ Page({
 
   // 检查用户登录状态
   checkUserLogin() {
-    const userInfo = utils.getStorageSync('user_info') || app.globalData.userInfo;
-    const isLoggedIn = !!userInfo && !!userInfo.openid;
+    // 从多个来源获取用户信息，确保获取到最新状态
+    const storageUserInfo = utils.getStorageSync('user_info');
+    const globalUserInfo = app.globalData.userInfo;
+    const token = utils.getStorageSync('user_token') || app.globalData.token;
+    
+    // 优先使用存储中的用户信息，其次使用全局数据
+    const userInfo = storageUserInfo || globalUserInfo;
+    const isLoggedIn = !!userInfo && (!!userInfo.openid || !!token);
+    
+    console.log('检查登录状态:', {
+      storageUserInfo: !!storageUserInfo,
+      globalUserInfo: !!globalUserInfo,
+      token: !!token,
+      isLoggedIn
+    });
     
     this.setData({
       userInfo,
@@ -119,6 +143,8 @@ Page({
         historyList: []
       });
     }
+    
+    return isLoggedIn;
   },
 
   // 加载历史记录数据
@@ -141,8 +167,8 @@ Page({
       const response = await api.getGenerationHistory(params);
       
       if (response.success) {
-        const historyList = response.data.list || [];
-        const hasMore = historyList.length >= this.data.pageSize;
+        const historyList = response.data.records || [];
+        const hasMore = response.data.hasNext || false;
         
         this.setData({
           historyList,
@@ -178,8 +204,8 @@ Page({
       const response = await api.getGenerationHistory(params);
       
       if (response.success) {
-        const newHistory = response.data.list || [];
-        const hasMore = newHistory.length >= this.data.pageSize;
+        const newHistory = response.data.records || [];
+        const hasMore = response.data.hasNext || false;
         
         this.setData({
           historyList: [...this.data.historyList, ...newHistory],

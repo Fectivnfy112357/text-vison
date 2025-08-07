@@ -103,7 +103,7 @@
 }
 
 .btn-text {
-  font-size: 32rpx;
+  font-size: 30rpx;
   color: #ffffff;
   font-weight: 500;
 }

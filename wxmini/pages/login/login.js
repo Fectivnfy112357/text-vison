@@ -1,7 +1,31 @@
 // pages/login/login.js
-const app = getApp()
-const { auth } = require('../../api/index.js')
-const { showToast, showLoading, hideLoading } = require('../../utils/utils.js')
+console.log('开始加载登录页模块')
+let app, auth, showToast, showLoading, hideLoading
+
+try {
+  app = getApp()
+  console.log('app对象获取成功:', !!app)
+} catch (error) {
+  console.error('获取app对象失败:', error)
+}
+
+try {
+  const authModule = require('../../api/index.js')
+  auth = authModule.auth
+  console.log('auth模块加载成功:', !!auth)
+} catch (error) {
+  console.error('auth模块加载失败:', error)
+}
+
+try {
+  const utils = require('../../utils/utils.js')
+  showToast = utils.showToast
+  showLoading = utils.showLoading
+  hideLoading = utils.hideLoading
+  console.log('utils模块加载成功:', !!showToast)
+} catch (error) {
+  console.error('utils模块加载失败:', error)
+}
 
 Page({
   /**
@@ -16,16 +40,57 @@ Page({
     
     // 用户信息授权
     canIUseGetUserProfile: wx.canIUse('getUserProfile'),
-    canIUseNicknameComp: wx.canIUse('input.type.nickname')
+    canIUseNicknameComp: wx.canIUse('input.type.nickname'),
+    
+    // 调试信息
+    debugInfo: '页面初始化完成'
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    this.setData({
-      source: options.source || 'direct'
-    })
+    console.log('登录页 onLoad 调用，参数:', options)
+    try {
+      this.setData({
+        source: options.source || 'direct',
+        debugInfo: 'onLoad完成'
+      })
+      console.log('登录页 onLoad 完成，当前数据:', this.data)
+    } catch (error) {
+      console.error('onLoad执行失败:', error)
+      this.setData({
+        debugInfo: 'onLoad失败: ' + error.message
+      })
+    }
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+    console.log('登录页 onShow 调用')
+    try {
+      this.setData({
+        debugInfo: 'onShow完成'
+      })
+    } catch (error) {
+      console.error('onShow执行失败:', error)
+    }
+  },
+
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+    console.log('登录页 onReady 调用，页面渲染完成')
+    try {
+      this.setData({
+        debugInfo: 'onReady完成-页面渲染成功'
+      })
+    } catch (error) {
+      console.error('onReady执行失败:', error)
+    }
   },
 
   /**

@@ -138,29 +138,17 @@ const user = {
    * 获取用户统计数据
    */
   getUserStats() {
-    return get('/api/users/stats')
+    return get('/api/contents/stats')
   },
 
   /**
    * 获取会员信息
    */
   getMemberInfo() {
-    return get('/api/users/member-info')
+    return get('/api/users/profile')
   },
 
-  /**
-   * 上传文件
-   * @param {string} filePath 文件路径
-   * @param {string} type 文件类型
-   */
-  uploadFile(filePath, type = 'image') {
-    return upload('/api/file/upload', filePath, {
-      name: 'file',
-      formData: { type },
-      loading: true,
-      loadingText: '上传中...'
-    })
-  },
+
 
   /**
    * 获取用户操作日志
@@ -235,6 +223,19 @@ const template = {
    */
   useTemplate(templateId) {
     return post(`/api/templates/${templateId}/use`)
+  },
+
+  /**
+   * 收藏/取消收藏模板
+   * @param {object} data 收藏数据
+   * @param {string} data.template_id 模板ID
+   * @param {string} data.action 操作类型 favorite/unfavorite
+   */
+  favoriteTemplate(data) {
+    return post('/api/templates/favorite', data, {
+      loading: true,
+      loadingText: '操作中...'
+    })
   }
 }
 
@@ -341,6 +342,22 @@ const content = {
       loading: true,
       loadingText: '删除中...'
     })
+  },
+
+  /**
+   * 获取任务状态
+   * @param {string} taskId 任务ID
+   */
+  getTaskStatus(taskId) {
+    return get(`/api/contents/task/${taskId}/status`)
+  },
+
+  /**
+   * 获取任务结果
+   * @param {string} taskId 任务ID
+   */
+  getTaskResult(taskId) {
+    return get(`/api/contents/task/${taskId}/result`)
   }
 }
 
@@ -538,199 +555,64 @@ const history = {
   }
 }
 
-/**
- * 文件上传相关接口
- */
-const file = {
-  /**
-   * 上传图片
-   * @param {string} filePath 文件路径
-   * @param {object} options 上传选项
-   */
-  uploadImage(filePath, options = {}) {
-    return upload('/api/file/upload-image', filePath, {
-      name: 'image',
-      loading: true,
-      loadingText: '上传中...',
-      ...options
-    })
-  },
 
-  /**
-   * 上传视频
-   * @param {string} filePath 文件路径
-   * @param {object} options 上传选项
-   */
-  uploadVideo(filePath, options = {}) {
-    return upload('/api/file/upload-video', filePath, {
-      name: 'video',
-      loading: true,
-      loadingText: '上传中...',
-      ...options
-    })
-  },
 
-  /**
-   * 获取上传凭证
-   * @param {string} fileType 文件类型
-   * @param {string} fileName 文件名
-   */
-  getUploadCredentials(fileType, fileName) {
-    return post('/api/file/upload-credentials', {
-      file_type: fileType,
-      file_name: fileName
-    })
-  }
-}
 
-/**
- * 用户配置相关接口
- */
-const config = {
-  /**
-   * 获取用户配置
-   */
-  getUserConfig() {
-    return get('/api/config/user')
-  },
 
-  /**
-   * 更新用户配置
-   * @param {object} data 配置数据
-   */
-  updateUserConfig(data) {
-    return put('/api/config/user', data)
-  },
 
-  /**
-   * 获取系统配置
-   */
-  getSystemConfig() {
-    return get('/api/config/system')
-  },
 
-  /**
-   * 获取生成参数配置
-   * @param {string} type 类型 image/video
-   */
-  getGenerationConfig(type) {
-    return get(`/api/config/generation/${type}`)
-  }
-}
+
+
+
 
 
 
 /**
- * 反馈相关接口
+ * 全局API接口（兼容旧版本调用方式）
  */
-const feedback = {
+const api = {
   /**
-   * 提交反馈
-   * @param {object} data 反馈数据
-   * @param {string} data.type 反馈类型
-   * @param {string} data.content 反馈内容
-   * @param {Array} data.images 图片列表
-   */
-  submitFeedback(data) {
-    return post('/api/feedback/submit', data, {
-      loading: true,
-      loadingText: '提交中...'
-    })
-  },
-
-  /**
-   * 获取反馈列表
+   * 获取生成历史
    * @param {object} params 查询参数
    */
-  getFeedbackList(params = {}) {
-    return get('/api/feedback/list', params)
+  getGenerationHistory(params = {}) {
+    return get('/api/contents', params)
   },
 
   /**
-   * 获取反馈详情
-   * @param {string} feedbackId 反馈ID
+   * 获取生成统计
    */
-  getFeedbackDetail(feedbackId) {
-    return get(`/api/feedback/${feedbackId}`)
-  }
-}
-
-/**
- * 分享相关接口
- */
-const share = {
-  /**
-   * 生成分享链接
-   * @param {object} data 分享数据
-   * @param {string} data.content_id 内容ID
-   * @param {string} data.type 分享类型
-   */
-  generateShareLink(data) {
-    return post('/api/share/generate-link', data)
+  getGenerationStatistics() {
+    return get('/api/contents/stats')
   },
 
   /**
-   * 获取分享内容
-   * @param {string} shareId 分享ID
+   * 删除生成历史
+   * @param {object} data 删除数据
+   * @param {string} data.id 单个ID
+   * @param {array} data.ids 批量ID数组
    */
-  getSharedContent(shareId) {
-    return get(`/api/share/${shareId}`)
+  deleteGenerationHistory(data) {
+    if (data.id) {
+      return del(`/api/contents/${data.id}`, {}, {
+        loading: true,
+        loadingText: '删除中...'
+      })
+    } else if (data.ids && data.ids.length > 0) {
+      return del('/api/contents/batch', { ids: data.ids }, {
+        loading: true,
+        loadingText: '删除中...'
+      })
+    }
+    return Promise.reject(new Error('缺少删除参数'))
   },
 
   /**
-   * 记录分享行为
-   * @param {object} data 分享数据
+   * 收藏模板
+   * @param {object} data 收藏数据
    */
-  trackShare(data) {
-    return post('/api/share/track', data, {
-      silent: true
-    })
-  }
-}
-
-/**
- * 通知相关接口
- */
-const notification = {
-  /**
-   * 获取通知列表
-   * @param {object} params 查询参数
-   */
-  getNotificationList(params = {}) {
-    return get('/api/notification/list', params)
-  },
-
-  /**
-   * 标记通知已读
-   * @param {string} notificationId 通知ID
-   */
-  markAsRead(notificationId) {
-    return post(`/api/notification/${notificationId}/read`)
-  },
-
-  /**
-   * 批量标记已读
-   * @param {Array} notificationIds 通知ID数组
-   */
-  batchMarkAsRead(notificationIds) {
-    return post('/api/notification/batch-read', {
-      notification_ids: notificationIds
-    })
-  },
-
-  /**
-   * 删除通知
-   * @param {string} notificationId 通知ID
-   */
-  deleteNotification(notificationId) {
-    return del(`/api/notification/${notificationId}`)
-  },
-
-  /**
-   * 获取未读通知数量
-   */
-  getUnreadCount() {
-    return get('/api/notification/unread-count')
+  favoriteTemplate(data) {
+    return template.favoriteTemplate(data)
   }
 }
 
@@ -742,9 +624,9 @@ module.exports = {
   category,
   artStyle,
   history,
-  file,
-  config,
-  feedback,
-  share,
-  notification
+  // 全局API接口
+  getGenerationHistory: api.getGenerationHistory,
+  getGenerationStatistics: api.getGenerationStatistics,
+  deleteGenerationHistory: api.deleteGenerationHistory,
+  favoriteTemplate: api.favoriteTemplate
 }

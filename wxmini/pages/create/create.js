@@ -4,7 +4,7 @@
  */
 
 const app = getApp()
-const { content, file } = require('../../api/index.js')
+const { content, file, config } = require('../../api/index.js')
 const { showToast, showLoading, hideLoading, showConfirm, navigateTo, navigateBack, storage } = require('../../utils/utils.js')
 
 Page({
@@ -13,123 +13,140 @@ Page({
    */
   data: {
     // 创作类型
-    createType: 'image', // image, video, transform
+    createType: 'image', // 'image' | 'video'
     
     // 用户输入
     prompt: '',
-    promptPlaceholder: '描述你想要生成的内容...',
+    promptLength: 0,
+    maxPromptLength: 500,
     
     // 模板相关
     selectedTemplate: null,
-    templateId: '',
+    templateId: null,
     
-    // 生成参数 - 匹配GenerateContentRequest.java
+    // 图片生成参数
+    sizeOptions: [
+      { label: '1:1 (512x512)', value: '1:1', width: 512, height: 512 },
+      { label: '4:3 (768x576)', value: '4:3', width: 768, height: 576 },
+      { label: '3:4 (576x768)', value: '3:4', width: 576, height: 768 },
+      { label: '16:9 (1024x576)', value: '16:9', width: 1024, height: 576 },
+      { label: '9:16 (576x1024)', value: '9:16', width: 576, height: 1024 }
+    ],
+    selectedSizeIndex: 0,
+    
+    qualityOptions: [
+      { label: '标准', value: 'standard' },
+      { label: '高清', value: 'hd' },
+      { label: '超高清', value: 'uhd' }
+    ],
+    selectedQualityIndex: 1,
+    
+    // 视频生成参数
+    videoModels: [
+      { label: 'Stable Video Diffusion', value: 'svd' },
+      { label: 'AnimateDiff', value: 'animatediff' },
+      { label: 'Pika Labs', value: 'pika' }
+    ],
+    selectedModelIndex: 0,
+    
+    resolutionOptions: [
+      { label: '720p (1280x720)', value: '720p', width: 1280, height: 720 },
+      { label: '1080p (1920x1080)', value: '1080p', width: 1920, height: 1080 },
+      { label: '4K (3840x2160)', value: '4k', width: 3840, height: 2160 }
+    ],
+    selectedResolutionIndex: 0,
+    
+    videoDurations: [
+      { label: '3秒', value: 3 },
+      { label: '5秒', value: 5 },
+      { label: '10秒', value: 10 },
+      { label: '15秒', value: 15 },
+      { label: '30秒', value: 30 }
+    ],
+    selectedDurationIndex: 1,
+    
+    videoRatios: [
+      { label: '16:9 (横屏)', value: '16:9' },
+      { label: '9:16 (竖屏)', value: '9:16' },
+      { label: '1:1 (方形)', value: '1:1' },
+      { label: '4:3 (标准)', value: '4:3' }
+    ],
+    selectedRatioIndex: 0,
+    
+    fpsOptions: [
+      { label: '24 FPS', value: 24 },
+      { label: '30 FPS', value: 30 },
+      { label: '60 FPS', value: 60 }
+    ],
+    selectedFpsIndex: 1,
+    
+    // 生成参数
     params: {
-      // 基础参数
-      type: 'image', // image, video
-      prompt: '',
-      size: '1:1', // 尺寸比例
-      style: '', // 艺术风格
-      styleId: null, // 艺术风格ID
-      referenceImage: '', // 参考图片URL
-      templateId: null, // 使用的模板ID
-      quality: 'standard', // 图片质量
+      // 图片参数
+      size: '1:1',
+      quality: 'hd',
+      seed: -1,
+      guidanceScale: 7.5,
       
-      // 图片生成参数
-      responseFormat: 'url', // url, b64_json
-      seed: -1, // 随机数种子 [-1, 2147483647]
-      guidanceScale: 2.5, // 引导比例 [1, 10]
+      // 视频参数
+      model: 'svd',
+      resolution: '720p',
+      duration: 5,
+      ratio: '16:9',
+      fps: 30,
+      cameraFixed: false,
+      cfgScale: 7.5,
+      count: 1,
+      hd: false,
       
-      // 视频生成参数
-      model: 'doubao-seedance-pronew', // 视频生成模型
-      resolution: '720p', // 480p, 720p, 1080p
-      duration: 5, // 视频时长（秒）[5, 10]
-      ratio: '16:9', // 视频比例 1:1, 3:4, 4:3, 16:9, 9:16, 21:9
-      fps: 24, // 帧率
-      cameraFixed: false, // 是否固定摄像头
-      cfgScale: 7, // CFG Scale参数 [1, 20]
-      count: 1, // 生成数量 [1, 4]
-      firstFrameImage: '', // 首帧图片URL
-      lastFrameImage: '', // 尾帧图片URL
-      hd: false, // 是否高清
-      watermark: false // 是否添加水印
+      // 通用参数
+      watermark: false
     },
     
     // 高级设置
     showAdvanced: false,
     
-    // 上传的图片（用于图生图）
-    uploadedImage: null,
-    uploadedImagePath: '',
+    // 上传图片
+    uploadedImages: [],
+    maxImages: 3,
     
     // 生成状态
-    generating: false,
-    generationProgress: 0,
-    generationStatus: '',
-    taskId: '',
+    isGenerating: false,
+    generateProgress: 0,
+    generateStatus: '',
     
     // 生成结果
-    generatedResults: [],
-    currentResultIndex: 0,
+    generateResult: null,
+    showResult: false,
     
     // 界面状态
-    showResults: false,
-    showParams: false,
-    
-    // 预设配置
-    sizeOptions: [
-      { label: '1:1 正方形', value: '1:1' },
-      { label: '4:3 横向', value: '4:3' },
-      { label: '3:4 竖向', value: '3:4' },
-      { label: '16:9 宽屏', value: '16:9' },
-      { label: '9:16 竖屏', value: '9:16' },
-      { label: '21:9 超宽', value: '21:9' }
-    ],
-    selectedSize: '1:1',
-    
-    qualityOptions: [
-      { label: '标准', value: 'standard' },
-      { label: '高清', value: 'hd' }
-    ],
-    
-    videoModels: [
-      { label: 'Seedance Pro', value: 'doubao-seedance-pronew' },
-      { label: 'Seedance Lite T2V', value: 'doubao-seedance-1-0-lite-t2v' },
-      { label: 'Seedance Lite I2V', value: 'doubao-seedance-1-0-lite-i2v' },
-      { label: 'Seaweed', value: 'doubao-seaweed' },
-      { label: 'Wan2 T2V', value: 'wan2-1-14b-t2v' },
-      { label: 'Wan2 I2V', value: 'wan2-1-14b-i2v' },
-      { label: 'Wan2 FLF2V', value: 'wan2-1-14b-flf2v' }
-    ],
-    
-    resolutionOptions: [
-       { label: '480p', value: '480p' },
-       { label: '720p', value: '720p' },
-       { label: '1080p', value: '1080p' }
-     ],
-     
-     videoDurations: [
-       { label: '5秒', value: 5 },
-       { label: '10秒', value: 10 }
-     ],
+    showPromptSuggestions: false,
     
     // 提示词建议
     promptSuggestions: [
-      '一只可爱的小猫咪',
+      '一只可爱的小猫',
       '未来科技城市',
       '梦幻森林',
       '宇宙星空',
-      '古风美女',
-      '机械朋克风格',
-      '水彩画风格',
-      '卡通动漫风格'
+      '古风建筑',
+      '抽象艺术',
+      '卡通角色',
+      '风景画'
     ],
     
     // 系统配置
-    systemConfig: {},
+    systemConfig: {
+      maxConcurrentGenerations: 3,
+      supportedFormats: ['jpg', 'png', 'webp'],
+      maxFileSize: 10 * 1024 * 1024 // 10MB
+    },
     
     // 用户配置
-    userConfig: {}
+    userConfig: {
+      autoSave: true,
+      defaultQuality: 'high',
+      enableWatermark: false
+    }
   },
 
   /**
@@ -217,12 +234,6 @@ Page({
    */
   async initPage() {
     try {
-      // 并行加载配置
-      await Promise.all([
-        this.loadSystemConfig(),
-        this.loadUserConfig()
-      ])
-      
       // 更新界面
       this.updateUI()
     } catch (error) {
@@ -252,32 +263,6 @@ Page({
       return false
     }
     return true
-  },
-
-  /**
-   * 加载系统配置
-   */
-  async loadSystemConfig() {
-    try {
-      const { config } = require('../../api/index.js')
-      const systemConfig = await config.getGenerationConfig(this.data.createType)
-      this.setData({ systemConfig })
-    } catch (error) {
-      console.error('Load system config error:', error)
-    }
-  },
-
-  /**
-   * 加载用户配置
-   */
-  async loadUserConfig() {
-    try {
-      const { config } = require('../../api/index.js')
-      const userConfig = await config.getUserConfig()
-      this.setData({ userConfig })
-    } catch (error) {
-      console.error('Load user config error:', error)
-    }
   },
 
   /**
@@ -356,15 +341,15 @@ Page({
   },
 
   /**
-   * 尺寸选择
+   * 图片尺寸选择
    */
   onSizeChange(e) {
-    const value = e.detail.value
-    const size = this.data.sizeOptions[value]
+    const index = e.detail.value
+    const selectedSize = this.data.sizeOptions[index]
     
     this.setData({
-      selectedSize: size.value,
-      'params.size': size.value
+      selectedSizeIndex: index,
+      'params.size': selectedSize.value
     })
   },
 
@@ -373,10 +358,58 @@ Page({
    */
   onParamSliderChange(e) {
     const { param } = e.currentTarget.dataset
-    const value = e.detail.value
+    const value = parseFloat(e.detail.value)
     
     this.setData({
       [`params.${param}`]: value
+    })
+  },
+  
+  /**
+   * 种子输入
+   */
+  onSeedInput(e) {
+    const value = e.detail.value
+    const seed = value === '' ? -1 : parseInt(value) || -1
+    this.setData({
+      'params.seed': seed
+    })
+  },
+  
+  /**
+   * 随机种子
+   */
+  onRandomSeed() {
+    const randomSeed = Math.floor(Math.random() * 2147483647)
+    this.setData({
+      'params.seed': randomSeed
+    })
+  },
+  
+  /**
+   * 摄像头固定切换
+   */
+  onCameraFixedChange(e) {
+    this.setData({
+      'params.cameraFixed': e.detail.value
+    })
+  },
+  
+  /**
+   * 高清模式切换
+   */
+  onHdChange(e) {
+    this.setData({
+      'params.hd': e.detail.value
+    })
+  },
+  
+  /**
+   * 水印切换
+   */
+  onWatermarkChange(e) {
+    this.setData({
+      'params.watermark': e.detail.value
     })
   },
 
@@ -384,11 +417,12 @@ Page({
    * 视频模型选择
    */
   onVideoModelChange(e) {
-    const value = e.detail.value
-    const model = this.data.videoModels[value]
+    const index = e.detail.value
+    const selectedModel = this.data.videoModels[index]
     
     this.setData({
-      'params.model': model.value
+      selectedModelIndex: index,
+      'params.model': selectedModel.value
     })
   },
   
@@ -396,11 +430,12 @@ Page({
    * 分辨率选择
    */
   onResolutionChange(e) {
-    const value = e.detail.value
-    const resolution = this.data.resolutionOptions[value]
+    const index = e.detail.value
+    const selectedResolution = this.data.resolutionOptions[index]
     
     this.setData({
-      'params.resolution': resolution.value
+      selectedResolutionIndex: index,
+      'params.resolution': selectedResolution.value
     })
   },
   
@@ -408,23 +443,51 @@ Page({
    * 视频时长选择
    */
   onDurationChange(e) {
-    const value = e.detail.value
-    const duration = this.data.videoDurations[value]
+    const index = e.detail.value
+    const selectedDuration = this.data.videoDurations[index]
     
     this.setData({
-      'params.duration': duration.value
+      selectedDurationIndex: index,
+      'params.duration': selectedDuration.value
     })
   },
   
   /**
-   * 质量选择
+   * 视频比例选择
    */
-  onQualityChange(e) {
-    const value = e.detail.value
-    const quality = this.data.qualityOptions[value]
+  onRatioChange(e) {
+    const index = e.detail.value
+    const selectedRatio = this.data.videoRatios[index]
     
     this.setData({
-      'params.quality': quality.value
+      selectedRatioIndex: index,
+      'params.ratio': selectedRatio.value
+    })
+  },
+  
+  /**
+   * 帧率选择
+   */
+  onFpsChange(e) {
+    const index = e.detail.value
+    const selectedFps = this.data.fpsOptions[index]
+    
+    this.setData({
+      selectedFpsIndex: index,
+      'params.fps': selectedFps.value
+    })
+  },
+  
+  /**
+   * 图片质量选择
+   */
+  onQualityChange(e) {
+    const index = e.detail.value
+    const selectedQuality = this.data.qualityOptions[index]
+    
+    this.setData({
+      selectedQualityIndex: index,
+      'params.quality': selectedQuality.value
     })
   },
 
@@ -452,21 +515,20 @@ Page({
    */
   async uploadImageFile(filePath) {
     try {
-      showLoading('上传图片中...')
+      showLoading('处理图片中...')
       
-      const result = await file.uploadImage(filePath)
-      
+      // 直接使用本地图片路径，不上传到服务器
       this.setData({
-        uploadedImage: result.url,
+        uploadedImage: filePath,
         uploadedImagePath: filePath
       })
       
       hideLoading()
-      showToast('图片上传成功')
+      showToast('图片选择成功')
     } catch (error) {
-      console.error('Upload image error:', error)
+      console.error('Process image error:', error)
       hideLoading()
-      showToast('图片上传失败')
+      showToast('图片处理失败')
     }
   },
 
@@ -598,16 +660,8 @@ Page({
   async callGenerateAPI(data) {
     const { createType } = this.data
     
-    switch (createType) {
-      case 'image':
-        return await content.textToImage(data)
-      case 'video':
-        return await content.textToVideo(data)
-      case 'transform':
-        return await content.imageToImage(data)
-      default:
-        throw new Error('不支持的生成类型')
-    }
+    // 使用统一的生成接口
+    return await content.generateContent(data)
   },
 
   /**
@@ -651,6 +705,8 @@ Page({
       }
     } catch (error) {
       console.error('Check progress error:', error)
+      // 添加错误处理，停止进度检查
+      this.onGenerationFailed('检查进度失败')
     }
   },
 
@@ -672,8 +728,6 @@ Page({
       })
       
       showToast('生成完成！')
-      
-
       
     } catch (error) {
       console.error('Get result error:', error)

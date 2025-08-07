@@ -319,31 +319,21 @@ Page({
    */
   async uploadAvatar(filePath) {
     try {
-      wx.showLoading({ title: '上传中...' })
+      wx.showLoading({ title: '处理中...' })
       
-      const uploadRes = await user.uploadFile(filePath, 'avatar')
+      // 直接使用本地头像，不上传到服务器
+      this.setData({
+        'userInfo.avatarUrl': filePath
+      })
       
-      if (uploadRes.success) {
-        const updateRes = await user.updateUserInfo({
-          avatarUrl: uploadRes.data.url
-        })
-        
-        if (updateRes.success) {
-          this.setData({
-            'userInfo.avatarUrl': uploadRes.data.url
-          })
-          
-          // 更新全局用户信息
-          app.globalData.userInfo.avatarUrl = uploadRes.data.url
-          
-          utils.showToast('头像更新成功')
-
-        }
-      }
+      // 更新全局用户信息
+      app.globalData.userInfo.avatarUrl = filePath
+      
+      utils.showToast('头像更新成功')
       
     } catch (error) {
-      console.error('上传头像失败:', error)
-      utils.showToast('上传失败，请重试')
+      console.error('处理头像失败:', error)
+      utils.showToast('处理失败，请重试')
     } finally {
       wx.hideLoading()
     }

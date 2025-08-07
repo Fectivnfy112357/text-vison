@@ -102,7 +102,7 @@ Page({
 
   // 检查用户登录状态
   checkUserLogin() {
-    const userInfo = utils.getStorageSync('userInfo');
+    const userInfo = utils.getStorageSync('user_info');
     const isLoggedIn = !!userInfo && !!userInfo.openid;
     
     this.setData({
@@ -153,11 +153,11 @@ Page({
         keyword: this.data.showSearchResult ? this.data.searchKeyword : ''
       };
       
-      const response = await api.getTemplates(params);
+      const response = await api.template.getTemplates(params);
       
       if (response.success) {
-        const templates = response.data.list || [];
-        const hasMore = templates.length >= this.data.pageSize;
+        const templates = response.data.records || [];
+        const hasMore = response.data.hasNext || false;
         
         this.setData({
           templates,
@@ -197,11 +197,11 @@ Page({
         keyword: this.data.showSearchResult ? this.data.searchKeyword : ''
       };
       
-      const response = await api.getTemplates(params);
+      const response = await api.template.getTemplates(params);
       
       if (response.success) {
-        const newTemplates = response.data.list || [];
-        const hasMore = newTemplates.length >= this.data.pageSize;
+        const newTemplates = response.data.records || [];
+        const hasMore = response.data.hasNext || false;
         
         this.setData({
           templates: [...this.data.templates, ...newTemplates],
