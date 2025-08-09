@@ -11,7 +11,7 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState<RegisterRequest>({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -35,7 +35,7 @@ const Register: React.FC = () => {
   }
 
   const isFormValid = 
-    formData.name && 
+    formData.username && 
     formData.email && 
     formData.password && 
     formData.confirmPassword &&
@@ -89,8 +89,8 @@ const Register: React.FC = () => {
               </div>
               <input
                 type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                value={formData.username}
+                onChange={(e) => handleInputChange('username', e.target.value)}
                 className="input-soft w-full pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500"
                 placeholder="请输入用户名"
                 required

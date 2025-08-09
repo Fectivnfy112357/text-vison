@@ -19,6 +19,7 @@ import { useGenerationStore } from '../store/useGenerationStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
+import MediaWithFallback from '../components/MediaWithFallback'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -46,7 +47,6 @@ const History: React.FC = () => {
   // 初始化
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login')
       return
     }
     loadHistory()
@@ -119,50 +119,79 @@ const History: React.FC = () => {
   }
 
   // 处理下载
-  const handleDownload = (item: GenerationContent) => {
-    if (item.result) {
+  const handleDownload = async (item: GenerationContent) => {
+    if (!item.url) {
+      toast.error('暂无可下载的内容')
+      return
+    }
+
+    try {
+      // 创建下载链接
       const link = document.createElement('a')
-      link.href = item.result
-      link.download = `${item.type}-${item.id}-${Date.now()}`
+      link.href = item.url
+      link.download = `文生视界-${item.type}-${item.id}-${Date.now()}.${item.type === 'image' ? 'jpg' : 'mp4'}`
+      link.style.display = 'none'
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
+      
+      toast.success('下载已开始')
+    } catch (error) {
+      console.error('下载失败:', error)
+      toast.error('下载失败，请重试')
     }
   }
 
   // 处理分享
   const handleShare = async (item: GenerationContent) => {
-    if (item.result && navigator.share) {
-      try {
-        await navigator.share({
-          title: 'AI生成内容',
-          text: item.prompt,
-          url: item.result,
-        })
-      } catch (error) {
-        console.error('分享失败:', error)
+    if (!item.url) {
+      toast.error('暂无可分享的内容')
+      return
+    }
+
+    try {
+      // 现代浏览器的原生分享API
+      if (navigator.share && navigator.canShare) {
+        const shareData = {
+          title: '文生视界 - AI生成作品',
+          text: `我用AI生成了${item.type === 'image' ? '一张图片' : '一个视频'}："${item.prompt}"`,
+          url: item.url,
+        }
+
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData)
+          toast.success('分享成功！')
+          return
+        }
       }
+
+      // 备用方案：复制链接到剪贴板
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(item.url)
+        toast.success('链接已复制到剪贴板')
+      } else {
+        // 降级方案：使用临时输入框
+        const tempInput = document.createElement('input')
+        tempInput.value = item.url
+        document.body.appendChild(tempInput)
+        tempInput.select()
+        document.execCommand('copy')
+        document.body.removeChild(tempInput)
+        toast.success('链接已复制到剪贴板')
+      }
+    } catch (error) {
+      console.error('分享失败:', error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        // 用户取消分享，不显示错误
+        return
+      }
+      toast.error('分享失败，请重试')
     }
   }
 
   // 处理查看详情
   const handleViewDetail = (_item: GenerationContent) => {
     // 这里可以导航到详情页面或打开模态框
-  }
-
-  // 切换选择模式
-  const toggleSelectionMode = () => {
-    setIsSelectionMode(!isSelectionMode)
-    setSelectedItems(new Set())
-  }
-
-  // 切换项目选择
-  const toggleItemSelection = (id: string) => {
-    const newSelected = new Set(selectedItems)
-    if (newSelected.has(id)) {
-      newSelected.delete(id)
-    } else {
-      newSelected.add(id)
-    }
-    setSelectedItems(newSelected)
   }
 
   // 格式化时间
@@ -183,6 +212,29 @@ const History: React.FC = () => {
     }
   }
 
+  // 如果未认证，显示登录提示
+  if (!isAuthenticated) {
+    return (
+      <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="text-center max-w-sm w-full">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Eye className="text-primary-500" size={32} />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">未登录</h3>
+            <p className="text-sm text-gray-500 mb-8">登录后查看创作历史记录</p>
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+            >
+              立即登录
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       {/* 头部 */}
@@ -201,16 +253,6 @@ const History: React.FC = () => {
             >
               <RefreshCw size={18} className={`text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
-            <button
-              onClick={toggleSelectionMode}
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                isSelectionMode 
-                  ? 'bg-primary-500 text-white' 
-                  : 'bg-white/80 text-gray-600'
-              }`}
-            >
-              {isSelectionMode ? '取消' : '选择'}
-            </button>
           </div>
         </div>
 
@@ -228,14 +270,6 @@ const History: React.FC = () => {
 
         {/* 过滤器 */}
         <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center space-x-2 px-3 py-2 bg-white/60 rounded-xl border border-white/60"
-          >
-            <Filter size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-600">筛选</span>
-          </button>
-          
           <div className="flex space-x-2">
             {(['all', 'image', 'video'] as FilterType[]).map((type) => (
               <button
@@ -252,57 +286,8 @@ const History: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* 展开的过滤器 */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 p-3 bg-white/60 rounded-xl border border-white/60"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">排序方式</span>
-                <select
-                  value={sortType}
-                  onChange={(e) => setSortType(e.target.value as SortType)}
-                  className="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="newest">最新创建</option>
-                  <option value="oldest">最早创建</option>
-                  <option value="name">按名称</option>
-                </select>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
-      {/* 批量操作栏 */}
-      <AnimatePresence>
-        {isSelectionMode && selectedItems.size > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="px-6 py-3 bg-primary-50 border-b border-primary-100"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-primary-700">
-                已选择 {selectedItems.size} 个项目
-              </span>
-              <button
-                onClick={handleBatchDelete}
-                className="flex items-center space-x-1 px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
-              >
-                <Trash2 size={14} />
-                <span>删除</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* 主内容 */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
@@ -314,202 +299,225 @@ const History: React.FC = () => {
             </div>
           </div>
         ) : filteredHistory.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock className="text-gray-400" size={24} />
-              </div>
-              <p className="text-gray-600 mb-2">暂无创作历史</p>
-              <p className="text-sm text-gray-500">开始你的第一次AI创作吧</p>
-              <button
+          <div className="flex-1 flex items-center justify-center px-6 py-12">
+            <div className="text-center space-y-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <Clock className="text-gray-400" size={32} />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-2"
+              >
+                <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
+                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                  还没有创作记录，开始你的第一次AI创作之旅吧
+                </p>
+              </motion.div>
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/create')}
-                className="mt-4 px-6 py-2 bg-primary-500 text-white rounded-xl font-medium"
+                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft hover:shadow-lg transition-all"
               >
                 开始创作
-              </button>
+              </motion.button>
             </div>
           </div>
         ) : (
           <div className="px-6 py-4">
-            <div className="grid gap-4">
+            <div className="space-y-4">
               {filteredHistory.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`card-soft p-4 relative ${
+                  className={`card-soft overflow-hidden ${
                     selectedItems.has(item.id) ? 'ring-2 ring-primary-300' : ''
                   }`}
                 >
-                  {/* 选择模式复选框 */}
-                  {isSelectionMode && (
-                    <button
-                      onClick={() => toggleItemSelection(item.id)}
-                      className="absolute top-3 left-3 z-10"
-                    >
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                        selectedItems.has(item.id)
-                          ? 'bg-primary-500 border-primary-500'
-                          : 'border-gray-300 bg-white'
-                      }`}>
-                        {selectedItems.has(item.id) && (
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                    </button>
-                  )}
 
-                  <div className={`flex space-x-3 ${isSelectionMode ? 'ml-8' : ''}`}>
-                    {/* 缩略图 */}
-                    <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                  {/* 主要内容区域 */}
+                  <div>
+                    {/* 大图展示 */}
+                    <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                       {(item.thumbnail || item.url) ? (
-                        item.type === 'image' ? (
-                          <img 
-                            src={item.thumbnail || item.url} 
-                            alt="Generated content"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = '/placeholder-image.jpg'
-                            }}
-                          />
-                        ) : (
-                          <video 
-                            src={item.url}
-                            poster={item.thumbnail}
-                            className="w-full h-full object-cover"
-                          />
-                        )
+                        <MediaWithFallback
+                          url={item.thumbnail || item.url}
+                          type={item.type}
+                          alt="Generated content"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          {item.type === 'image' ? (
-                            <Image className="text-gray-400" size={20} />
-                          ) : (
-                            <Video className="text-gray-400" size={20} />
-                          )}
+                          <div className="text-center">
+                            {item.type === 'image' ? (
+                              <Image className="text-gray-400 mb-2" size={32} />
+                            ) : (
+                              <Video className="text-gray-400 mb-2" size={32} />
+                            )}
+                            <div className="text-sm text-gray-500">{item.type === 'image' ? '图片' : '视频'}模板</div>
+                          </div>
                         </div>
                       )}
-                    </div>
+                      
+                      {/* 状态标签 */}
+                      <div className="absolute top-3 left-3 flex flex-col space-y-2">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
+                          item.type === 'image' 
+                            ? 'bg-primary-100/80 text-primary-700 border border-primary-200/50'
+                            : 'bg-secondary-100/80 text-secondary-700 border border-secondary-200/50'
+                        }`}>
+                          {item.type === 'image' ? (
+                            <><Image size={12} className="mr-1" />图片</>
+                          ) : (
+                            <><Video size={12} className="mr-1" />视频</>
+                          )}
+                        </span>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
+                          item.status === 'completed' 
+                            ? 'bg-emerald-100/80 text-emerald-700 border border-emerald-200/50'
+                            : item.status === 'processing'
+                            ? 'bg-amber-100/80 text-amber-700 border border-amber-200/50'
+                            : 'bg-rose-100/80 text-rose-700 border border-rose-200/50'
+                        }`}>
+                          {item.status === 'completed' ? '已完成' :
+                           item.status === 'processing' ? '处理中' : '失败'}
+                        </span>
+                      </div>
 
-                    {/* 内容信息 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {item.prompt}
-                          </p>
-                          <div className="flex items-center space-x-3 mt-1">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              item.type === 'image' 
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-purple-100 text-purple-800'
-                            }`}>
-                              {item.type === 'image' ? (
-                                <><Image size={12} className="mr-1" />图片</>
-                              ) : (
-                                <><Video size={12} className="mr-1" />视频</>
+                      {/* 操作按钮 - 悬停显示 */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleViewDetail(item)
+                                }}
+                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                                title="查看详情"
+                              >
+                                <Eye size={18} />
+                              </button>
+                              {item.url && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDownload(item)
+                                    }}
+                                    className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                                    title="下载"
+                                  >
+                                    <Download size={18} />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleShare(item)
+                                    }}
+                                    className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                                    title="分享"
+                                  >
+                                    <Share2 size={18} />
+                                  </button>
+                                </>
                               )}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              item.status === 'completed' 
-                                ? 'bg-green-100 text-green-800'
-                                : item.status === 'processing'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {item.status === 'completed' ? '已完成' : 
-                               item.status === 'processing' ? '处理中' : '失败'}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
-                            <Calendar size={12} />
-                            <span>{formatTime(item.createdAt)}</span>
-                            <span>•</span>
-                            <span>{new Date(item.createdAt).toLocaleTimeString('zh-CN', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}</span>
-                          </div>
-                        </div>
-
-                        {/* 操作按钮 */}
-                        {!isSelectionMode && (
-                          <div className="relative">
+                            </div>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setShowActionMenu(showActionMenu === item.id ? null : item.id)
+                                handleDelete(item.id)
                               }}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation"
+                              className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-red-500/30 transition-colors"
+                              title="删除"
                             >
-                              <MoreVertical size={16} className="text-gray-400" />
+                              <Trash2 size={18} />
                             </button>
-
-                            <AnimatePresence>
-                              {showActionMenu === item.id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.95 }}
-                                  className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
-                                  style={{ zIndex: 9999 }}
-                                >
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleViewDetail(item)
-                                      setShowActionMenu(null)
-                                    }}
-                                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
-                                  >
-                                    <Eye size={16} />
-                                    <span>查看详情</span>
-                                  </button>
-                                  {item.url && (
-                                    <>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleDownload(item)
-                                          setShowActionMenu(null)
-                                        }}
-                                        className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
-                                      >
-                                        <Download size={16} />
-                                        <span>下载</span>
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleShare(item)
-                                          setShowActionMenu(null)
-                                        }}
-                                        className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 touch-manipulation"
-                                      >
-                                        <Share2 size={16} />
-                                        <span>分享</span>
-                                      </button>
-                                    </>
-                                  )}
-                                  <div className="border-t border-gray-100 my-1"></div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleDelete(item.id)
-                                      setShowActionMenu(null)
-                                    }}
-                                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-3 touch-manipulation"
-                                  >
-                                    <Trash2 size={16} />
-                                    <span>删除</span>
-                                  </button>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
                           </div>
-                        )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 内容区域 */}
+                    <div className="p-5">
+                      <div className="space-y-3">
+                        {/* 提示词 - 多行展示 */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium text-gray-500">提示词</h3>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-sm text-gray-800 leading-relaxed line-clamp-3 hover:line-clamp-none transition-all">
+                              {item.prompt}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 元数据 */}
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-4 text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <Calendar size={14} />
+                              <span>{formatTime(item.createdAt)}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock size={14} />
+                              <span>{new Date(item.createdAt).toLocaleTimeString('zh-CN', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 快速操作按钮（移动端可见） */}
+                        <div className="flex items-center space-x-2 pt-3 border-t border-gray-100">
+                          {item.url && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDownload(item)
+                                }}
+                                className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors"
+                              >
+                                <Download size={12} />
+                                <span>下载</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleShare(item)
+                                }}
+                                className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-secondary-50 text-secondary-600 rounded-lg hover:bg-secondary-100 transition-colors"
+                              >
+                                <Share2 size={12} />
+                                <span>分享</span>
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDelete(item.id)
+                            }}
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                            <span>删除</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

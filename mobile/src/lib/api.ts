@@ -96,12 +96,16 @@ export const request = async <T = any>(
 // 类型定义
 export interface User {
   id: string
-  name: string
+  username: string
+  nickname?: string
   email: string
   avatar?: string
   phone?: string
-  bio?: string
-  isPremium?: boolean
+  gender?: number
+  country?: string
+  province?: string
+  city?: string
+  status?: number
   createdAt: string
   updatedAt: string
 }
@@ -112,7 +116,7 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  name: string
+  username: string
   email: string
   password: string
   confirmPassword: string
@@ -274,7 +278,7 @@ export const authAPI = {
 
 // 模板API
 export const templateAPI = {
-  getTemplates: (params?: { categoryId?: string; search?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Template>> => 
+  getTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Template>> => 
     request('GET', '/templates', params),
   
   getTemplate: (id: string): Promise<ApiResponse<Template>> => 
@@ -287,7 +291,7 @@ export const templateAPI = {
     request('GET', `/templates/category/${category}`),
   
   searchTemplates: (query: string): Promise<PaginatedResponse<Template>> => 
-    request('GET', '/templates/search', { q: query }),
+    request('GET', '/templates/search', { keyword: query }),
   
   useTemplate: (id: string): Promise<ApiResponse<void>> => 
     request('POST', `/templates/${id}/use`),
@@ -344,6 +348,18 @@ export const contentAPI = {
     todayCount: number
   }>> => 
     request('GET', '/contents/stats'),
+  
+  getUserHistoryStats: (params?: { days?: number }): Promise<ApiResponse<{
+    dailyStats: Array<{
+      date: string
+      total: number
+      completed: number
+      failed: number
+      images: number
+      videos: number
+    }>
+  }>> => 
+    request('GET', '/contents/history-stats', params),
 }
 
 export default apiClient

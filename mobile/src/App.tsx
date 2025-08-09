@@ -11,6 +11,10 @@ import Templates from './pages/Templates'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Help from './pages/Help'
+import Notifications from './pages/Settings/Notifications'
+import Privacy from './pages/Settings/Privacy'
+import Appearance from './pages/Settings/Appearance'
 
 // 布局组件
 import MobileLayout from './components/layout/MobileLayout'
@@ -116,6 +120,50 @@ function App() {
                           className="h-full"
                         >
                           <Profile />
+                        </motion.div>
+                      } />
+                      <Route path="/help" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Help />
+                        </motion.div>
+                      } />
+                      <Route path="/settings/notifications" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Notifications />
+                        </motion.div>
+                      } />
+                      <Route path="/settings/privacy" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Privacy />
+                        </motion.div>
+                      } />
+                      <Route path="/settings/appearance" element={
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="h-full"
+                        >
+                          <Appearance />
                         </motion.div>
                       } />
                       {/* 默认重定向到首页 */}

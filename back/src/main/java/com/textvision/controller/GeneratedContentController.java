@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * 生成内容控制器
@@ -242,6 +243,56 @@ public class GeneratedContentController {
         stats.put("todayCount", todayCount);
         
         return Result.success(stats);
+    }
+
+    @GetMapping("/history-stats")
+    @Operation(summary = "获取用户历史统计", description = "获取用户指定天数的历史统计数据")
+    public Result<Map<String, Object>> getUserHistoryStats(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @RequestParam(defaultValue = "7") int days) {
+        
+        log.debug("获取用户历史统计: userId={}, days={}", userId, days);
+        
+        Map<String, Object> result = new HashMap<>();
+        List<Map<String, Object>> dailyStats = new ArrayList<>();
+        
+        // 获取指定天数的历史统计数据
+        for (int i = days - 1; i >= 0; i--) {
+            Map<String, Object> dayStats = new HashMap<>();
+            
+            // 计算日期
+            LocalDateTime date = LocalDateTime.now().minusDays(i);
+            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
+            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
+            
+            // 该日期的总生成数量
+            long total = generatedContentService.countUserContentsByDateRange(userId, startOfDay, endOfDay);
+            
+            // 该日期的成功生成数量
+            long completed = generatedContentService.countUserContentsByDateRange(userId, startOfDay, endOfDay, "completed");
+            
+            // 该日期的失败生成数量
+            long failed = generatedContentService.countUserContentsByDateRange(userId, startOfDay, endOfDay, "failed");
+            
+            // 该日期的图片生成数量
+            long images = generatedContentService.countUserContentsByDateRange(userId, startOfDay, endOfDay, null, "image");
+            
+            // 该日期的视频生成数量
+            long videos = generatedContentService.countUserContentsByDateRange(userId, startOfDay, endOfDay, null, "video");
+            
+            dayStats.put("date", date.toString());
+            dayStats.put("total", total);
+            dayStats.put("completed", completed);
+            dayStats.put("failed", failed);
+            dayStats.put("images", images);
+            dayStats.put("videos", videos);
+            
+            dailyStats.add(dayStats);
+        }
+        
+        result.put("dailyStats", dailyStats);
+        
+        return Result.success(result);
     }
 
     @PostMapping("/{id}/download")

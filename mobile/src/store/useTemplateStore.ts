@@ -18,7 +18,7 @@ interface TemplateState {
 }
 
 interface TemplateActions {
-  loadTemplates: (params?: { categoryId?: string; search?: string; page?: number; limit?: number }) => Promise<void>
+  loadTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; limit?: number }) => Promise<void>
   loadPopularTemplates: (limit?: number) => Promise<void>
   loadCategories: () => Promise<void>
   searchTemplates: (query: string) => Promise<void>

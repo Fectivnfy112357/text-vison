@@ -386,4 +386,40 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         
         return response;
     }
+
+    @Override
+    public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+        LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GeneratedContent::getUserId, userId)
+               .ge(GeneratedContent::getCreatedAt, startTime)
+               .le(GeneratedContent::getCreatedAt, endTime);
+        return count(wrapper);
+    }
+
+    @Override
+    public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status) {
+        LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GeneratedContent::getUserId, userId)
+               .ge(GeneratedContent::getCreatedAt, startTime)
+               .le(GeneratedContent::getCreatedAt, endTime);
+        if (status != null) {
+            wrapper.eq(GeneratedContent::getStatus, status);
+        }
+        return count(wrapper);
+    }
+
+    @Override
+    public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status, String type) {
+        LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GeneratedContent::getUserId, userId)
+               .ge(GeneratedContent::getCreatedAt, startTime)
+               .le(GeneratedContent::getCreatedAt, endTime);
+        if (status != null) {
+            wrapper.eq(GeneratedContent::getStatus, status);
+        }
+        if (type != null) {
+            wrapper.eq(GeneratedContent::getType, type);
+        }
+        return count(wrapper);
+    }
 }

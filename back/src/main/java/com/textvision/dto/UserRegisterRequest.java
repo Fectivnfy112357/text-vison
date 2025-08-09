@@ -29,7 +29,7 @@ public class UserRegisterRequest {
     @NotBlank(message = "用户名不能为空")
     @Size(min = 2, max = 20, message = "用户名长度必须在2-20位之间")
     @Pattern(regexp = "^[a-zA-Z0-9\u4e00-\u9fa5_-]+$", message = "用户名只能包含字母、数字、中文、下划线和横线")
-    private String name;
+    private String username;
 
     /**
      * 密码

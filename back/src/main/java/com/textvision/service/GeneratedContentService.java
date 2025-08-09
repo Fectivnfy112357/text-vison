@@ -115,4 +115,37 @@ public interface GeneratedContentService extends IService<GeneratedContent> {
      * @param errorMessage 错误信息
      */
     void updateGenerationStatus(Long contentId, String status, java.util.List<String> urls, java.util.List<String> thumbnails, String errorMessage);
+
+    /**
+     * 根据日期范围统计用户生成内容数量
+     * 
+     * @param userId 用户ID
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 数量
+     */
+    long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime);
+
+    /**
+     * 根据日期范围和状态统计用户生成内容数量
+     * 
+     * @param userId 用户ID
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param status 状态
+     * @return 数量
+     */
+    long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status);
+
+    /**
+     * 根据日期范围、状态和类型统计用户生成内容数量
+     * 
+     * @param userId 用户ID
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param status 状态
+     * @param type 内容类型
+     * @return 数量
+     */
+    long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status, String type);
 }

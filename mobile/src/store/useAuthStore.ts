@@ -37,7 +37,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     set({ isLoading: true, error: null })
     try {
       const response = await authAPI.login(credentials)
-      // 根据后端返回的数据结构 {code: 200, data: {token: '...', user: {...}}, message: '登录成功'}
+      
+      // 检查响应是否成功
+      if (!response.success || response.code !== 200) {
+        throw new Error(response.message || '登录失败')
+      }
+      
+      // 检查data是否存在
+      if (!response.data) {
+        throw new Error('登录响应数据无效')
+      }
+      
       const token = response.data.token
       const user = response.data.user
 
@@ -66,7 +76,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     set({ isLoading: true, error: null })
     try {
       const response = await authAPI.register(data)
-      // 根据后端返回的数据结构 {code: 200, data: {token: '...', user: {...}}, message: '注册成功'}
+      
+      // 检查响应是否成功
+      if (!response.success || response.code !== 200) {
+        throw new Error(response.message || '注册失败')
+      }
+      
+      // 检查data是否存在
+      if (!response.data) {
+        throw new Error('注册响应数据无效')
+      }
+      
       const token = response.data.token
       const user = response.data.user
 
