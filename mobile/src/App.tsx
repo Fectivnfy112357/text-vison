@@ -1,20 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// 页面组件
-import Home from './pages/Home'
-import Create from './pages/Create'
-import History from './pages/History'
-import Templates from './pages/Templates'
-import Profile from './pages/Profile'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Help from './pages/Help'
-import Notifications from './pages/Settings/Notifications'
-import Privacy from './pages/Settings/Privacy'
-import Appearance from './pages/Settings/Appearance'
+// 页面组件 - 使用懒加载优化性能
+const Home = lazy(() => import('./pages/Home'))
+const Create = lazy(() => import('./pages/Create'))
+const History = lazy(() => import('./pages/History'))
+const Templates = lazy(() => import('./pages/Templates'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const Help = lazy(() => import('./pages/Help'))
+const Notifications = lazy(() => import('./pages/Settings/Notifications'))
+const Privacy = lazy(() => import('./pages/Settings/Privacy'))
+const Appearance = lazy(() => import('./pages/Settings/Appearance'))
 
 // 布局组件
 import MobileLayout from './components/layout/MobileLayout'
@@ -26,6 +26,26 @@ import { useAuthStore } from './store/useAuthStore'
 // 认证组件
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
+// 页面加载组件
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-full">
+    <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
+// 优化的页面动画组件
+const AnimatedPage = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.2 }}
+    className="h-full"
+  >
+    {children}
+  </motion.div>
+)
+
 function App() {
   const { checkAuth } = useAuthStore()
 
@@ -34,31 +54,30 @@ function App() {
     checkAuth()
   }, [])
 
+  // 缓存背景样式，避免重复计算
+  const backgroundStyle = useMemo(() => ({
+    className: "h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
+  }), [])
+
   return (
     <Router>
-      <div className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+      <div {...backgroundStyle}>
         <AnimatePresence mode="wait">
           <Routes>
             {/* 认证相关路由 */}
             <Route path="/login" element={
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Login />
-              </motion.div>
+              <Suspense fallback={<PageLoader />}>
+                <AnimatedPage>
+                  <Login />
+                </AnimatedPage>
+              </Suspense>
             } />
             <Route path="/register" element={
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Register />
-              </motion.div>
+              <Suspense fallback={<PageLoader />}>
+                <AnimatedPage>
+                  <Register />
+                </AnimatedPage>
+              </Suspense>
             } />
             
             {/* 主应用路由 - 统一使用ProtectedRoute包裹 */}
@@ -68,103 +87,67 @@ function App() {
                   <div className="flex-1 overflow-hidden pb-20">
                     <Routes>
                       <Route path="/" element={
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Home />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Home />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/create" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Create />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Create />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/history" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <History />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <History />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/templates" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Templates />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Templates />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/profile" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Profile />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Profile />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/help" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Help />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Help />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/settings/notifications" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Notifications />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Notifications />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/settings/privacy" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Privacy />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Privacy />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       <Route path="/settings/appearance" element={
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        >
-                          <Appearance />
-                        </motion.div>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedPage>
+                            <Appearance />
+                          </AnimatedPage>
+                        </Suspense>
                       } />
                       {/* 默认重定向到首页 */}
                       <Route path="*" element={<Navigate to="/" replace />} />

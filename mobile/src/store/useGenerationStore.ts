@@ -22,6 +22,7 @@ interface GenerationActions {
   stopPolling: () => void
   checkGenerationStatus: (id: string) => Promise<void>
   clearError: () => void
+  destroy: () => void
 }
 
 export const useGenerationStore = create<GenerationState & GenerationActions>((set, get) => ({
@@ -32,6 +33,15 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   pollingInterval: null,
   isLoading: false,
   error: null,
+
+  // 清理函数 - 在组件卸载时调用
+  destroy: () => {
+    const { pollingInterval } = get()
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      set({ pollingInterval: null })
+    }
+  },
 
   // 生成内容
   generateContent: async (params: GenerateContentRequest) => {

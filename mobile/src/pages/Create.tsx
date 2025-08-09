@@ -280,7 +280,7 @@ const FileUploader = ({
 const Create: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { generateContent, isGenerating, currentGeneration } = useGenerationStore()
+  const { generateContent, isGenerating, currentGeneration, destroy } = useGenerationStore()
   const { artStyles, selectedStyle, isLoading: stylesLoading, error: stylesError, loadArtStyles, setSelectedStyle, clearError } = useArtStyleStore()
   const { isAuthenticated } = useAuthStore()
 
@@ -337,7 +337,12 @@ const Create: React.FC = () => {
         styleId: undefined // 如果模板有特定风格ID，可以在这里设置
       }))
     }
-  }, [isAuthenticated, location.state, loadArtStyles])
+    
+    // 组件卸载时清理轮询
+    return () => {
+      destroy()
+    }
+  }, [isAuthenticated, location.state, loadArtStyles, destroy])
 
   // 处理参数变化
   const updateParam = (key: keyof GenerateContentRequest, value: any) => {

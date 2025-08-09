@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Image, Video, Play } from 'lucide-react'
 
 interface MediaWithFallbackProps {
@@ -18,7 +18,10 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isInView, setIsInView] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   
   // 清理URL，移除可能存在的反引号
   const cleanUrl = React.useMemo(() => {
@@ -30,6 +33,32 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
     }
     return cleaned
   }, [url])
+
+  // 使用Intersection Observer实现懒加载
+  useEffect(() => {
+    const element = containerRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          observer.unobserve(element)
+        }
+      },
+      {
+        root: null,
+        rootMargin: '50px', // 提前50px加载
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.unobserve(element)
+    }
+  }, [])
 
   const handleImageError = () => {
     setHasError(true)
@@ -44,13 +73,14 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
     onError?.()
   }
 
-  const handleImageLoad = () => {
+  const handleImageLoad = useCallback(() => {
     setIsLoading(false)
-  }
+    setImageLoaded(true)
+  }, [])
 
-  const handleVideoLoadedData = () => {
+  const handleVideoLoadedData = useCallback(() => {
     setIsLoading(false)
-  }
+  }, [])
 
   const handlePlayClick = () => {
     if (videoRef.current) {
@@ -60,20 +90,39 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
 
   if (type === 'image') {
     return (
-      <div className="relative w-full h-full">
-        {isLoading && (
+      <div ref={containerRef} className="relative w-full h-full">
+        {/* 占位符 */}
+        {(!isInView || isLoading) && (
           <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
           </div>
         )}
-        <img 
-          src={cleanUrl}
-          alt={alt}
-          className={`${className} ${hasError ? 'hidden' : ''}`}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          loading="lazy"
-        />
+        
+        {/* 渐进式图片加载 */}
+        {isInView && (
+          <>
+            {/* 低质量占位图 */}
+            {!imageLoaded && !hasError && (
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 filter blur-sm scale-110" />
+            )}
+            
+            <img 
+              src={cleanUrl}
+              alt={alt}
+              className={`${className} ${hasError ? 'hidden' : ''} transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+              loading="lazy"
+              decoding="async"
+              style={{
+                willChange: 'opacity'
+              }}
+            />
+          </>
+        )}
+        
         {hasError && (
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg flex flex-col items-center justify-center text-center p-4 border border-red-200/50">
             <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-2">
@@ -93,37 +142,42 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
 
   if (type === 'video') {
     return (
-      <div className="relative w-full h-full group">
-        {isLoading && (
+      <div ref={containerRef} className="relative w-full h-full group">
+        {(!isInView || isLoading) && (
           <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center z-10">
             <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
           </div>
         )}
         
-        <video 
-          ref={videoRef}
-          src={cleanUrl}
-          className={`${className} ${hasError ? 'hidden' : ''}`}
-          onError={handleVideoError}
-          onLoadedData={handleVideoLoadedData}
-          preload="metadata"
-          playsInline
-          webkit-playsinline="true"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="true"
-          x5-playsinline="true"
-          style={{ 
-            objectFit: 'cover',
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#000'
-          }}
-          controlsList="nodownload noremoteplayback"
-          disablePictureInPicture
-          crossOrigin="anonymous"
-        >
-          您的浏览器不支持视频播放
-        </video>
+        {isInView && (
+          <video 
+            ref={videoRef}
+            src={cleanUrl}
+            className={`${className} ${hasError ? 'hidden' : ''} transition-opacity duration-300 ${
+              !isLoading ? 'opacity-100' : 'opacity-0'
+            }`}
+            onError={handleVideoError}
+            onLoadedData={handleVideoLoadedData}
+            preload="metadata"
+            playsInline
+            webkit-playsinline="true"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            x5-playsinline="true"
+            style={{ 
+              objectFit: 'cover',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000',
+              willChange: 'opacity'
+            }}
+            controlsList="nodownload noremoteplayback"
+            disablePictureInPicture
+            crossOrigin="anonymous"
+          >
+            您的浏览器不支持视频播放
+          </video>
+        )}
         
         {/* 视频播放按钮（仅在移动端且未播放时显示） */}
         {!hasError && !isLoading && (

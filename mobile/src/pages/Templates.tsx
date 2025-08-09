@@ -1,21 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   Search, 
   Grid3X3, 
   List, 
-  Eye, 
-  Play, 
-  Heart, 
   Sparkles,
-  X,
-  TrendingUp
+  X
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
+import TemplateCard from '../components/TemplateCard'
 
 type ViewMode = 'grid' | 'list'
 
@@ -58,39 +55,12 @@ const Templates: React.FC = () => {
 
 
   // 排序模板 - 按使用次数排序
-  const sortedTemplates = React.useMemo(() => {
+  const sortedTemplates = useMemo(() => {
     const sorted = [...templates]
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
   }, [templates])
 
-  // 页面进入动画
-  const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    },
-    exit: { opacity: 0 }
-  }
-
-  // 卡片动画
-  const cardVariants = {
-    initial: { opacity: 0, y: 30, scale: 0.9 },
-    animate: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1
-    },
-    hover: { 
-      scale: 1.02
-    }
-  }
-
-
-  // 搜索防抖
+  // 搜索防抖 - 使用useCallback优化
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localSearchQuery !== searchQuery) {
@@ -104,16 +74,15 @@ const Templates: React.FC = () => {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [localSearchQuery])
+  }, [localSearchQuery, searchQuery, setSearchQuery, searchTemplates, loadTemplates])
 
-  // 处理分类选择
-  const handleCategorySelect = (category: TemplateCategory | null) => {
+  // 处理分类选择 - 使用useCallback优化
+  const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
     setSelectedCategory(category)
-    // setSelectedCategory内部已经会调用loadTemplates，无需重复调用
-  }
+  }, [setSelectedCategory])
 
-  // 处理模板使用
-  const handleUseTemplate = async (template: Template) => {
+  // 处理模板使用 - 使用useCallback优化
+  const handleUseTemplate = useCallback(async (template: Template) => {
     if (!isAuthenticated) {
       navigate('/login')
       return
@@ -130,10 +99,10 @@ const Templates: React.FC = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message || error.toString())
     }
-  }
+  }, [isAuthenticated, useTemplate, navigate])
 
-  // 处理收藏
-  const handleToggleFavorite = (templateId: string) => {
+  // 处理收藏 - 使用useCallback优化
+  const handleToggleFavorite = useCallback((templateId: string) => {
     const newFavorites = new Set(favorites)
     if (newFavorites.has(templateId)) {
       newFavorites.delete(templateId)
@@ -143,20 +112,20 @@ const Templates: React.FC = () => {
       toast.success('已添加到收藏')
     }
     setFavorites(newFavorites)
-  }
+  }, [favorites])
 
-  // 格式化数字
-  const formatNumber = (num: number) => {
+  // 格式化数字 - 使用useCallback优化
+  const formatNumber = useCallback((num: number) => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M'
     } else if (num >= 1000) {
       return (num / 1000).toFixed(1) + 'K'
     }
     return num.toString()
-  }
+  }, [])
 
-  // 获取分类图标
-  const getCategoryIcon = (categoryName: string) => {
+  // 获取分类图标 - 使用useMemo优化
+  const getCategoryIcon = useCallback((categoryName: string) => {
     const iconMap: Record<string, string> = {
       '人物': '👤',
       '风景': '🏞️',
@@ -178,16 +147,16 @@ const Templates: React.FC = () => {
       '其他': '📌'
     }
     return iconMap[categoryName] || '📁'
-  }
+  }, [])
 
   
   return (
     <motion.div 
       className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
       {/* 头部 */}
       <motion.div 
@@ -348,249 +317,33 @@ const Templates: React.FC = () => {
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-2 gap-3 px-3 py-4">
                 {sortedTemplates.map((template, index) => (
-                  <motion.div
+                  <TemplateCard
                     key={template.id}
-                    variants={cardVariants}
-                    initial="initial"
-                    animate="animate"
-                    whileHover="hover"
-                    transition={{ delay: Math.min(index * 0.05, 0.5) }}
-                    className="group relative"
-                  >
-                    {/* 主卡片 */}
-                    <div className="card-glow h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                      {/* 模板预览区域 */}
-                      <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                        {template.imageUrl ? (
-                          <img 
-                            src={template.imageUrl} 
-                            alt={template.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            onError={(e) => {
-                              e.currentTarget.src = '/placeholder-template.jpg'
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100">
-                            <div className="text-center">
-                              <Sparkles className="text-primary-400 mx-auto mb-2" size={32} />
-                              <p className="text-xs text-primary-600 font-medium">暂无预览</p>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* 渐变遮罩 */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        
-                        {/* 顶部标签 */}
-                        <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
-                          <div className="flex flex-col space-y-1">
-                            {template.isPremium && (
-                              <span className="px-2 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
-                                ✨ PRO
-                              </span>
-                            )}
-                            {template.isHot && (
-                              <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center space-x-1">
-                                <TrendingUp size={10} />
-                                <span>热门</span>
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* 收藏按钮 */}
-                          <button
-                            onClick={() => handleToggleFavorite(template.id.toString())}
-                            className="p-1.5 bg-white/20 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30"
-                          >
-                            <Heart 
-                              size={14} 
-                              className={`${
-                                favorites.has(template.id.toString()) 
-                                  ? 'text-red-400 fill-current' 
-                                  : 'text-white'
-                              }`} 
-                            />
-                          </button>
-                        </div>
-                        
-                        {/* 底部操作按钮 */}
-                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <button
-                            onClick={() => handleUseTemplate(template)}
-                            className="w-full py-2 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold rounded-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center space-x-1"
-                          >
-                            <Play size={12} />
-                            <span>使用模板</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 模板信息 */}
-                      <div className="p-3 bg-white">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
-                              {template.title}
-                            </h3>
-                            <p className="text-xs text-gray-500 line-clamp-1 leading-relaxed">
-                              {template.description}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* 统计信息 */}
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1 text-xs text-gray-500">
-                              <Eye size={11} className="text-primary-500" />
-                              <span className="font-medium">{formatNumber(template.usageCount || 0)}</span>
-                            </div>
-                          </div>
-                          
-                          {/* 类型指示器 */}
-                          <div className="flex items-center space-x-1">
-                            <div className={`w-2 h-2 rounded-full ${
-                              template.type === 'image' 
-                                ? 'bg-blue-400' 
-                                : 'bg-purple-400'
-                            }`}></div>
-                            <span className="text-xs text-gray-500 font-medium">
-                              {template.type === 'image' ? '图片' : '视频'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    template={template}
+                    index={index}
+                    viewMode={viewMode}
+                    isFavorite={favorites.has(template.id.toString())}
+                    onUseTemplate={handleUseTemplate}
+                    onToggleFavorite={handleToggleFavorite}
+                    getCategoryIcon={getCategoryIcon}
+                    formatNumber={formatNumber}
+                  />
                 ))}
               </div>
             ) : (
               <div className="space-y-3 px-3 py-4">
                 {sortedTemplates.map((template, index) => (
-                  <motion.div
+                  <TemplateCard
                     key={template.id}
-                    variants={cardVariants}
-                    initial="initial"
-                    animate="animate"
-                    whileHover="hover"
-                    transition={{ delay: Math.min(index * 0.05, 0.5) }}
-                    className="group cursor-pointer"
-                    onClick={() => handleUseTemplate(template)}
-                  >
-                    <div className="card-glow hover:shadow-xl transition-all overflow-hidden">
-                      {/* 大图展示区域 */}
-                      <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                        {template.imageUrl ? (
-                          <img
-                            src={template.imageUrl}
-                            alt={template.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.currentTarget.src = '/placeholder-template.jpg'
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center">
-                              <Sparkles className="text-gray-400 mb-2" size={32} />
-                              <div className="text-xs text-gray-500">模板预览</div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* 顶部标签 */}
-                        <div className="absolute top-3 left-3 flex flex-col space-y-1">
-                          {template.isPremium && (
-                            <span className="px-2 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
-                              ✨ PRO
-                            </span>
-                          )}
-                          {template.isHot && (
-                            <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center space-x-1">
-                              <TrendingUp size={10} />
-                              <span>热门</span>
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* 收藏按钮 */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleToggleFavorite(template.id.toString())
-                          }}
-                          className="absolute top-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30"
-                        >
-                          <Heart 
-                            size={16} 
-                            className={`${favorites.has(template.id.toString()) ? 'text-red-400 fill-current' : 'text-white'}`} 
-                          />
-                        </button>
-                        
-                        {/* 遮罩层 */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <div className="flex items-center justify-between">
-                              <div className="text-white">
-                                <div className="text-sm font-medium mb-1">
-                                  {getCategoryIcon(template.category || '')} {template.category}
-                                </div>
-                                <div className="flex items-center space-x-2 text-xs">
-                                  <span className="flex items-center space-x-1">
-                                    <Eye size={14} />
-                                    <span>{formatNumber(template.usageCount || 0)}次使用</span>
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30">
-                                <Play size={20} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* 内容区域 */}
-                      <div className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-base mb-2 line-clamp-1 group-hover:text-primary-600 transition-colors">
-                              {template.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                              {template.description}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* 操作栏 */}
-                        <div className="mt-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xs text-primary-600 bg-primary-50 px-3 py-1 rounded-full font-medium">
-                                {getCategoryIcon(template.category || '')} {template.category}
-                              </span>
-                              <div className={`w-2 h-2 rounded-full ${
-                                template.type === 'image' 
-                                  ? 'bg-blue-400' 
-                                  : 'bg-purple-400'
-                              }`}></div>
-                              <span className="text-xs text-gray-500 font-medium">
-                                {template.type === 'image' ? '图片' : '视频'}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-4 text-sm text-gray-500">
-                              <div className="flex items-center space-x-1">
-                                <Eye size={14} className="text-primary-500" />
-                                <span className="font-medium">{formatNumber(template.usageCount || 0)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    template={template}
+                    index={index}
+                    viewMode={viewMode}
+                    isFavorite={favorites.has(template.id.toString())}
+                    onUseTemplate={handleUseTemplate}
+                    onToggleFavorite={handleToggleFavorite}
+                    getCategoryIcon={getCategoryIcon}
+                    formatNumber={formatNumber}
+                  />
                 ))}
               </div>
             )}
