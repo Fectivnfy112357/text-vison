@@ -16,9 +16,9 @@ public interface UserService extends IService<User> {
      * 用户注册
      * 
      * @param request 注册请求
-     * @return 用户响应
+     * @return 登录响应（包含token）
      */
-    UserResponse register(UserRegisterRequest request);
+    LoginResponse register(UserRegisterRequest request);
 
     /**
      * 用户登录
@@ -75,8 +75,8 @@ public interface UserService extends IService<User> {
     /**
      * 检查用户名是否存在
      * 
-     * @param name 用户名
+     * @param username 用户名
      * @return 是否存在
      */
-    boolean existsByName(String name);
+    boolean existsByUsername(String username);
 }

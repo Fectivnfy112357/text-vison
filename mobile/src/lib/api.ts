@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosError } from 'axios'
 
 // API基础配置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8999/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://223.72.35.202:8999/api'
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -97,6 +97,7 @@ export const request = async <T = any>(
 export interface User {
   id: string
   username: string
+  name?: string
   nickname?: string
   email: string
   avatar?: string
@@ -106,6 +107,8 @@ export interface User {
   province?: string
   city?: string
   status?: number
+  bio?: string
+  isPremium?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -203,6 +206,61 @@ export interface ArtStyle {
   updatedAt: string
 }
 
+// 生成内容请求DTO（匹配后端GenerateContentRequest）
+export interface GenerateContentRequest {
+  /** 生成类型：image-图片，video-视频 */
+  type: 'image' | 'video'
+  /** 生成提示词 */
+  prompt: string
+  /** 尺寸比例 */
+  size?: string
+  /** 艺术风格 */
+  style?: string
+  /** 艺术风格ID */
+  styleId?: number
+  /** 参考图片URL */
+  referenceImage?: string
+  /** 使用的模板ID */
+  templateId?: number
+  /** 图片质量（仅图片生成） */
+  quality?: string
+  /** 是否添加水印 */
+  watermark?: boolean
+
+  // ========== 图片生成参数 ==========
+  /** 返回格式（仅图片生成） */
+  responseFormat?: string
+  /** 随机数种子（仅图片生成） */
+  seed?: number
+  /** 引导比例（仅图片生成） */
+  guidanceScale?: number
+
+  // ========== 视频生成参数 ==========
+  /** 视频生成模型 */
+  model?: string
+  /** 视频分辨率 */
+  resolution?: string
+  /** 视频时长（秒） */
+  duration?: number
+  /** 视频比例 */
+  ratio?: string
+  /** 帧率（仅视频生成） */
+  fps?: number
+  /** 是否固定摄像头（仅视频生成） */
+  cameraFixed?: boolean
+  /** CFG Scale参数（仅视频生成） */
+  cfgScale?: number
+  /** 生成视频数量 */
+  count?: number
+  /** 首帧图片URL（图生视频） */
+  firstFrameImage?: string
+  /** 尾帧图片URL（图生视频-首尾帧） */
+  lastFrameImage?: string
+  /** 是否高清（仅视频生成） */
+  hd?: boolean
+}
+
+// 保持向后兼容的旧接口
 export interface ImageGenerationParams {
   prompt: string
   size?: string
@@ -212,7 +270,6 @@ export interface ImageGenerationParams {
   guidanceScale?: number
   watermark?: boolean
   referenceImage?: string
-  // 新增参数以匹配后端
   type?: string
   style?: string
   styleId?: number
@@ -230,7 +287,6 @@ export interface VideoGenerationParams {
   count?: number
   watermark?: boolean
   referenceImage?: string
-  // 新增参数以匹配后端
   type?: string
   style?: string
   styleId?: number
@@ -308,7 +364,11 @@ export const templateCategoryAPI = {
 
 // 内容生成API
 export const contentAPI = {
-  generateContent: (data: {
+  generateContent: (data: GenerateContentRequest): Promise<ApiResponse<GenerationContent>> => 
+    request('POST', '/contents/generate', data),
+  
+  // 保持向后兼容的旧方法
+  generateContentLegacy: (data: {
     prompt: string
     type: 'image' | 'video'
     templateId?: string

@@ -34,7 +34,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserResponse register(UserRegisterRequest request) {
+    public LoginResponse register(UserRegisterRequest request) {
         // 验证密码确认
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "两次输入的密码不一致");
@@ -51,14 +51,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 检查用户名是否已存在
-        if (existsByName(request.getName())) {
+        if (existsByUsername(request.getUsername())) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS, "用户名已存在");
         }
 
         // 创建用户
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setUsername(request.getName());
+        user.setUsername(request.getUsername());
         user.setPassword(PasswordUtil.encode(request.getPassword()));
         user.setStatus(1);
         user.setCreatedAt(LocalDateTime.now());
@@ -69,10 +69,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException("用户注册失败");
         }
 
-        log.info("用户注册成功: email={}, name={}", request.getEmail(), request.getName());
+        log.info("用户注册成功: email={}, username={}", request.getEmail(), request.getUsername());
 
-        // 返回用户信息
-        return convertToUserResponse(user);
+        // 生成JWT令牌
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        Long expiresIn = jwtUtil.getExpirationSeconds();
+
+        // 返回登录响应
+        UserResponse userResponse = convertToUserResponse(user);
+        return new LoginResponse(token, expiresIn, userResponse);
     }
 
     @Override
@@ -127,7 +132,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 检查用户名是否已被其他用户使用
-        if (name != null && !name.equals(user.getUsername()) && existsByName(name)) {
+        if (name != null && !name.equals(user.getUsername()) && existsByUsername(name)) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS, "用户名已存在");
         }
 
@@ -191,9 +196,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean existsByName(String name) {
+    public boolean existsByUsername(String username) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, name)
+        wrapper.eq(User::getUsername, username)
                .eq(User::getDeleted, 0);
         return count(wrapper) > 0;
     }

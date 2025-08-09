@@ -9,6 +9,14 @@
   
   html {
     @apply h-full;
+    /* 移动端基础字体大小调整 */
+    font-size: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px;
+    }
   }
   
   body {
@@ -17,6 +25,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    /* 确保文字在移动端不会被缩放过小 */
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
   
   #root {
@@ -119,6 +130,38 @@
     -ms-user-select: none;
     user-select: none;
   }
+  
+  /* 按钮缩放效果 */
+  .hover-scale-102 {
+    @apply hover:scale-[1.02] transition-transform duration-200;
+  }
+  
+  .active-scale-98 {
+    @apply active:scale-[0.98] transition-transform duration-150;
+  }
+  
+  /* 移动端文字大小优化 */
+  .mobile-readable {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-readable {
+      font-size: 0.9375rem;
+    }
+  }
+  
+  .mobile-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-title {
+      font-size: 1.25rem;
+    }
+  }
 }
 
 /* 移动端特定样式 */
@@ -128,7 +171,26 @@
   }
   
   .mobile-text {
-    @apply text-sm;
+    font-size: 0.875rem; /* 14px */
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.75rem; /* 12px */
+  }
+  
+  .mobile-text-lg {
+    font-size: 1rem; /* 16px */
+  }
+  
+  .mobile-text-xl {
+    font-size: 1.125rem; /* 18px */
+  }
+  
+  /* 针对高密度屏幕调整字体大小 */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .mobile-text {
+      font-size: 0.875rem; /* 14px */
+    }
   }
 }
 

@@ -5,24 +5,20 @@ import {
   User, 
   Settings, 
   Crown, 
-  Heart, 
-  Download, 
-  Share2, 
   Bell, 
   Shield, 
   HelpCircle, 
   LogOut, 
   Edit3, 
   Camera, 
-  Award, 
   ChevronRight,
-  Palette,
   Lock,
   Key,
   Trash2,
   AlertTriangle,
   X,
-  TrendingUp
+  TrendingUp,
+  Palette
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { contentAPI } from '../lib/api'

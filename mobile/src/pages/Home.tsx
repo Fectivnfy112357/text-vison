@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Sparkles, Image, Video, Zap, Star, TrendingUp, ArrowRight, Search, Palette, Lightbulb, BookOpen, Users, Clock, Heart } from 'lucide-react'
+import { Sparkles, Image, Video, Zap, Star, TrendingUp, ArrowRight } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template } from '../lib/api'

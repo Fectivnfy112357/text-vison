@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   Search, 
-  Filter, 
   Image, 
   Video, 
   Download, 
   Share2, 
   Trash2, 
-  MoreVertical,
   Calendar,
   Clock,
   Eye,
@@ -31,19 +29,20 @@ const History: React.FC = () => {
     isLoading, 
     loadHistory, 
     refreshHistory, 
-    removeFromHistory 
+    removeFromHistory
   } = useGenerationStore()
   const { isAuthenticated } = useAuthStore()
 
   // 状态管理
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
-  const [sortType, setSortType] = useState<SortType>('newest')
-  const [showFilters, setShowFilters] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [sortType, _setSortType] = useState<SortType>('newest')
+  const [_showFilters, _setShowFilters] = useState(false)
+  const [selectedItems, _setSelectedItems] = useState<Set<string>>(new Set())
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null)
-  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [_isSelectionMode, _setIsSelectionMode] = useState(false)
 
+  
   // 初始化
   useEffect(() => {
     if (!isAuthenticated) {
@@ -104,20 +103,7 @@ const History: React.FC = () => {
     }
   }
 
-  // 批量删除
-  const handleBatchDelete = async () => {
-    try {
-      await Promise.all(
-        Array.from(selectedItems).map(id => removeFromHistory(id))
-      )
-      setSelectedItems(new Set())
-      setIsSelectionMode(false)
-      toast.success(`已删除 ${selectedItems.size} 个项目`)
-    } catch (error) {
-      toast.error('批量删除失败')
-    }
-  }
-
+  
   // 处理下载
   const handleDownload = async (item: GenerationContent) => {
     if (!item.url) {
@@ -353,7 +339,7 @@ const History: React.FC = () => {
                     <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                       {(item.thumbnail || item.url) ? (
                         <MediaWithFallback
-                          url={item.thumbnail || item.url}
+                          url={item.thumbnail || item.url || ''}
                           type={item.type}
                           alt="Generated content"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"

@@ -32,10 +32,10 @@ public interface UserMapper extends BaseMapper<User> {
     /**
      * 检查用户名是否存在
      * 
-     * @param name 用户名
+     * @param username 用户名
      * @return 是否存在
      */
-    boolean existsByName(String name);
+    boolean existsByUsername(String username);
 
     /**
      * 根据微信openId查找用户

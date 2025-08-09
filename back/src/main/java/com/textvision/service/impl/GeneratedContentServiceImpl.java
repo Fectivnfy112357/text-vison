@@ -271,7 +271,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getQuality(),
                         request.getResponseFormat(),
                         request.getSeed(),
-                        request.getGuidanceScale()
+                        request.getGuidanceScale(),
+                        request.getWatermark()
                 );
                 
                 if (result.isSuccess()) {
@@ -295,7 +296,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getCount(),
                         request.getFirstFrameImage(),
                         request.getLastFrameImage(),
-                        request.getHd()
+                        request.getHd(),
+                        request.getWatermark()
                 );
                 
                 if (result.isSuccess() && result.getTaskId() != null) {

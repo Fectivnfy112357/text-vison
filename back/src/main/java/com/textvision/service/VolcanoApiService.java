@@ -51,10 +51,11 @@ public class VolcanoApiService {
      * @param responseFormat 返回格式
      * @param seed 随机数种子
      * @param guidanceScale 引导比例
+     * @param watermark 是否添加水印
      * @return 生成结果
      */
     public ImageGenerationResult generateImage(String prompt, String size, String style, String quality, 
-                                             String responseFormat, Integer seed, Double guidanceScale) {
+                                             String responseFormat, Integer seed, Double guidanceScale, Boolean watermark) {
         try {
             String url = baseUrl + imageEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
@@ -81,9 +82,19 @@ public class VolcanoApiService {
                 request.setGuidanceScale(guidanceScale);
             }
             
+            // 设置水印参数
+            if (watermark != null) {
+                // 根据水印状态调整提示词
+                if (watermark) {
+                    request.setPrompt(prompt + ", with watermark");
+                } else {
+                    request.setPrompt(prompt + ", no watermark");
+                }
+            }
+            
             // 如果有风格参数，添加到提示词中
             if (style != null && !style.trim().isEmpty()) {
-                request.setPrompt(prompt + ", " + style + " style");
+                request.setPrompt(request.getPrompt() + ", " + style + " style");
             }
             
             log.info("调用火山引擎图片生成API: {}", JSON.toJSONString(request));
@@ -146,12 +157,13 @@ public class VolcanoApiService {
      * @param firstFrameImage 首帧图片
      * @param lastFrameImage 尾帧图片
      * @param hd 是否高清
+     * @param watermark 是否添加水印
      * @return 生成结果
      */
     public VideoGenerationResult generateVideo(String prompt, String model, String resolution, 
                                              Integer duration, String ratio, Integer fps, 
                                              Boolean cameraFixed, Double cfgScale, Integer count,
-                                             String firstFrameImage, String lastFrameImage, Boolean hd) {
+                                             String firstFrameImage, String lastFrameImage, Boolean hd, Boolean watermark) {
         try {
             String url = baseUrl + videoEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
@@ -206,6 +218,15 @@ public class VolcanoApiService {
             // 添加生成数量参数
             if (count != null && count > 1) {
                 textBuilder.append(" --n ").append(count);
+            }
+            
+            // 添加水印参数
+            if (watermark != null) {
+                if (watermark) {
+                    textBuilder.append(" --wm true");
+                } else {
+                    textBuilder.append(" --wm false");
+                }
             }
             
             textContent.setText(textBuilder.toString());

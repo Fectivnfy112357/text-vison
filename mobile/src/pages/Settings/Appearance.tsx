@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Palette, Sun, Moon, Monitor, X } from 'lucide-react'
+import { Sun, Moon, Monitor, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Appearance: React.FC = () => {

@@ -9,9 +9,8 @@ import {
   Play, 
   Heart, 
   Sparkles,
-  Clock,
-  User,
-  X
+  X,
+  TrendingUp
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
@@ -83,16 +82,10 @@ const Templates: React.FC = () => {
     animate: { 
       opacity: 1, 
       y: 0, 
-      scale: 1,
-      transition: { 
-        type: "spring",
-        stiffness: 300,
-        damping: 20
-      }
+      scale: 1
     },
     hover: { 
-      scale: 1.02,
-      transition: { duration: 0.2 }
+      scale: 1.02
     }
   }
 

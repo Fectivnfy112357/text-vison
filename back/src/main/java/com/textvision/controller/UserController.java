@@ -40,26 +40,26 @@ public class UserController {
 
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "用户注册接口")
-    public Result<UserResponse> register(@Valid @RequestBody UserRegisterRequest request, HttpServletRequest httpRequest) {
-        log.info("用户注册请求: email={}, name={}", request.getEmail(), request.getName());
+    public Result<LoginResponse> register(@Valid @RequestBody UserRegisterRequest request, HttpServletRequest httpRequest) {
+        log.info("用户注册请求: email={}, username={}", request.getEmail(), request.getUsername());
         
-        UserResponse userResponse = userService.register(request);
+        LoginResponse loginResponse = userService.register(request);
         
         // 记录操作日志
         Map<String, Object> details = new HashMap<>();
         details.put("email", request.getEmail());
-        details.put("name", request.getName());
+        details.put("username", request.getUsername());
         userOperationLogService.logUserOperation(
-                userResponse.getId(),
+                loginResponse.getUser().getId(),
                 "REGISTER",
                 "USER",
-                userResponse.getId(),
+                loginResponse.getUser().getId(),
                 details,
                 getClientIpAddress(httpRequest),
                 httpRequest.getHeader("User-Agent")
         );
         
-        return Result.success(userResponse);
+        return Result.success(loginResponse);
     }
 
     @PostMapping("/login")
@@ -167,7 +167,7 @@ public class UserController {
     public Result<Boolean> checkUsernameExists(@RequestParam String username) {
         log.debug("检查用户名是否存在: username={}", username);
         
-        boolean exists = userService.existsByName(username);
+        boolean exists = userService.existsByUsername(username);
         return Result.success(exists);
     }
 

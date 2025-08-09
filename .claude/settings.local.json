@@ -5,7 +5,12 @@
       "Bash(mkdir:*)",
       "Bash(grep:*)",
       "Bash(mvn compile:*)",
-      "Bash(rmdir:*)"
+      "Bash(rmdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn spring-boot:run:*)",
+      "Bash(taskkill:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

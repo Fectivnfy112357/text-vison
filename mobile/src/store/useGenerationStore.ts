@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { contentAPI, GenerationContent, ImageGenerationParams, VideoGenerationParams } from '../lib/api'
+import { contentAPI, GenerationContent, GenerateContentRequest } from '../lib/api'
 import { toast } from 'sonner'
 
 interface GenerationState {
@@ -12,13 +12,7 @@ interface GenerationState {
 }
 
 interface GenerationActions {
-  generateContent: (params: {
-    prompt: string
-    type: 'image' | 'video'
-    templateId?: string
-    style?: string
-    options?: ImageGenerationParams | VideoGenerationParams
-  }) => Promise<GenerationContent | null>
+  generateContent: (params: GenerateContentRequest) => Promise<GenerationContent | null>
   loadHistory: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }) => Promise<void>
   refreshHistory: () => Promise<void>
   removeFromHistory: (id: string) => Promise<void>
@@ -40,7 +34,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   error: null,
 
   // 生成内容
-  generateContent: async (params) => {
+  generateContent: async (params: GenerateContentRequest) => {
     set({ isGenerating: true, error: null })
     try {
       // 创建临时生成项
@@ -50,7 +44,7 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
         prompt: params.prompt,
         status: 'pending',
         progress: 0,
-        params: params.options || {} as ImageGenerationParams | VideoGenerationParams,
+        params: params,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -211,12 +205,14 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
           currentGeneration: state.currentGeneration?.id === id ? result : state.currentGeneration
         }))
 
-        // 如果生成完成或失败，停止轮询
+        // 如果任务完成或失败，停止轮询
         if (result.status === 'completed' || result.status === 'failed') {
           get().stopPolling()
+          
+          // 显示状态变更通知
           if (result.status === 'completed') {
             toast.success('生成完成')
-          } else {
+          } else if (result.status === 'failed') {
             toast.error('生成失败')
           }
         }

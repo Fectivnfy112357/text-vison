@@ -58,7 +58,7 @@ const LineChart: React.FC<LineChartProps> = ({
   const yScale = (value: number) => chartHeight - (value / paddedMax) * chartHeight
 
   // 生成平滑曲线路径
-  const createSmoothPath = (values: number[], type: 'total' | 'completed') => {
+  const createSmoothPath = (values: number[]) => {
     if (values.length < 2) return ''
     
     const points = values.map((value, index) => ({
@@ -106,15 +106,12 @@ const LineChart: React.FC<LineChartProps> = ({
     </defs>
   )
 
-  const totalPath = createSmoothPath(data.map(d => d.total), 'total')
-  const completedPath = createSmoothPath(data.map(d => d.completed), 'completed')
+  const totalPath = createSmoothPath(data.map(d => d.total))
+  const completedPath = createSmoothPath(data.map(d => d.completed))
 
   // 生成区域路径
   const createAreaPath = (linePath: string) => {
     if (!linePath) return ''
-    const pathData = linePath.split(' ')
-    const lastPoint = pathData[pathData.length - 1]
-    const lastY = parseInt(lastPoint.split(',')[1])
     
     return `${linePath} L ${dimensions.width - margin.right} ${height - margin.bottom} L ${margin.left} ${height - margin.bottom} Z`
   }

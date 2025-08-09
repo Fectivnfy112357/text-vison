@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, ChevronRight, MessageCircle, LifeBuoy, Book, Zap, Shield, CreditCard, Users, FileText, Clock, AlertTriangle } from 'lucide-react'
+import { Search, ChevronRight, MessageCircle, LifeBuoy, Book, Zap, Shield, CreditCard, Users, FileText } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Help: React.FC = () => {
