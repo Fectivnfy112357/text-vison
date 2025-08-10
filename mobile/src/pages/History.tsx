@@ -253,7 +253,7 @@ const History: React.FC = () => {
 
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
 const BottomNavigation: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { reducedMotion, animationConfig, transitionConfig } = useAnimationPerformance()
+  const { reducedMotion, transitionConfig } = useAnimationPerformance()
 
   const handleNavigation = (path: string) => {
     navigate(path)
@@ -30,12 +30,10 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-white/80 backdrop-blur-md border-t border-white/60 px-2 py-2"
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ 
-        duration: animationConfig.duration,
-        delay: animationConfig.delay
+      className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-white/80 backdrop-blur-md border-t border-white/60 px-2 py-2 gpu-accelerated"
+      style={{ 
+        willChange: 'auto',
+        backfaceVisibility: 'hidden'
       }}
     >
       <div className="flex items-center justify-around">
@@ -49,12 +47,19 @@ const BottomNavigation: React.FC = () => {
               onClick={() => handleNavigation(item.path)}
               className={clsx(
                 'relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200',
-                'min-w-[60px] min-h-[60px] touch-manipulation',
+                'min-w-[60px] min-h-[60px] touch-manipulation-passive',
                 isActive 
                   ? 'text-primary-600' 
                   : 'text-gray-500 hover:text-primary-500'
               )}
-              whileTap={reducedMotion ? undefined : { scale: 0.92 }}
+              whileTap={reducedMotion ? undefined : { 
+                scale: 0.92,
+                transform: 'translateZ(0)'
+              }}
+              style={{ 
+                willChange: reducedMotion ? 'auto' : 'transform',
+                transform: 'translateZ(0)'
+              }}
             >
               {/* 活跃状态背景 */}
               {isActive && (

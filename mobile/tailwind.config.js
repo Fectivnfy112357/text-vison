@@ -4,6 +4,28 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // 优化：移除开发模式警告，启用生产优化
+  purge: {
+    enabled: import.meta.env?.MODE === 'production',
+    content: [
+      "./index.html",
+      "./src/**/*.{js,ts,jsx,tsx}",
+    ],
+    options: {
+      safelist: [
+        // 预定义常用类，避免被 purged
+        'bg-gradient-to-br',
+        'from-cream-50',
+        'via-mist-50',
+        'to-sky-50',
+        'backdrop-blur-sm',
+        'backdrop-blur-md',
+        'blur-xl',
+        'blur-2xl',
+        'blur-3xl',
+      ]
+    }
+  },
   theme: {
     extend: {
       colors: {
@@ -90,6 +112,17 @@ export default {
       backdropBlur: {
         xs: '2px',
       },
+    },
+  },
+  // 性能优化配置
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  variants: {
+    extend: {
+      // 性能优化：减少变体数量
+      opacity: ['responsive', 'hover', 'focus', 'disabled'],
+      transform: ['responsive', 'hover', 'focus', 'disabled'],
     },
   },
   plugins: [],

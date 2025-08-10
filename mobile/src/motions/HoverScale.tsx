@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import { useAnimationPerformance } from '../hooks/useAnimationPerformance';
 
 interface HoverScaleProps {
   children: ReactNode;
@@ -8,14 +9,21 @@ interface HoverScaleProps {
 }
 
 export const HoverScale = ({ children, scale = 1.02, disabled = false }: HoverScaleProps) => {
-  if (disabled) {
+  const { reducedMotion, transitionConfig } = useAnimationPerformance();
+  
+  if (disabled || reducedMotion) {
     return <>{children}</>;
   }
 
   return (
     <motion.div
       whileHover={{ scale }}
-      transition={{ duration: 0.2 }}
+      transition={transitionConfig}
+      className="transform-gpu"
+      style={{ 
+        willChange: 'transform',
+        transform: 'translateZ(0)'
+      }}
     >
       {children}
     </motion.div>

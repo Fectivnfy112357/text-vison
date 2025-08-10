@@ -6,11 +6,37 @@ import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template } from '../lib/api'
 import { JellyButton, CardHover, HoverScale } from '../motions'
+import { useAnimationPerformance } from '../hooks/useAnimationPerformance'
+
+// 定义动画 variants 以优化性能
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut'
+    }
+  }
+}
 
 const Home: React.FC = () => {
   const navigate = useNavigate()
   const { popularTemplates, loadPopularTemplates } = useTemplateStore()
   const { isAuthenticated, user } = useAuthStore()
+  const { reducedMotion, transitionConfig } = useAnimationPerformance()
   const [animatedStats, setAnimatedStats] = useState({ today: 0, total: 0, satisfaction: 0 })
 
   useEffect(() => {
@@ -66,56 +92,45 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide">
-      {/* 静态背景元素 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-40 h-40 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl top-10 left-10" />
-        <div className="absolute w-32 h-32 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl bottom-20 right-10" />
+    <div className="h-full overflow-y-auto scrollbar-hide pb-20">
+      {/* 静态背景元素 - 性能优化 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none contain-paint">
+        <div className="absolute w-40 h-40 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl top-10 left-10 transform-gpu" />
+        <div className="absolute w-32 h-32 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl bottom-20 right-10 transform-gpu" />
       </div>
 
-      {/* 头部区域 */}
+      {/* 头部区域 - 使用 variants 优化 */}
       <motion.div
         className="relative px-6 pt-8 pb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
         {/* 问候语和统计 */}
-        <div className="mb-6">
-          <motion.h1
-            className="text-2xl font-bold text-gradient mb-2"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+        <motion.div className="mb-6" variants={itemVariants}>
+          <motion.h1 className="text-2xl font-bold text-gradient mb-2">
             {isAuthenticated ? `你好，${user?.nickname || user?.username || '用户'}` : '欢迎来到文生视界'}
           </motion.h1>
-          <motion.p
-            className="text-gray-600 text-sm"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+          <motion.p className="text-gray-600 text-sm">
             {isAuthenticated ? '开始你的创意之旅吧' : 'AI驱动的图文生成平台'}
           </motion.p>
-        </div>
+        </motion.div>
 
         {/* 热门搜索词 */}
-        <motion.div
-          className="flex flex-wrap gap-2 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.32 }}
+        <motion.div 
+          className="flex flex-wrap gap-2 mb-6" 
+          variants={itemVariants}
         >
-          {['国风', '赛博朋克', '油画', '水墨', '像素'].map((tag, index) => (
+          {['国风', '赛博朋克', '油画', '水墨', '像素'].map((tag) => (
             <HoverScale key={tag} scale={1.05}>
               <motion.button
-                className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200 transform-gpu"
+                variants={itemVariants}
+                whileTap={{ scale: reducedMotion ? 1 : 0.95 }}
                 onClick={() => navigate('/create', { state: { prompt: tag } })}
+                style={{ 
+                  willChange: reducedMotion ? 'auto' : 'transform'
+                }}
               >
                 #{tag}
               </motion.button>
@@ -125,29 +140,39 @@ const Home: React.FC = () => {
 
         {/* 用户统计卡片 */}
         {isAuthenticated && (
-          <motion.div
-            className="grid grid-cols-3 gap-3 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
+          <motion.div 
+            className="grid grid-cols-3 gap-3 mb-6" 
+            variants={itemVariants}
           >
             <motion.div 
-              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow"
-              whileHover={{ scale: 1.02 }}
+              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
+              whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+              whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
+              style={{ 
+                willChange: reducedMotion ? 'auto' : 'transform'
+              }}
             >
               <div className="text-lg font-bold text-primary-600">{animatedStats.today}</div>
               <div className="text-xs text-gray-500">今日生成</div>
             </motion.div>
             <motion.div 
-              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow"
-              whileHover={{ scale: 1.02 }}
+              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
+              whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+              whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
+              style={{ 
+                willChange: reducedMotion ? 'auto' : 'transform'
+              }}
             >
               <div className="text-lg font-bold text-secondary-600">{animatedStats.total}</div>
               <div className="text-xs text-gray-500">总作品</div>
             </motion.div>
             <motion.div 
-              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow"
-              whileHover={{ scale: 1.02 }}
+              className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
+              whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+              whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
+              style={{ 
+                willChange: reducedMotion ? 'auto' : 'transform'
+              }}
             >
               <div className="text-lg font-bold text-accent-600">{animatedStats.satisfaction}%</div>
               <div className="text-xs text-gray-500">满意度</div>
@@ -156,36 +181,39 @@ const Home: React.FC = () => {
         )}
 
         {/* 快速创作按钮 */}
-        <JellyButton
-          onClick={handleCreateClick}
-          className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl p-4 mb-6 shadow-glow"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
+        <motion.div variants={itemVariants}>
+          <JellyButton
+            onClick={handleCreateClick}
+            className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl p-4 mb-6 shadow-glow transform-gpu"
+          >
           <div className="flex items-center justify-center space-x-2">
             <Sparkles size={20} />
             <span className="font-semibold">开始创作</span>
             <ArrowRight size={16} />
           </div>
-        </JellyButton>
+                </JellyButton>
+        </motion.div>
       </motion.div>
 
-      {/* 功能卡片 */}
+      {/* 功能卡片 - 使用 variants 优化 */}
       <motion.div
         className="px-6 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
         <div className="grid grid-cols-2 gap-4">
           <motion.div
-            className="card-soft p-4 text-center"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="card-soft p-4 text-center "
+            variants={itemVariants}
+            whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+            whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
             onClick={() => navigate('/create', { state: { type: 'image' } })}
+            style={{ 
+              willChange: reducedMotion ? 'auto' : 'transform'
+            }}
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl flex items-center justify-center mx-auto mb-3 transform-gpu">
               <Image className="text-primary-600" size={24} />
             </div>
             <h3 className="font-semibold text-gray-800 mb-1">图片生成</h3>
@@ -193,12 +221,16 @@ const Home: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-soft p-4 text-center"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="card-soft p-4 text-center "
+            variants={itemVariants}
+            whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+            whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
             onClick={() => navigate('/create', { state: { type: 'video' } })}
+            style={{ 
+              willChange: reducedMotion ? 'auto' : 'transform'
+            }}
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl flex items-center justify-center mx-auto mb-3 transform-gpu">
               <Video className="text-secondary-600" size={24} />
             </div>
             <h3 className="font-semibold text-gray-800 mb-1">视频生成</h3>
@@ -210,11 +242,11 @@ const Home: React.FC = () => {
       {/* 创作灵感 */}
       <motion.div
         className="px-6 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        <div className="card-soft p-4">
+        <motion.div className="card-soft p-4" variants={itemVariants}>
           <div className="flex items-center space-x-2 mb-3">
             <Zap className="text-primary-600" size={20} />
             <h3 className="font-semibold text-gray-800">今日灵感</h3>
@@ -224,52 +256,59 @@ const Home: React.FC = () => {
               "梦幻星空下的城市夜景",
               "赛博朋克风格的街头艺术", 
               "国风水墨山水画"
-            ].map((inspiration, index) => (
+            ].map((inspiration) => (
               <motion.div
-                key={index}
-                className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                whileTap={{ scale: 0.98 }}
+                key={inspiration}
+                className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors "
+                variants={itemVariants}
+                whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
                 onClick={() => navigate('/create', { state: { prompt: inspiration } })}
+                style={{ 
+                  willChange: reducedMotion ? 'auto' : 'transform'
+                }}
               >
                 <p className="text-sm text-gray-700">{inspiration}</p>
               </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* 热门模板 */}
       <motion.div
         className="px-6 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        <div className="flex items-center justify-between mb-4">
+        <motion.div className="flex items-center justify-between mb-4" variants={itemVariants}>
           <div className="flex items-center space-x-2">
             <TrendingUp className="text-primary-600" size={20} />
             <h2 className="text-lg font-semibold text-gray-800">热门模板</h2>
           </div>
-          <button
+          <motion.button
             onClick={() => navigate('/templates')}
             className="text-primary-600 text-sm font-medium flex items-center space-x-1 hover:text-primary-700 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <span>查看全部</span>
             <ArrowRight size={14} />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {popularTemplates.length > 0 ? (
           <div className="space-y-3">
-            {popularTemplates.slice(0, 3).map((template, index) => (
+            {popularTemplates.slice(0, 3).map((template) => (
               <CardHover key={template.id} lift={false}>
                 <motion.div
-                  className="card-soft cursor-pointer overflow-hidden"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.75 + index * 0.1 }}
-                  whileTap={{ scale: 0.98 }}
+                  className="card-soft cursor-pointer overflow-hidden "
+                  variants={itemVariants}
+                  whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
                   onClick={() => handleTemplateClick(template)}
+                  style={{ 
+                    willChange: reducedMotion ? 'auto' : 'transform'
+                  }}
                 >
                 {/* 大图展示区域 */}
                 <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
@@ -291,10 +330,13 @@ const Home: React.FC = () => {
                   {/* 热门标识 */}
                   {template.usageCount > 10 && (
                     <motion.div 
-                      className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 shadow-lg"
+                      className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 shadow-lg transform-gpu"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: 0.9 + index * 0.1 }}
+                      transition={transitionConfig}
+                      style={{ 
+                        willChange: reducedMotion ? 'auto' : 'transform'
+                      }}
                     >
                       <Star size={12} fill="currentColor" />
                       <span>热门</span>
@@ -315,10 +357,13 @@ const Home: React.FC = () => {
                           </div>
                         </div>
                         <motion.div
-                          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30"
+                          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 transform-gpu"
                           initial={{ scale: 0 }}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                          whileHover={{ scale: reducedMotion ? 1 : 1.1 }}
+                          whileTap={{ scale: reducedMotion ? 1 : 0.9 }}
+                          style={{ 
+                            willChange: reducedMotion ? 'auto' : 'transform'
+                          }}
                         >
                           <ArrowRight size={20} />
                         </motion.div>
@@ -363,8 +408,7 @@ const Home: React.FC = () => {
         ) : (
           <motion.div 
             className="card-soft p-8"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            variants={itemVariants}
           >
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
