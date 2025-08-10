@@ -20,8 +20,10 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [isInView, setIsInView] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   
   // 清理URL，移除可能存在的反引号
   const cleanUrl = React.useMemo(() => {
@@ -82,11 +84,53 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
     setIsLoading(false)
   }, [])
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Play button clicked - event type:', e.type)
+    console.log('Video ref:', videoRef.current)
+    console.log('Button ref:', buttonRef.current)
+    
+    // 强制显示按钮正在被点击
+    if (buttonRef.current) {
+      buttonRef.current.style.transform = 'scale(0.95)'
+      setTimeout(() => {
+        if (buttonRef.current) {
+          buttonRef.current.style.transform = 'scale(1)'
+        }
+      }, 100)
+    }
+    
     if (videoRef.current) {
-      videoRef.current.play()
+      console.log('Video paused:', videoRef.current.paused)
+      console.log('Video readyState:', videoRef.current.readyState)
+      
+      if (videoRef.current.paused) {
+        // 尝试静音播放以解决自动播放策略问题
+        videoRef.current.muted = true
+        videoRef.current.play().then(() => {
+          console.log('Video started playing')
+          setIsPlaying(true)
+        }).catch(err => {
+          console.error('Failed to play video:', err)
+          // 如果静音播放失败，尝试取消静音
+          videoRef.current.muted = false
+          videoRef.current.play().then(() => {
+            setIsPlaying(true)
+          }).catch(err2 => {
+            console.error('Failed to play video without mute:', err2)
+            alert('视频播放失败，请稍后重试')
+          })
+        })
+      } else {
+        videoRef.current.pause()
+        setIsPlaying(false)
+      }
     }
   }
+
+  const handleVideoPlay = () => setIsPlaying(true)
+  const handleVideoPause = () => setIsPlaying(false)
 
   if (type === 'image') {
     return (
@@ -158,6 +202,8 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
             }`}
             onError={handleVideoError}
             onLoadedData={handleVideoLoadedData}
+            onPlay={handleVideoPlay}
+            onPause={handleVideoPause}
             preload="metadata"
             playsInline
             webkit-playsinline="true"
@@ -173,21 +219,28 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
             }}
             controlsList="nodownload noremoteplayback"
             disablePictureInPicture
-            crossOrigin="anonymous"
           >
+           
             您的浏览器不支持视频播放
           </video>
         )}
         
         {/* 视频播放按钮（仅在移动端且未播放时显示） */}
-        {!hasError && !isLoading && (
+        {!hasError && !isLoading && !isPlaying && (
           <button
+            ref={buttonRef}
             onClick={handlePlayClick}
-            className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:hidden"
-            style={{ display: videoRef.current?.paused ? 'flex' : 'none' }}
+            onTouchEnd={handlePlayClick}
+            className="absolute inset-0 flex items-center justify-center bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 md:hidden"
+            style={{ 
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              zIndex: 25
+            }}
           >
-            <div className="w-16 h-16 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
-              <Play size={32} className="text-primary-600 ml-1" />
+            <div className="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+              <Play size={32} className="text-primary-600 ml-1" fill="currentColor" />
             </div>
           </button>
         )}

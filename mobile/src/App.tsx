@@ -26,6 +26,9 @@ import { useAuthStore } from './store/useAuthStore'
 // 认证组件
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
+// VConsole 调试工具
+import VConsoleComponent from './components/VConsole'
+
 // 页面加载组件
 const PageLoader = () => (
   <div className="flex items-center justify-center h-full">
@@ -176,6 +179,9 @@ function App() {
             duration: 3000,
           }}
         />
+        
+        {/* VConsole 调试工具 - 仅在移动端显示 */}
+        <VConsoleComponent />
       </div>
     </Router>
   )

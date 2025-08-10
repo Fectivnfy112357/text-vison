@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Image, 
@@ -32,6 +32,42 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
   onShare,
   onDelete
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isInView, setIsInView] = useState(false)
+
+  // 使用Intersection Observer实现懒加载和自动播放
+  useEffect(() => {
+    const element = containerRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting)
+        if (entry.isIntersecting && item.type === 'video' && videoRef.current) {
+          // 视频进入视图时尝试播放
+          videoRef.current.play().catch(() => {
+            // 自动播放失败，静音后再试
+            if (videoRef.current) {
+              videoRef.current.muted = true
+              videoRef.current.play().catch(console.error)
+            }
+          })
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.5
+      }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.unobserve(element)
+    }
+  }, [item.type])
   // 格式化时间函数
   const formatTime = useCallback((dateString: string) => {
     const date = new Date(dateString)
@@ -89,14 +125,31 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
       {/* 主要内容区域 */}
       <div>
         {/* 大图展示 */}
-        <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden group">
+        <div ref={containerRef} className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden group">
           {(item.thumbnail || item.url) ? (
-            <MediaWithFallback
-              url={item.thumbnail || item.url || ''}
-              type={item.type}
-              alt="Generated content"
-              className="w-full h-full object-cover"
-            />
+            item.type === 'video' ? (
+              <video
+                ref={videoRef}
+                src={item.url || ''}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                webkit-playsinline="true"
+                loop
+                preload="metadata"
+                style={{ 
+                  backgroundColor: '#000',
+                  objectFit: 'cover'
+                }}
+              />
+            ) : (
+              <MediaWithFallback
+                url={item.thumbnail || item.url || ''}
+                type={item.type}
+                alt="Generated content"
+                className="w-full h-full object-cover"
+              />
+            )
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
@@ -133,48 +186,6 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
               {item.status === 'completed' ? '已完成' :
                item.status === 'processing' ? '处理中' : '失败'}
             </span>
-          </div>
-
-          {/* 操作按钮 - 悬停显示 */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleViewDetail}
-                    className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                    title="查看详情"
-                  >
-                    <Eye size={18} />
-                  </button>
-                  {item.url && (
-                    <>
-                      <button
-                        onClick={handleDownload}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                        title="下载"
-                      >
-                        <Download size={18} />
-                      </button>
-                      <button
-                        onClick={handleShare}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                        title="分享"
-                      >
-                        <Share2 size={18} />
-                      </button>
-                    </>
-                  )}
-                </div>
-                <button
-                  onClick={handleDelete}
-                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-red-500/30 transition-colors"
-                  title="删除"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 

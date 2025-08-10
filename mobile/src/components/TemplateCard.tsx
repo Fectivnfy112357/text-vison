@@ -224,6 +224,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
               </span>
             )}
           </div>
+        </div>
           
           {/* 收藏按钮 */}
           <button
