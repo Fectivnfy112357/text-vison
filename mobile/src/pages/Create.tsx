@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { JellyButton } from '../motions'
 import { 
   Sparkles, 
   Image, 
@@ -469,7 +470,7 @@ const Create: React.FC = () => {
             <p className="text-gray-600 mb-8">登录后即可使用AI生成精美的图片和视频内容</p>
             <button
               onClick={() => navigate('/login')}
-              className="w-full px-8 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+              className="w-full px-8 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold"
             >
               立即登录
             </button>
@@ -881,15 +882,13 @@ const Create: React.FC = () => {
           </motion.div>
 
           {/* 生成按钮 */}
-          <motion.button
+          <JellyButton
             onClick={handleGenerate}
             disabled={!prompt.trim() || isGenerating}
             className="w-full group relative py-4 px-8 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative flex items-center justify-center space-x-3">
@@ -905,7 +904,7 @@ const Create: React.FC = () => {
                 </>
               )}
             </div>
-          </motion.button>
+          </JellyButton>
 
           {/* 生成结果 */}
           {currentGeneration && (
@@ -965,7 +964,7 @@ const Create: React.FC = () => {
                           }
                         }
                       }}
-                      className="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium flex items-center justify-center space-x-2 hover:shadow-lg transition-all duration-300"
+                      className="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium flex items-center justify-center space-x-2"
                     >
                       <Share2 size={16} />
                       <span>分享</span>

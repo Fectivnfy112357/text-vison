@@ -13,6 +13,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
+import { Float, Pulse } from '../motions'
 
 type ViewMode = 'grid' | 'list'
 
@@ -200,7 +201,7 @@ const Templates: React.FC = () => {
               value={localSearchQuery}
               onChange={(e) => setLocalSearchQuery(e.target.value)}
               placeholder="搜索模板名称、描述或标签..."
-              className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 focus:bg-white/90 transition-all duration-200 shadow-soft"
+              className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 focus:bg-white/90 shadow-soft"
             />
             {localSearchQuery && (
               <button
@@ -218,7 +219,7 @@ const Templates: React.FC = () => {
           <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide py-1">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
                 !selectedCategory 
                   ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
                   : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
@@ -236,7 +237,7 @@ const Templates: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
                   selectedCategory?.id === category.id
                     ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg'
                     : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
@@ -262,9 +263,11 @@ const Templates: React.FC = () => {
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center">
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-soft">
-                  <Sparkles className="text-primary-400" size={32} />
-                </div>
+                <Pulse duration={2}>
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="text-primary-400" size={32} />
+                  </div>
+                </Pulse>
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
                   <div className="w-20 h-20 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
                 </div>
@@ -277,12 +280,12 @@ const Templates: React.FC = () => {
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center max-w-md mx-auto">
               <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                  <div className="text-center">
+                <Float duration={6}>
+                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Sparkles className="text-primary-400 mx-auto mb-1" size={40} />
                     <div className="w-2 h-2 bg-primary-300 rounded-full mx-auto animate-ping"></div>
                   </div>
-                </div>
+                </Float>
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
               <p className="text-sm text-gray-500 mb-6">
@@ -298,7 +301,7 @@ const Templates: React.FC = () => {
                       setSearchQuery('')
                       setSelectedCategory(null)
                     }}
-                    className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-300"
+                    className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
                   >
                     🔄 重置筛选
                   </button>

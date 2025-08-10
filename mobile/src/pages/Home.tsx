@@ -5,6 +5,7 @@ import { Sparkles, Image, Video, Zap, Star, TrendingUp, ArrowRight } from 'lucid
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template } from '../lib/api'
+import { JellyButton, CardHover, HoverScale } from '../motions'
 
 const Home: React.FC = () => {
   const navigate = useNavigate()
@@ -15,19 +16,20 @@ const Home: React.FC = () => {
   useEffect(() => {
     loadPopularTemplates(4)
     
-    // 动态数字动画
+    // 优化的数字动画 - 使用 requestAnimationFrame
     if (isAuthenticated) {
-      const duration = 2000
-      const steps = 60
+      const duration = 1500
+      const startTime = performance.now()
       const todayTarget = 12
       const totalTarget = 156
       const satisfactionTarget = 89
 
-      let currentStep = 0
-      const interval = setInterval(() => {
-        currentStep++
-        const progress = currentStep / steps
-        const easeOut = 1 - Math.pow(1 - progress, 3)
+      let animationFrameId: number
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const easeOut = 1 - Math.pow(1 - progress, 2)
         
         setAnimatedStats({
           today: Math.floor(todayTarget * easeOut),
@@ -35,13 +37,19 @@ const Home: React.FC = () => {
           satisfaction: Math.floor(satisfactionTarget * easeOut)
         })
 
-        if (currentStep >= steps) {
-          clearInterval(interval)
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(animate)
+        } else {
           setAnimatedStats({ today: todayTarget, total: totalTarget, satisfaction: satisfactionTarget })
         }
-      }, duration / steps)
+      }
 
-      return () => clearInterval(interval)
+      animationFrameId = requestAnimationFrame(animate)
+
+      return () => cancelAnimationFrame(animationFrameId)
+    } else {
+      // 未登录时重置为0
+      setAnimatedStats({ today: 0, total: 0, satisfaction: 0 })
     }
   }, [isAuthenticated])
 
@@ -59,29 +67,10 @@ const Home: React.FC = () => {
 
   return (
     <div className="h-full overflow-y-auto scrollbar-hide">
-      {/* 动态背景元素 */}
+      {/* 静态背景元素 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-32 h-32 bg-gradient-to-br from-primary-200/20 to-secondary-200/20 rounded-full blur-xl"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              x: [0, Math.random() * 100 - 50],
-              y: [0, Math.random() * 100 - 50],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 4,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
+        <div className="absolute w-40 h-40 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl top-10 left-10" />
+        <div className="absolute w-32 h-32 bg-gradient-to-br from-primary-100/10 to-secondary-100/10 rounded-full blur-2xl bottom-20 right-10" />
       </div>
 
       {/* 头部区域 */}
@@ -119,18 +108,18 @@ const Home: React.FC = () => {
           transition={{ delay: 0.32 }}
         >
           {['国风', '赛博朋克', '油画', '水墨', '像素'].map((tag, index) => (
-            <motion.button
-              key={tag}
-              className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200 hover:border-primary-300 hover:text-primary-600 transition-all"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + index * 0.05 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/create', { state: { prompt: tag } })}
-            >
-              #{tag}
-            </motion.button>
+            <HoverScale key={tag} scale={1.05}>
+              <motion.button
+                className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 + index * 0.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/create', { state: { prompt: tag } })}
+              >
+                #{tag}
+              </motion.button>
+            </HoverScale>
           ))}
         </motion.div>
 
@@ -167,20 +156,19 @@ const Home: React.FC = () => {
         )}
 
         {/* 快速创作按钮 */}
-        <motion.button
+        <JellyButton
           onClick={handleCreateClick}
-          className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl p-4 mb-6 btn-jelly shadow-glow"
+          className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl p-4 mb-6 shadow-glow"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
         >
           <div className="flex items-center justify-center space-x-2">
             <Sparkles size={20} />
             <span className="font-semibold">开始创作</span>
             <ArrowRight size={16} />
           </div>
-        </motion.button>
+        </JellyButton>
       </motion.div>
 
       {/* 功能卡片 */}
@@ -274,23 +262,22 @@ const Home: React.FC = () => {
         {popularTemplates.length > 0 ? (
           <div className="space-y-3">
             {popularTemplates.slice(0, 3).map((template, index) => (
-              <motion.div
-                key={template.id}
-                className="card-soft cursor-pointer group hover:shadow-xl transition-all overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75 + index * 0.1 }}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleTemplateClick(template)}
-              >
+              <CardHover key={template.id} lift={false}>
+                <motion.div
+                  className="card-soft cursor-pointer overflow-hidden"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.75 + index * 0.1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleTemplateClick(template)}
+                >
                 {/* 大图展示区域 */}
                 <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   {template.imageUrl ? (
                     <img
                       src={template.imageUrl}
                       alt={template.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -369,7 +356,8 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+                </motion.div>
+              </CardHover>
             ))}
           </div>
         ) : (

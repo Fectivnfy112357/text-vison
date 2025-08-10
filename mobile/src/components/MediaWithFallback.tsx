@@ -107,21 +107,25 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
       
       if (videoRef.current.paused) {
         // 尝试静音播放以解决自动播放策略问题
-        videoRef.current.muted = true
-        videoRef.current.play().then(() => {
-          console.log('Video started playing')
-          setIsPlaying(true)
-        }).catch(err => {
-          console.error('Failed to play video:', err)
-          // 如果静音播放失败，尝试取消静音
-          videoRef.current.muted = false
+        if (videoRef.current) {
+          videoRef.current.muted = true
           videoRef.current.play().then(() => {
+            console.log('Video started playing')
             setIsPlaying(true)
-          }).catch(err2 => {
-            console.error('Failed to play video without mute:', err2)
-            alert('视频播放失败，请稍后重试')
+          }).catch(err => {
+            console.error('Failed to play video:', err)
+            // 如果静音播放失败，尝试取消静音
+            if (videoRef.current) {
+              videoRef.current.muted = false
+              videoRef.current.play().then(() => {
+                setIsPlaying(true)
+              }).catch(err2 => {
+                console.error('Failed to play video without mute:', err2)
+                alert('视频播放失败，请稍后重试')
+              })
+            }
           })
-        })
+        }
       } else {
         videoRef.current.pause()
         setIsPlaying(false)

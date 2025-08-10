@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { LoginRequest } from '../lib/api'
+import { JellyButton, Float } from '../motions'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
@@ -129,11 +130,10 @@ const Login: React.FC = () => {
           )}
 
           {/* 登录按钮 */}
-          <motion.button
+          <JellyButton
             type="submit"
             disabled={!isFormValid || isLoading}
-            className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 rounded-xl font-semibold btn-jelly shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
-            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 rounded-xl font-semibold shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">
@@ -143,7 +143,7 @@ const Login: React.FC = () => {
             ) : (
               '登录'
             )}
-          </motion.button>
+          </JellyButton>
         </motion.form>
 
         {/* 注册链接 */}
@@ -166,8 +166,12 @@ const Login: React.FC = () => {
       </div>
 
       {/* 装饰元素 */}
-      <div className="absolute top-20 right-10 w-20 h-20 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl animate-float" />
-      <div className="absolute bottom-40 left-10 w-16 h-16 bg-gradient-to-tr from-sky-200/30 to-mist-200/30 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }} />
+      <Float duration={6} delay={0}>
+        <div className="absolute top-20 right-10 w-20 h-20 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl" />
+      </Float>
+      <Float duration={6} delay={2}>
+        <div className="absolute bottom-40 left-10 w-16 h-16 bg-gradient-to-tr from-sky-200/30 to-mist-200/30 rounded-full blur-xl" />
+      </Float>
     </div>
   )
 }

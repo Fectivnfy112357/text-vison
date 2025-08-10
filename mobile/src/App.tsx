@@ -65,7 +65,7 @@ function App() {
   return (
     <Router>
       <div {...backgroundStyle}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <Routes>
             {/* 认证相关路由 */}
             <Route path="/login" element={

@@ -12,6 +12,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
+import { JellyButton } from '../motions'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -173,12 +174,7 @@ const History: React.FC = () => {
     }
   }, [])
 
-  // 处理查看详情 - 使用useCallback优化
-  const handleViewDetail = useCallback((item: GenerationContent) => {
-    // 这里可以导航到详情页面或打开模态框
-    console.log('查看详情:', item)
-  }, [])
-
+  
   // 如果未认证，显示登录提示
   if (!isAuthenticated) {
     return (
@@ -190,12 +186,12 @@ const History: React.FC = () => {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">未登录</h3>
             <p className="text-sm text-gray-500 mb-8">登录后查看创作历史记录</p>
-            <button
+            <JellyButton
               onClick={() => navigate('/login')}
-              className="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+              className="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium"
             >
               立即登录
-            </button>
+            </JellyButton>
           </div>
         </div>
       </div>
@@ -287,17 +283,15 @@ const History: React.FC = () => {
                   还没有创作记录，开始你的第一次AI创作之旅吧
                 </p>
               </motion.div>
-              <motion.button
+              <JellyButton
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
                 onClick={() => navigate('/create')}
-                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft hover:shadow-lg transition-all"
+                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft"
               >
                 开始创作
-              </motion.button>
+              </JellyButton>
             </div>
           </div>
         ) : (
@@ -309,8 +303,7 @@ const History: React.FC = () => {
                   item={item}
                   index={index}
                   isSelected={selectedItems.has(item.id)}
-                  onViewDetail={handleViewDetail}
-                  onDownload={handleDownload}
+                    onDownload={handleDownload}
                   onShare={handleShare}
                   onDelete={handleDelete}
                 />

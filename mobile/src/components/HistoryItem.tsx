@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useRef, useEffect, useState } from 'react'
+import React, { memo, useCallback, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Image, 
@@ -7,8 +7,7 @@ import {
   Share2, 
   Trash2, 
   Calendar,
-  Clock,
-  Eye
+  Clock
 } from 'lucide-react'
 import { GenerationContent } from '../lib/api'
 import MediaWithFallback from './MediaWithFallback'
@@ -17,7 +16,6 @@ interface HistoryItemProps {
   item: GenerationContent
   index: number
   isSelected: boolean
-  onViewDetail: (item: GenerationContent) => void
   onDownload: (item: GenerationContent) => void
   onShare: (item: GenerationContent) => void
   onDelete: (id: string) => void
@@ -27,14 +25,12 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
   item,
   index,
   isSelected,
-  onViewDetail,
   onDownload,
   onShare,
   onDelete
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isInView, setIsInView] = useState(false)
 
   // 使用Intersection Observer实现懒加载和自动播放
   useEffect(() => {
@@ -43,7 +39,6 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsInView(entry.isIntersecting)
         if (entry.isIntersecting && item.type === 'video' && videoRef.current) {
           // 视频进入视图时尝试播放
           videoRef.current.play().catch(() => {
@@ -86,12 +81,7 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
     }
   }, [])
 
-  // 处理查看详情
-  const handleViewDetail = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    onViewDetail(item)
-  }, [item, onViewDetail])
-
+  
   // 处理下载
   const handleDownload = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()

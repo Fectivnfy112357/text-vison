@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Home, Sparkles, History, Grid3X3, User } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useAnimationPerformance } from '../../hooks/useAnimationPerformance'
 
 interface NavItem {
   path: string
@@ -21,6 +22,7 @@ const navItems: NavItem[] = [
 const BottomNavigation: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { reducedMotion, animationConfig, transitionConfig } = useAnimationPerformance()
 
   const handleNavigation = (path: string) => {
     navigate(path)
@@ -31,7 +33,10 @@ const BottomNavigation: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-white/80 backdrop-blur-md border-t border-white/60 px-2 py-2"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={{ 
+        duration: animationConfig.duration,
+        delay: animationConfig.delay
+      }}
     >
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
@@ -49,40 +54,41 @@ const BottomNavigation: React.FC = () => {
                   ? 'text-primary-600' 
                   : 'text-gray-500 hover:text-primary-500'
               )}
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.05 }}
+              whileTap={reducedMotion ? undefined : { scale: 0.92 }}
             >
               {/* 活跃状态背景 */}
               {isActive && (
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-primary-100/80 to-secondary-100/80 rounded-xl"
-                  layoutId="activeTab"
-                  initial={false}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30
-                  }}
-                />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-100/80 to-secondary-100/80 rounded-xl" />
               )}
               
               {/* 图标 */}
-              <motion.div
-                className="relative z-10 mb-1"
-                animate={{
-                  scale: isActive ? 1.1 : 1,
-                  rotate: isActive ? [0, -5, 5, 0] : 0
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                <Icon 
-                  size={20} 
-                  className={clsx(
-                    'transition-colors duration-200',
-                    isActive ? 'text-primary-600' : 'text-gray-500'
-                  )}
-                />
-              </motion.div>
+              {reducedMotion ? (
+                <div className="relative z-10 mb-1">
+                  <Icon 
+                    size={20} 
+                    className={clsx(
+                      'transition-colors duration-200',
+                      isActive ? 'text-primary-600' : 'text-gray-500'
+                    )}
+                  />
+                </div>
+              ) : (
+                <motion.div
+                  className="relative z-10 mb-1"
+                  animate={{
+                    scale: isActive ? 1.1 : 1
+                  }}
+                  transition={transitionConfig}
+                >
+                  <Icon 
+                    size={20} 
+                    className={clsx(
+                      'transition-colors duration-200',
+                      isActive ? 'text-primary-600' : 'text-gray-500'
+                    )}
+                  />
+                </motion.div>
+              )}
               
               {/* 标签 */}
               <span 
@@ -95,13 +101,16 @@ const BottomNavigation: React.FC = () => {
               </span>
               
               {/* 活跃指示器 */}
-              {isActive && (
+              {isActive && !reducedMotion && (
                 <motion.div
                   className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
+                  transition={transitionConfig}
                 />
+              )}
+              {isActive && reducedMotion && (
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full" />
               )}
             </motion.button>
           )
