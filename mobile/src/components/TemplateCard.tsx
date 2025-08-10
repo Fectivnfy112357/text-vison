@@ -296,7 +296,6 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             </div>
           </div>
         </div>
-      </div>
     </motion.div>
   )
 })
