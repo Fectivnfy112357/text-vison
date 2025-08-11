@@ -1,7 +1,8 @@
 import axios, { AxiosResponse, AxiosError } from 'axios'
 
 // API基础配置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://223.72.35.202:8999/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8999/api'
+
 
 // 创建axios实例
 const apiClient = axios.create({

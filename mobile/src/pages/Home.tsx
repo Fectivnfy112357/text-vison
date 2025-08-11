@@ -5,7 +5,7 @@ import { Sparkles, Image, Video, Zap, Star, TrendingUp, ArrowRight } from 'lucid
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template } from '../lib/api'
-import { JellyButton, CardHover, HoverScale } from '../motions'
+import { JellyButton, HoverScale } from '../motions'
 import { useAnimationPerformance } from '../hooks/useAnimationPerformance'
 
 // 定义动画 variants 以优化性能
@@ -36,12 +36,12 @@ const Home: React.FC = () => {
   const navigate = useNavigate()
   const { popularTemplates, loadPopularTemplates } = useTemplateStore()
   const { isAuthenticated, user } = useAuthStore()
-  const { reducedMotion, transitionConfig } = useAnimationPerformance()
+  const { reducedMotion } = useAnimationPerformance()
   const [animatedStats, setAnimatedStats] = useState({ today: 0, total: 0, satisfaction: 0 })
 
   useEffect(() => {
     loadPopularTemplates(4)
-    
+
     // 优化的数字动画 - 使用 requestAnimationFrame
     if (isAuthenticated) {
       const duration = 1500
@@ -56,7 +56,7 @@ const Home: React.FC = () => {
         const elapsed = currentTime - startTime
         const progress = Math.min(elapsed / duration, 1)
         const easeOut = 1 - Math.pow(1 - progress, 2)
-        
+
         setAnimatedStats({
           today: Math.floor(todayTarget * easeOut),
           total: Math.floor(totalTarget * easeOut),
@@ -117,8 +117,8 @@ const Home: React.FC = () => {
         </motion.div>
 
         {/* 热门搜索词 */}
-        <motion.div 
-          className="flex flex-wrap gap-2 mb-6" 
+        <motion.div
+          className="flex flex-wrap gap-2 mb-6"
           variants={itemVariants}
         >
           {['国风', '赛博朋克', '油画', '水墨', '像素'].map((tag) => (
@@ -128,7 +128,7 @@ const Home: React.FC = () => {
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.95 }}
                 onClick={() => navigate('/create', { state: { prompt: tag } })}
-                style={{ 
+                style={{
                   willChange: reducedMotion ? 'auto' : 'transform'
                 }}
               >
@@ -140,37 +140,37 @@ const Home: React.FC = () => {
 
         {/* 用户统计卡片 */}
         {isAuthenticated && (
-          <motion.div 
-            className="grid grid-cols-3 gap-3 mb-6" 
+          <motion.div
+            className="grid grid-cols-3 gap-3 mb-6"
             variants={itemVariants}
           >
-            <motion.div 
+            <motion.div
               className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-              style={{ 
+              style={{
                 willChange: reducedMotion ? 'auto' : 'transform'
               }}
             >
               <div className="text-lg font-bold text-primary-600">{animatedStats.today}</div>
               <div className="text-xs text-gray-500">今日生成</div>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-              style={{ 
+              style={{
                 willChange: reducedMotion ? 'auto' : 'transform'
               }}
             >
               <div className="text-lg font-bold text-secondary-600">{animatedStats.total}</div>
               <div className="text-xs text-gray-500">总作品</div>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="card-soft p-3 text-center group hover:shadow-lg transition-shadow "
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-              style={{ 
+              style={{
                 willChange: reducedMotion ? 'auto' : 'transform'
               }}
             >
@@ -186,12 +186,12 @@ const Home: React.FC = () => {
             onClick={handleCreateClick}
             className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl p-4 mb-6 shadow-glow transform-gpu"
           >
-          <div className="flex items-center justify-center space-x-2">
-            <Sparkles size={20} />
-            <span className="font-semibold">开始创作</span>
-            <ArrowRight size={16} />
-          </div>
-                </JellyButton>
+            <div className="flex items-center justify-center space-x-2">
+              <Sparkles size={20} />
+              <span className="font-semibold">开始创作</span>
+              <ArrowRight size={16} />
+            </div>
+          </JellyButton>
         </motion.div>
       </motion.div>
 
@@ -209,7 +209,7 @@ const Home: React.FC = () => {
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
             onClick={() => navigate('/create', { state: { type: 'image' } })}
-            style={{ 
+            style={{
               willChange: reducedMotion ? 'auto' : 'transform'
             }}
           >
@@ -226,7 +226,7 @@ const Home: React.FC = () => {
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
             onClick={() => navigate('/create', { state: { type: 'video' } })}
-            style={{ 
+            style={{
               willChange: reducedMotion ? 'auto' : 'transform'
             }}
           >
@@ -254,7 +254,7 @@ const Home: React.FC = () => {
           <div className="space-y-2">
             {[
               "梦幻星空下的城市夜景",
-              "赛博朋克风格的街头艺术", 
+              "赛博朋克风格的街头艺术",
               "国风水墨山水画"
             ].map((inspiration) => (
               <motion.div
@@ -263,7 +263,7 @@ const Home: React.FC = () => {
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
                 onClick={() => navigate('/create', { state: { prompt: inspiration } })}
-                style={{ 
+                style={{
                   willChange: reducedMotion ? 'auto' : 'transform'
                 }}
               >
@@ -281,147 +281,84 @@ const Home: React.FC = () => {
         initial="hidden"
         animate="visible"
       >
-        <motion.div className="flex items-center justify-between mb-4" variants={itemVariants}>
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="text-primary-600" size={20} />
-            <h2 className="text-lg font-semibold text-gray-800">热门模板</h2>
-          </div>
-          <motion.button
-            onClick={() => navigate('/templates')}
-            className="text-primary-600 text-sm font-medium flex items-center space-x-1 hover:text-primary-700 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span>查看全部</span>
-            <ArrowRight size={14} />
-          </motion.button>
+        <motion.div className="flex items-center space-x-2 mb-4" variants={itemVariants}>
+          <TrendingUp className="text-primary-600" size={20} />
+          <h3 className="font-semibold text-gray-800">热门模板</h3>
         </motion.div>
 
-        {popularTemplates.length > 0 ? (
-          <div className="space-y-3">
-            {popularTemplates.slice(0, 3).map((template) => (
-              <CardHover key={template.id} lift={false}>
-                <motion.div
-                  className="card-soft cursor-pointer overflow-hidden "
-                  variants={itemVariants}
-                  whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-                  onClick={() => handleTemplateClick(template)}
-                  style={{ 
-                    willChange: reducedMotion ? 'auto' : 'transform'
+        <div className="space-y-3">
+          {popularTemplates?.map((template) => (
+            <motion.div
+              key={template.id}
+              className="card-soft p-4 cursor-pointer hover:shadow-md transition-all "
+              variants={itemVariants}
+              whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
+              whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
+              onClick={() => handleTemplateClick(template)}
+              style={{
+                willChange: reducedMotion ? 'auto' : 'transform'
+              }}
+            >
+              {/* 模板图片 */}
+              <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-3">
+                <img
+                  src={template.imageUrl || template.thumbnail || template.previewImage || '/placeholder.png'}
+                  alt={template.title || template.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = '/placeholder.png'
                   }}
-                >
-                {/* 大图展示区域 */}
-                <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                  {template.imageUrl ? (
-                    <img
-                      src={template.imageUrl}
-                      alt={template.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <Sparkles className="text-gray-400 mb-2" size={32} />
-                        <div className="text-xs text-gray-500">模板预览</div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* 热门标识 */}
-                  {template.usageCount > 10 && (
-                    <motion.div 
-                      className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 shadow-lg transform-gpu"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={transitionConfig}
-                      style={{ 
-                        willChange: reducedMotion ? 'auto' : 'transform'
-                      }}
-                    >
-                      <Star size={12} fill="currentColor" />
-                      <span>热门</span>
-                    </motion.div>
-                  )}
-                  
-                  {/* 遮罩层 */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-white">
-                          <div className="text-sm font-medium mb-1">{template.category}</div>
-                          <div className="flex items-center space-x-2 text-xs">
-                            <span className="flex items-center space-x-1">
-                              <Zap size={14} />
-                              <span>{template.usageCount}次使用</span>
-                            </span>
-                          </div>
-                        </div>
-                        <motion.div
-                          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 transform-gpu"
-                          initial={{ scale: 0 }}
-                          whileHover={{ scale: reducedMotion ? 1 : 1.1 }}
-                          whileTap={{ scale: reducedMotion ? 1 : 0.9 }}
-                          style={{ 
-                            willChange: reducedMotion ? 'auto' : 'transform'
-                          }}
-                        >
-                          <ArrowRight size={20} />
-                        </motion.div>
-                      </div>
-                    </div>
+                />
+              </div>
+
+              {/* 模板信息 */}
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <h4 className="font-semibold text-gray-800 text-base truncate flex-1 pr-2">
+                    {template.title || template.name}
+                  </h4>
+                  <div className="flex items-center space-x-1 text-xs text-gray-500 flex-shrink-0">
+                    <Star size={12} className="text-yellow-500 fill-current" />
+                    <span>{template.usageCount || 0}</span>
                   </div>
                 </div>
-                
-                {/* 内容区域 */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-base mb-2 line-clamp-1 group-hover:text-primary-600 transition-colors">
-                        {template.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                        {template.description}
-                      </p>
-                    </div>
+
+                <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                  {template.description}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800`}>
+
+                      <span className="ml-1">
+                        {template.category}
+                      </span>
+                    </span>
+
+                    {template.usageCount > 5 && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <Zap size={10} />
+                        <span className="ml-1">热门</span>
+                      </span>
+                    )}
                   </div>
-                  
-                  {/* 操作栏 */}
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-primary-600 bg-primary-50 px-3 py-1 rounded-full font-medium">
-                          {template.category}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <Zap size={16} />
-                        <span className="font-medium">{template.usageCount}</span>
-                        <span className="text-xs">次使用</span>
-                      </div>
-                    </div>
-                  </div>
+
+                  <ArrowRight size={14} className="text-gray-400" />
                 </div>
-                </motion.div>
-              </CardHover>
-            ))}
-          </div>
-        ) : (
-          <motion.div 
-            className="card-soft p-8"
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {popularTemplates?.length === 0 && (
+          <motion.div
+            className="text-center py-8 text-gray-500"
             variants={itemVariants}
           >
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="text-gray-400" size={24} />
-              </div>
-              <p className="text-gray-500 text-sm mb-2">暂无热门模板</p>
-              <button
-                onClick={() => navigate('/create')}
-                className="text-primary-600 text-sm font-medium"
-              >
-                去创建第一个模板
-              </button>
-            </div>
+            <Sparkles size={24} className="mx-auto mb-2 text-gray-400" />
+            <p className="text-sm">暂无热门模板</p>
           </motion.div>
         )}
       </motion.div>
