@@ -91,7 +91,10 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
       // 移除临时项
       const errorMessage = error.response?.data?.message || error.message || error.toString()
       set(state => ({
-        history: state.history.filter(item => !item.id.startsWith('temp-')),
+        history: state.history.filter(item => {
+          // 检查 item.id 是否存在并且是字符串类型
+          return item.id && typeof item.id === 'string' && !item.id.startsWith('temp-')
+        }),
         currentGeneration: null,
         isGenerating: false,
         error: errorMessage

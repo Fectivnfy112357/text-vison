@@ -504,7 +504,7 @@ const Create: React.FC = () => {
       </motion.div>
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
         <div className="px-6 py-6 space-y-6">
           {/* 类型选择 */}
           <motion.div
