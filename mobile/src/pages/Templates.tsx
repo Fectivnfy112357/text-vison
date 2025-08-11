@@ -154,7 +154,10 @@ const Templates: React.FC = () => {
       className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
       style={{
         opacity: 1,
-        transition: 'opacity 0.2s ease-out'
+        transition: 'opacity 0.15s ease-out',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        perspective: 1000
       }}
     >
       {/* 头部 */}
@@ -163,8 +166,11 @@ const Templates: React.FC = () => {
         style={{
           opacity: 1,
           transform: 'translateY(0)',
-          transition: 'all 0.3s ease-out',
-          willChange: 'transform, opacity'
+          transition: 'transform 0.15s ease-out, opacity 0.15s ease-out',
+          willChange: 'auto',
+          backfaceVisibility: 'hidden',
+          perspective: 1000,
+          transform: 'translateZ(0)'
         }}
       >
         {/* 头部标题和操作区 */}
@@ -182,7 +188,11 @@ const Templates: React.FC = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="p-2.5 rounded-xl bg-white/80 backdrop-blur-sm shadow-soft hover:bg-white/90 transition-colors"
+                className="p-2.5 rounded-xl bg-white/80 backdrop-blur-sm shadow-soft hover:bg-white/90 transition-all duration-150 active:scale-95"
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden'
+                }}
               >
                 {viewMode === 'grid' ? (
                   <List size={16} className="text-gray-600" />
@@ -204,6 +214,10 @@ const Templates: React.FC = () => {
               onChange={(e) => setLocalSearchQuery(e.target.value)}
               placeholder="搜索模板名称、描述或标签..."
               className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 focus:bg-white/90 shadow-soft"
+              style={{
+                transform: 'translateZ(0)',
+                backfaceVisibility: 'hidden'
+              }}
             />
             {localSearchQuery && (
               <button
@@ -221,11 +235,15 @@ const Templates: React.FC = () => {
           <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide py-1">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 transition-all duration-150 transform hover:scale-105 ${
                 !selectedCategory 
                   ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
                   : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
               }`}
+              style={{
+                transform: 'translateZ(0)',
+                backfaceVisibility: 'hidden'
+              }}
             >
               <span>🌟</span>
               <span>全部</span>
@@ -239,11 +257,15 @@ const Templates: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 transition-all duration-150 transform hover:scale-105 ${
                   selectedCategory?.id === category.id
                     ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg'
                     : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
                 }`}
+                style={{
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden'
+                }}
               >
                 <span>{getCategoryIcon(category.name)}</span>
                 <span>{category.name}</span>
@@ -263,7 +285,13 @@ const Templates: React.FC = () => {
       <div className="flex-1 overflow-y-auto pb-20" style={{
         WebkitOverflowScrolling: 'touch',
         scrollBehavior: 'smooth',
-        willChange: 'transform'
+        willChange: 'auto',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        perspective: 1000,
+        contain: 'content',
+        scrollSnapType: 'none',
+        overflowScrolling: 'touch'
       }}>
         {isLoading ? (
           <div className="flex items-center justify-center h-full py-12">
@@ -311,7 +339,13 @@ const Templates: React.FC = () => {
         ) : (
           <div className="px-3 py-4">
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 gap-3 px-3 py-4">
+              <div className="grid grid-cols-2 gap-3 px-3 py-4" style={{
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            perspective: 1000,
+            contain: 'none',
+            willChange: 'auto'
+          }}>
                 {sortedTemplates.map((template, index) => (
                   <TemplateCard
                     key={template.id}
@@ -327,7 +361,13 @@ const Templates: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="space-y-3 px-3 py-4">
+              <div className="space-y-3 px-3 py-4" style={{
+                transform: 'translateZ(0)',
+                backfaceVisibility: 'hidden',
+                perspective: 1000,
+                contain: 'none',
+                willChange: 'auto'
+              }}>
                 {sortedTemplates.map((template, index) => (
                   <TemplateCard
                     key={template.id}
