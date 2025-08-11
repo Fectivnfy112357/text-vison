@@ -308,34 +308,6 @@ const Home: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      <div>
-        <video src=""></video>
-         <video 
-           
-            src='https://video.699pic.com/videos/36/17/02/361702613bfc4d45c7abc9b2be44ae64_10s.mp4'
-            className={`} transition-opacity duration-300 `}
-            preload="metadata"
-            playsInline
-            webkit-playsinline="true"
-            x5-video-player-type="h5"
-            x5-video-player-fullscreen="true"
-            x5-playsinline="true"
-            style={{ 
-              objectFit: 'cover',
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#000',
-              willChange: 'opacity'
-            }}
-            controlsList="nodownload noremoteplayback"
-            disablePictureInPicture
-          >
-           
-            您的浏览器不支持视频播放
-          </video>
-      </div>
-
-
       {/* 热门模板 */}
       <motion.div
         className="px-6 mb-6"
