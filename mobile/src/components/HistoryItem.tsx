@@ -118,20 +118,28 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
         <div ref={containerRef} className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden group">
           {(item.thumbnail || item.url) ? (
             item.type === 'video' ? (
+              <div className="relative w-full h-full bg-gradient-to-br from-primary-50 to-secondary-50">
               <video
                 ref={videoRef}
                 src={item.url || ''}
-                className="w-full h-full object-cover"
-                muted
+                className="absolute inset-0 w-full h-full object-cover"
+                preload="auto"
                 playsInline
                 webkit-playsinline="true"
+                x5-video-player-type="h5"
+                x5-video-player-fullscreen="true"
+                x5-playsinline="true"
+                muted
                 loop
-                preload="metadata"
-                style={{ 
-                  backgroundColor: '#000',
-                  objectFit: 'cover'
-                }}
-              />
+                autoPlay
+                controlsList="nodownload noremoteplayback"
+                disablePictureInPicture
+                poster={item.url || undefined}
+              >
+                <source src={item.url || ''} type="video/mp4" />
+                您的浏览器不支持视频播放
+              </video>
+            </div>
             ) : (
               <MediaWithFallback
                 url={item.thumbnail || item.url || ''}
@@ -154,7 +162,7 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
           )}
           
           {/* 状态标签 */}
-          <div className="absolute top-3 left-3 flex flex-col space-y-2">
+          <div className="absolute top-3 left-3 flex flex-col space-y-2 z-10">
             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
               item.type === 'image' 
                 ? 'bg-primary-100/80 text-primary-700 border border-primary-200/50'
