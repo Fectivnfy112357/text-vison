@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { 
   Search, 
@@ -12,6 +13,31 @@ import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
+
+
+// 页面切换动画
+const pageVariants = {
+  initial: { 
+    opacity: 0, 
+    x: 100 
+  },
+  animate: { 
+    opacity: 1, 
+    x: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    x: -100,
+    transition: {
+      duration: 0.2,
+      ease: "easeIn"
+    }
+  }
+}
 
 type ViewMode = 'grid' | 'list'
 
@@ -150,27 +176,31 @@ const Templates: React.FC = () => {
 
   
   return (
-    <div 
+    <motion.div 
       className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       style={{
-        opacity: 1,
-        transition: 'opacity 0.15s ease-out',
         transform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
         perspective: 1000
       }}
     >
       {/* 头部 */}
-      <div 
+      <motion.div 
         className="relative safe-area-top bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-transparent backdrop-blur-sm border-b border-white/20"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ 
+          duration: 0.3, 
+          ease: "easeOut" 
+        }}
         style={{
-          opacity: 1,
-          transform: 'translateY(0)',
-          transition: 'transform 0.15s ease-out, opacity 0.15s ease-out',
-          willChange: 'auto',
+          transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
-          perspective: 1000,
-          transform: 'translateZ(0)'
+          perspective: 1000
         }}
       >
         {/* 头部标题和操作区 */}
@@ -279,20 +309,20 @@ const Templates: React.FC = () => {
           </div>
         </div>
 
-        </div>
+        </motion.div>
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto pb-20" style={{
-        WebkitOverflowScrolling: 'touch',
-        scrollBehavior: 'smooth',
-        willChange: 'auto',
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        perspective: 1000,
-        contain: 'content',
-        scrollSnapType: 'none',
-        overflowScrolling: 'touch'
-      }}>
+      <div 
+        className="flex-1 overflow-y-auto pb-20"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollBehavior: 'smooth',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          perspective: 1000,
+          contain: 'content',
+        }}
+      >
         {isLoading ? (
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center">
@@ -339,47 +369,37 @@ const Templates: React.FC = () => {
         ) : (
           <div className="px-3 py-4">
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 gap-3 px-3 py-4" style={{
-            transform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            perspective: 1000,
-            contain: 'none',
-            willChange: 'auto'
-          }}>
+              <div className="grid grid-cols-2 gap-3 px-3 py-4">
                 {sortedTemplates.map((template, index) => (
-                  <TemplateCard
-                    key={template.id}
-                    template={template}
-                    index={index}
-                    viewMode={viewMode}
-                    isFavorite={favorites.has(template.id.toString())}
-                    onUseTemplate={handleUseTemplate}
-                    onToggleFavorite={handleToggleFavorite}
-                    getCategoryIcon={getCategoryIcon}
-                    formatNumber={formatNumber}
-                  />
+                  <div key={template.id}>
+                    <TemplateCard
+                      template={template}
+                      index={index}
+                      viewMode={viewMode}
+                      isFavorite={favorites.has(template.id.toString())}
+                      onUseTemplate={handleUseTemplate}
+                      onToggleFavorite={handleToggleFavorite}
+                      getCategoryIcon={getCategoryIcon}
+                      formatNumber={formatNumber}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="space-y-3 px-3 py-4" style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden',
-                perspective: 1000,
-                contain: 'none',
-                willChange: 'auto'
-              }}>
+              <div className="space-y-3 px-3 py-4">
                 {sortedTemplates.map((template, index) => (
-                  <TemplateCard
-                    key={template.id}
-                    template={template}
-                    index={index}
-                    viewMode={viewMode}
-                    isFavorite={favorites.has(template.id.toString())}
-                    onUseTemplate={handleUseTemplate}
-                    onToggleFavorite={handleToggleFavorite}
-                    getCategoryIcon={getCategoryIcon}
-                    formatNumber={formatNumber}
-                  />
+                  <div key={template.id}>
+                    <TemplateCard
+                      template={template}
+                      index={index}
+                      viewMode={viewMode}
+                      isFavorite={favorites.has(template.id.toString())}
+                      onUseTemplate={handleUseTemplate}
+                      onToggleFavorite={handleToggleFavorite}
+                      getCategoryIcon={getCategoryIcon}
+                      formatNumber={formatNumber}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -387,8 +407,7 @@ const Templates: React.FC = () => {
         )}
       </div>
 
-
-    </div>
+    </motion.div>
   )
 }
 
