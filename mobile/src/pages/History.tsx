@@ -5,7 +5,8 @@ import {
   Search, 
   RefreshCw,
   Eye,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react'
 import { useGenerationStore } from '../store/useGenerationStore'
 import { useAuthStore } from '../store/useAuthStore'
@@ -178,21 +179,19 @@ const History: React.FC = () => {
   // 如果未认证，显示登录提示
   if (!isAuthenticated) {
     return (
-      <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="text-center max-w-sm w-full">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Eye className="text-primary-500" size={32} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">未登录</h3>
-            <p className="text-sm text-gray-500 mb-8">登录后查看创作历史记录</p>
-            <JellyButton
-              onClick={() => navigate('/login')}
-              className="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium"
-            >
-              立即登录
-            </JellyButton>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+        <div className="text-center max-w-sm w-full px-6">
+          <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="text-primary-500" size={40} />
           </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">开始AI创作之旅</h3>
+          <p className="text-gray-600 mb-8">登录后即可使用AI生成精美的图片和视频内容</p>
+          <JellyButton
+            onClick={() => navigate('/login')}
+            className="w-3/4 mx-auto px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold"
+          >
+            立即登录
+          </JellyButton>
         </div>
       </div>
     )
