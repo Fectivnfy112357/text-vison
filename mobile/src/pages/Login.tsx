@@ -73,7 +73,7 @@ const Login: React.FC = () => {
               邮箱地址
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                 <Mail className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -93,21 +93,21 @@ const Login: React.FC = () => {
               密码
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                className="input-soft w-full pl-10 pr-12 py-3 text-gray-900 placeholder-gray-500"
+                className="input-soft w-full pl-10 pr-10 py-3 text-gray-900 placeholder-gray-500"
                 placeholder="请输入密码"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5 text-gray-400" />
