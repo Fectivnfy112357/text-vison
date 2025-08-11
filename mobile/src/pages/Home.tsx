@@ -204,7 +204,7 @@ const Home: React.FC = () => {
       >
         <div className="grid grid-cols-2 gap-4">
           <motion.div
-            className="card-soft p-4 text-center "
+            className="relative p-8 rounded-2xl border-2 border-primary-400 bg-gradient-to-br from-primary-50 to-primary-100 shadow-lg overflow-hidden cursor-pointer flex flex-col justify-center"
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
@@ -213,15 +213,22 @@ const Home: React.FC = () => {
               willChange: reducedMotion ? 'auto' : 'transform'
             }}
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl flex items-center justify-center mx-auto mb-3 transform-gpu">
-              <Image className="text-primary-600" size={24} />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 opacity-100" />
+            <div className="relative z-10 text-center">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 bg-primary-500 text-white shadow-lg">
+                <Image size={24} />
+              </div>
+              <h3 className="font-semibold mb-1 text-primary-700">
+                图片生成
+              </h3>
+              <p className="text-xs text-primary-600">
+                AI生成精美图片
+              </p>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-1">图片生成</h3>
-            <p className="text-xs text-gray-500">AI智能图片创作</p>
           </motion.div>
 
           <motion.div
-            className="card-soft p-4 text-center "
+            className="relative p-8 rounded-2xl border-2 border-secondary-400 bg-gradient-to-br from-secondary-50 to-secondary-100 shadow-lg overflow-hidden cursor-pointer flex flex-col justify-center"
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
@@ -230,11 +237,18 @@ const Home: React.FC = () => {
               willChange: reducedMotion ? 'auto' : 'transform'
             }}
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl flex items-center justify-center mx-auto mb-3 transform-gpu">
-              <Video className="text-secondary-600" size={24} />
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary-500/10 to-primary-500/10 opacity-100" />
+            <div className="relative z-10 text-center">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 bg-secondary-500 text-white shadow-lg">
+                <Video size={24} />
+              </div>
+              <h3 className="font-semibold mb-1 text-secondary-700">
+                视频生成
+              </h3>
+              <p className="text-xs text-secondary-600">
+                AI创作动态视频
+              </p>
             </div>
-            <h3 className="font-semibold text-gray-800 mb-1">视频生成</h3>
-            <p className="text-xs text-gray-500">AI智能视频创作</p>
           </motion.div>
         </div>
       </motion.div>
