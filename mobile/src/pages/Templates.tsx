@@ -258,7 +258,7 @@ const Templates: React.FC = () => {
         </motion.div>
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
         {isLoading ? (
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center">
@@ -279,14 +279,14 @@ const Templates: React.FC = () => {
         ) : sortedTemplates.length === 0 ? (
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center max-w-md mx-auto">
-              <div className="relative mb-6">
-                <Float duration={6}>
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="text-primary-400 mx-auto mb-1" size={40} />
-                    <div className="w-2 h-2 bg-primary-300 rounded-full mx-auto animate-ping"></div>
-                  </div>
-                </Float>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <Sparkles className="text-gray-400" size={40} />
+              </motion.div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
               <p className="text-sm text-gray-500 mb-6">
                 {searchQuery || selectedCategory 
@@ -303,15 +303,9 @@ const Templates: React.FC = () => {
                     }}
                     className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
                   >
-                    🔄 重置筛选
+                    重置筛选
                   </button>
                 )}
-                <button
-                  onClick={() => loadTemplates()}
-                  className="px-4 py-2 bg-white/70 backdrop-blur-sm border border-white/60 text-gray-700 rounded-lg text-sm font-medium hover:bg-white/80 transition-colors"
-                >
-                  🔄 重新加载
-                </button>
               </div>
             </div>
           </div>

@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Sparkles, Image, Video, Zap, Star, TrendingUp, ArrowRight } from 'lucide-react'
-import { useTemplateStore } from '../store/useTemplateStore'
-import { useAuthStore } from '../store/useAuthStore'
-import { Template } from '../lib/api'
-import { JellyButton, HoverScale } from '../motions'
-import { useAnimationPerformance } from '../hooks/useAnimationPerformance'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Sparkles,
+  Image,
+  Video,
+  Zap,
+  Star,
+  TrendingUp,
+  ArrowRight,
+} from "lucide-react";
+import { useTemplateStore } from "../store/useTemplateStore";
+import { useAuthStore } from "../store/useAuthStore";
+import { Template } from "../lib/api";
+import { JellyButton, HoverScale } from "../motions";
+import { useAnimationPerformance } from "../hooks/useAnimationPerformance";
 
 // 定义动画 variants 以优化性能
 const containerVariants = {
@@ -15,10 +23,10 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.05,
-      delayChildren: 0.1
-    }
-  }
-}
+      delayChildren: 0.1,
+    },
+  },
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -27,69 +35,77 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.3,
-      ease: 'easeOut'
-    }
-  }
-}
+      ease: "easeOut",
+    },
+  },
+};
 
 const Home: React.FC = () => {
-  const navigate = useNavigate()
-  const { popularTemplates, loadPopularTemplates } = useTemplateStore()
-  const { isAuthenticated, user } = useAuthStore()
-  const { reducedMotion } = useAnimationPerformance()
-  const [animatedStats, setAnimatedStats] = useState({ today: 0, total: 0, satisfaction: 0 })
+  const navigate = useNavigate();
+  const { popularTemplates, loadPopularTemplates } = useTemplateStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const { reducedMotion } = useAnimationPerformance();
+  const [animatedStats, setAnimatedStats] = useState({
+    today: 0,
+    total: 0,
+    satisfaction: 0,
+  });
 
   useEffect(() => {
-    loadPopularTemplates(4)
+    loadPopularTemplates(4);
 
     // 优化的数字动画 - 使用 requestAnimationFrame
     if (isAuthenticated) {
-      const duration = 1500
-      const startTime = performance.now()
-      const todayTarget = 12
-      const totalTarget = 156
-      const satisfactionTarget = 89
+      const duration = 1500;
+      const startTime = performance.now();
+      const todayTarget = 12;
+      const totalTarget = 156;
+      const satisfactionTarget = 89;
 
-      let animationFrameId: number
+      let animationFrameId: number;
 
       const animate = (currentTime: number) => {
-        const elapsed = currentTime - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        const easeOut = 1 - Math.pow(1 - progress, 2)
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 2);
 
         setAnimatedStats({
           today: Math.floor(todayTarget * easeOut),
           total: Math.floor(totalTarget * easeOut),
-          satisfaction: Math.floor(satisfactionTarget * easeOut)
-        })
+          satisfaction: Math.floor(satisfactionTarget * easeOut),
+        });
 
         if (progress < 1) {
-          animationFrameId = requestAnimationFrame(animate)
+          animationFrameId = requestAnimationFrame(animate);
         } else {
-          setAnimatedStats({ today: todayTarget, total: totalTarget, satisfaction: satisfactionTarget })
+          setAnimatedStats({
+            today: todayTarget,
+            total: totalTarget,
+            satisfaction: satisfactionTarget,
+          });
         }
-      }
+      };
 
-      animationFrameId = requestAnimationFrame(animate)
+      animationFrameId = requestAnimationFrame(animate);
 
-      return () => cancelAnimationFrame(animationFrameId)
+      return () => cancelAnimationFrame(animationFrameId);
     } else {
       // 未登录时重置为0
-      setAnimatedStats({ today: 0, total: 0, satisfaction: 0 })
+      setAnimatedStats({ today: 0, total: 0, satisfaction: 0 });
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated]);
 
   const handleCreateClick = () => {
     if (isAuthenticated) {
-      navigate('/create')
+      navigate("/create");
     }
-  }
+  };
 
   const handleTemplateClick = (template: Template) => {
     if (isAuthenticated) {
-      navigate('/create', { state: { template } })
+      navigate("/create", { state: { template } });
     }
-  }
+  };
 
   return (
     <div className="h-full overflow-y-auto scrollbar-hide pb-20">
@@ -109,10 +125,12 @@ const Home: React.FC = () => {
         {/* 问候语和统计 */}
         <motion.div className="mb-6" variants={itemVariants}>
           <motion.h1 className="text-2xl font-bold text-gradient mb-2">
-            {isAuthenticated ? `你好，${user?.nickname || user?.username || '用户'}` : '欢迎来到文生视界'}
+            {isAuthenticated
+              ? `你好，${user?.nickname || user?.username || "用户"}`
+              : "欢迎来到文生视界"}
           </motion.h1>
           <motion.p className="text-gray-600 text-sm">
-            {isAuthenticated ? '开始你的创意之旅吧' : 'AI驱动的图文生成平台'}
+            {isAuthenticated ? "开始你的创意之旅吧" : "AI驱动的图文生成平台"}
           </motion.p>
         </motion.div>
 
@@ -121,15 +139,15 @@ const Home: React.FC = () => {
           className="flex flex-wrap gap-2 mb-6"
           variants={itemVariants}
         >
-          {['国风', '赛博朋克', '油画', '水墨', '像素'].map((tag) => (
+          {["国风", "赛博朋克", "油画", "水墨", "像素"].map((tag) => (
             <HoverScale key={tag} scale={1.05}>
               <motion.button
                 className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200 transform-gpu"
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.95 }}
-                onClick={() => navigate('/create', { state: { prompt: tag } })}
+                onClick={() => navigate("/create", { state: { prompt: tag } })}
                 style={{
-                  willChange: reducedMotion ? 'auto' : 'transform'
+                  willChange: reducedMotion ? "auto" : "transform",
                 }}
               >
                 #{tag}
@@ -149,10 +167,12 @@ const Home: React.FC = () => {
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
               style={{
-                willChange: reducedMotion ? 'auto' : 'transform'
+                willChange: reducedMotion ? "auto" : "transform",
               }}
             >
-              <div className="text-lg font-bold text-primary-600">{animatedStats.today}</div>
+              <div className="text-lg font-bold text-primary-600">
+                {animatedStats.today}
+              </div>
               <div className="text-xs text-gray-500">今日生成</div>
             </motion.div>
             <motion.div
@@ -160,10 +180,12 @@ const Home: React.FC = () => {
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
               style={{
-                willChange: reducedMotion ? 'auto' : 'transform'
+                willChange: reducedMotion ? "auto" : "transform",
               }}
             >
-              <div className="text-lg font-bold text-secondary-600">{animatedStats.total}</div>
+              <div className="text-lg font-bold text-secondary-600">
+                {animatedStats.total}
+              </div>
               <div className="text-xs text-gray-500">总作品</div>
             </motion.div>
             <motion.div
@@ -171,10 +193,12 @@ const Home: React.FC = () => {
               whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
               style={{
-                willChange: reducedMotion ? 'auto' : 'transform'
+                willChange: reducedMotion ? "auto" : "transform",
               }}
             >
-              <div className="text-lg font-bold text-accent-600">{animatedStats.satisfaction}%</div>
+              <div className="text-lg font-bold text-accent-600">
+                {animatedStats.satisfaction}%
+              </div>
               <div className="text-xs text-gray-500">满意度</div>
             </motion.div>
           </motion.div>
@@ -208,9 +232,9 @@ const Home: React.FC = () => {
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-            onClick={() => navigate('/create', { state: { type: 'image' } })}
+            onClick={() => navigate("/create", { state: { type: "image" } })}
             style={{
-              willChange: reducedMotion ? 'auto' : 'transform'
+              willChange: reducedMotion ? "auto" : "transform",
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 opacity-100" />
@@ -218,12 +242,8 @@ const Home: React.FC = () => {
               <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 bg-primary-500 text-white shadow-lg">
                 <Image size={24} />
               </div>
-              <h3 className="font-semibold mb-1 text-primary-700">
-                图片生成
-              </h3>
-              <p className="text-xs text-primary-600">
-                AI生成精美图片
-              </p>
+              <h3 className="font-semibold mb-1 text-primary-700">图片生成</h3>
+              <p className="text-xs text-primary-600">AI生成精美图片</p>
             </div>
           </motion.div>
 
@@ -232,9 +252,9 @@ const Home: React.FC = () => {
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-            onClick={() => navigate('/create', { state: { type: 'video' } })}
+            onClick={() => navigate("/create", { state: { type: "video" } })}
             style={{
-              willChange: reducedMotion ? 'auto' : 'transform'
+              willChange: reducedMotion ? "auto" : "transform",
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-secondary-500/10 to-primary-500/10 opacity-100" />
@@ -245,9 +265,7 @@ const Home: React.FC = () => {
               <h3 className="font-semibold mb-1 text-secondary-700">
                 视频生成
               </h3>
-              <p className="text-xs text-secondary-600">
-                AI创作动态视频
-              </p>
+              <p className="text-xs text-secondary-600">AI创作动态视频</p>
             </div>
           </motion.div>
         </div>
@@ -269,16 +287,18 @@ const Home: React.FC = () => {
             {[
               "梦幻星空下的城市夜景",
               "赛博朋克风格的街头艺术",
-              "国风水墨山水画"
+              "国风水墨山水画",
             ].map((inspiration) => (
               <motion.div
                 key={inspiration}
                 className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors "
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-                onClick={() => navigate('/create', { state: { prompt: inspiration } })}
+                onClick={() =>
+                  navigate("/create", { state: { prompt: inspiration } })
+                }
                 style={{
-                  willChange: reducedMotion ? 'auto' : 'transform'
+                  willChange: reducedMotion ? "auto" : "transform",
                 }}
               >
                 <p className="text-sm text-gray-700">{inspiration}</p>
@@ -288,6 +308,34 @@ const Home: React.FC = () => {
         </motion.div>
       </motion.div>
 
+      <div>
+        <video src=""></video>
+         <video 
+           
+            src='https://video.699pic.com/videos/36/17/02/361702613bfc4d45c7abc9b2be44ae64_10s.mp4'
+            className={`} transition-opacity duration-300 `}
+            preload="metadata"
+            playsInline
+            webkit-playsinline="true"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            x5-playsinline="true"
+            style={{ 
+              objectFit: 'cover',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000',
+              willChange: 'opacity'
+            }}
+            controlsList="nodownload noremoteplayback"
+            disablePictureInPicture
+          >
+           
+            您的浏览器不支持视频播放
+          </video>
+      </div>
+
+
       {/* 热门模板 */}
       <motion.div
         className="px-6 mb-6"
@@ -295,7 +343,10 @@ const Home: React.FC = () => {
         initial="hidden"
         animate="visible"
       >
-        <motion.div className="flex items-center space-x-2 mb-4" variants={itemVariants}>
+        <motion.div
+          className="flex items-center space-x-2 mb-4"
+          variants={itemVariants}
+        >
           <TrendingUp className="text-primary-600" size={20} />
           <h3 className="font-semibold text-gray-800">热门模板</h3>
         </motion.div>
@@ -310,18 +361,23 @@ const Home: React.FC = () => {
               whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
               onClick={() => handleTemplateClick(template)}
               style={{
-                willChange: reducedMotion ? 'auto' : 'transform'
+                willChange: reducedMotion ? "auto" : "transform",
               }}
             >
               {/* 模板图片 */}
               <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-3">
                 <img
-                  src={template.imageUrl || template.thumbnail || template.previewImage || '/placeholder.png'}
+                  src={
+                    template.imageUrl ||
+                    template.thumbnail ||
+                    template.previewImage ||
+                    "/placeholder.png"
+                  }
                   alt={template.title || template.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = '/placeholder.png'
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.png";
                   }}
                 />
               </div>
@@ -344,11 +400,10 @@ const Home: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800`}>
-
-                      <span className="ml-1">
-                        {template.category}
-                      </span>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800`}
+                    >
+                      <span className="ml-1">{template.category}</span>
                     </span>
 
                     {template.usageCount > 5 && (
@@ -377,7 +432,7 @@ const Home: React.FC = () => {
         )}
       </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
