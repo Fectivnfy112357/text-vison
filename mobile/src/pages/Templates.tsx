@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { 
   Search, 
   Grid3X3, 
@@ -13,7 +12,6 @@ import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
-import { Float, Pulse } from '../motions'
 
 type ViewMode = 'grid' | 'list'
 
@@ -152,18 +150,22 @@ const Templates: React.FC = () => {
 
   
   return (
-    <motion.div 
+    <div 
       className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      style={{
+        opacity: 1,
+        transition: 'opacity 0.2s ease-out'
+      }}
     >
       {/* 头部 */}
-      <motion.div 
+      <div 
         className="relative safe-area-top bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-transparent backdrop-blur-sm border-b border-white/20"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        style={{
+          opacity: 1,
+          transform: 'translateY(0)',
+          transition: 'all 0.3s ease-out',
+          willChange: 'transform, opacity'
+        }}
       >
         {/* 头部标题和操作区 */}
         <div className="px-3 pt-4 pb-2">
@@ -255,19 +257,21 @@ const Templates: React.FC = () => {
           </div>
         </div>
 
-        </motion.div>
+        </div>
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
+      <div className="flex-1 overflow-y-auto pb-20" style={{
+        WebkitOverflowScrolling: 'touch',
+        scrollBehavior: 'smooth',
+        willChange: 'transform'
+      }}>
         {isLoading ? (
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center">
               <div className="relative mb-6">
-                <Pulse duration={2}>
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="text-primary-400" size={32} />
-                  </div>
-                </Pulse>
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="text-primary-400" size={32} />
+                </div>
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
                   <div className="w-20 h-20 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
                 </div>
@@ -279,14 +283,9 @@ const Templates: React.FC = () => {
         ) : sortedTemplates.length === 0 ? (
           <div className="flex items-center justify-center h-full py-12">
             <div className="text-center max-w-md mx-auto">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6"
-              >
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Sparkles className="text-gray-400" size={40} />
-              </motion.div>
+              </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
               <p className="text-sm text-gray-500 mb-6">
                 {searchQuery || selectedCategory 
@@ -349,7 +348,7 @@ const Templates: React.FC = () => {
       </div>
 
 
-    </motion.div>
+    </div>
   )
 }
 

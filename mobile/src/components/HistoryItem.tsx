@@ -1,5 +1,4 @@
-import React, { memo, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React, { memo, useCallback, useRef, useEffect, useState } from 'react'
 import { 
   Image, 
   Video, 
@@ -31,6 +30,7 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   // 使用Intersection Observer实现懒加载和自动播放
   useEffect(() => {
@@ -39,15 +39,18 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && item.type === 'video' && videoRef.current) {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
           // 视频进入视图时尝试播放
-          videoRef.current.play().catch(() => {
-            // 自动播放失败，静音后再试
-            if (videoRef.current) {
-              videoRef.current.muted = true
-              videoRef.current.play().catch(console.error)
-            }
-          })
+          if (item.type === 'video' && videoRef.current) {
+            videoRef.current.play().catch(() => {
+              // 自动播放失败，静音后再试
+              if (videoRef.current) {
+                videoRef.current.muted = true
+                videoRef.current.play().catch(console.error)
+              }
+            })
+          }
         }
       },
       {
@@ -101,16 +104,16 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
   }, [item.id, onDelete])
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        delay: Math.min(index * 0.02, 0.3),
-        duration: 0.2 
-      }}
+    <div
       className={`card-soft overflow-hidden ${
         isSelected ? 'ring-2 ring-primary-300' : ''
       }`}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+        transition: `all 0.2s ease-out ${Math.min(index * 0.02, 0.3)}s`,
+        willChange: 'transform, opacity'
+      }}
     >
       {/* 主要内容区域 */}
       <div>
@@ -248,7 +251,7 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 })
 

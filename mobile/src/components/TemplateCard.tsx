@@ -1,5 +1,6 @@
-import React, { memo, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import React, { memo, useCallback, useState, useRef, useEffect } from 'react'
+import { motion } from "framer-motion";
+
 import { 
   Eye, 
   Play, 
@@ -22,7 +23,6 @@ interface TemplateCardProps {
 
 const TemplateCard: React.FC<TemplateCardProps> = memo(({
   template,
-  index,
   viewMode,
   isFavorite,
   onUseTemplate,
@@ -30,6 +30,32 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   getCategoryIcon,
   formatNumber
 }) => {
+  const [isIntersecting, setIsIntersecting] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  // 使用Intersection Observer实现懒加载
+  useEffect(() => {
+    const element = cardRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsIntersecting(entry.isIntersecting)
+      },
+      {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.unobserve(element)
+    }
+  }, [])
   // 处理使用模板
   const handleUseTemplate = useCallback(() => {
     onUseTemplate(template)
@@ -46,44 +72,41 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
     e.currentTarget.src = '/placeholder-template.jpg'
   }, [])
 
-  // 基础动画配置 - 优化性能
-  const cardVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.2,
-        ease: 'easeOut'
-      }
-    },
-    hover: { 
-      scale: 1.01,
-      transition: {
-        duration: 0.15
-      }
-    }
-  }
+  // 处理悬停状态
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
+  }, [])
 
   // 网格视图
   if (viewMode === 'grid') {
     return (
-      <motion.div
-        variants={cardVariants}
-        initial="initial"
-        animate="animate"
-        whileHover="hover"
-        transition={{ delay: Math.min(index * 0.02, 0.2) }}
+      <div
+        ref={cardRef}
         className="group relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          opacity: isIntersecting ? 1 : 0.8,
+          transform: isIntersecting ? 'translateY(0)' : 'translateY(5px)',
+          transition: 'all 0.3s ease-out',
+          willChange: 'transform, opacity'
+        }}
       >
-        <div className="card-glow h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div className={`card-glow h-full overflow-hidden transition-all duration-300 ${isHovered ? 'shadow-lg -translate-y-1' : ''}`}>
           {/* 模板预览区域 */}
           <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
             {template.imageUrl ? (
               <img 
                 src={template.imageUrl} 
                 alt={template.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300"
+                style={{
+                  transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+                }}
                 onError={handleImageError}
                 loading="lazy"
                 decoding="async"
@@ -98,7 +121,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             )}
             
             {/* 渐变遮罩 */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
             
             {/* 顶部标签 */}
             <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
@@ -119,7 +142,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
               {/* 收藏按钮 */}
               <button
                 onClick={handleToggleFavorite}
-                className="p-1.5 bg-white/20 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30"
+                className={`p-1.5 bg-white/20 backdrop-blur-sm rounded-full transition-opacity duration-300 hover:bg-white/30 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
               >
                 <Heart 
                   size={14} 
@@ -129,7 +152,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             </div>
             
             {/* 底部操作按钮 */}
-            <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className={`absolute bottom-2 left-2 right-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
               <button
                 onClick={handleUseTemplate}
                 className="w-full py-2 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold rounded-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center space-x-1"
@@ -144,7 +167,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           <div className="p-3 bg-white">
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                <h3 className={`font-bold text-gray-900 text-sm mb-1 line-clamp-2 transition-colors ${isHovered ? 'text-primary-600' : ''}`}>
                   {template.title}
                 </h3>
                 <p className="text-xs text-gray-500 line-clamp-1 leading-relaxed">
@@ -174,29 +197,36 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     )
   }
 
   // 列表视图
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      whileHover="hover"
-      transition={{ delay: Math.min(index * 0.02, 0.2) }}
+    <div
+      ref={cardRef}
       className="group cursor-pointer"
       onClick={handleUseTemplate}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        opacity: isIntersecting ? 1 : 0.8,
+        transform: isIntersecting ? 'translateY(0)' : 'translateY(5px)',
+        transition: 'all 0.3s ease-out',
+        willChange: 'transform, opacity'
+      }}
     >
-      <div className="card-glow hover:shadow-xl transition-all overflow-hidden">
+      <div className={`card-glow transition-all overflow-hidden ${isHovered ? 'shadow-xl' : ''}`}>
         {/* 大图展示区域 */}
         <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           {template.imageUrl ? (
             <img
               src={template.imageUrl}
               alt={template.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover transition-transform duration-300"
+                style={{
+                  transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+                }}
               onError={handleImageError}
               loading="lazy"
               decoding="async"
@@ -229,7 +259,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           {/* 收藏按钮 */}
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30"
+            className={`absolute top-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30 transition-opacity duration-300 hover:bg-white/30 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
           >
             <Heart 
               size={16} 
@@ -238,7 +268,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           </button>
           
           {/* 遮罩层 */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             <div className="absolute bottom-4 left-4 right-4">
               <div className="flex items-center justify-between">
                 <div className="text-white">
@@ -264,7 +294,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
         <div className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 text-base mb-2 line-clamp-1 group-hover:text-primary-600 transition-colors">
+              <h3 className={`font-bold text-gray-900 text-base mb-2 line-clamp-1 transition-colors ${isHovered ? 'text-primary-600' : ''}`}>
                 {template.title}
               </h3>
               <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
@@ -296,7 +326,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             </div>
           </div>
         </div>
-    </motion.div>
+    </div>
   )
 })
 

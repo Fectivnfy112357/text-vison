@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { 
   Search, 
   RefreshCw,
@@ -13,7 +12,6 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
-import { JellyButton } from '../motions'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -37,6 +35,7 @@ const History: React.FC = () => {
   const [selectedItems, _setSelectedItems] = useState<Set<string>>(new Set())
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null)
   const [_isSelectionMode, _setIsSelectionMode] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
 
   
   // 初始化
@@ -45,6 +44,7 @@ const History: React.FC = () => {
       return
     }
     loadHistory()
+    setIsVisible(true)
     
     // 组件卸载时清理轮询
     return () => {
@@ -186,12 +186,12 @@ const History: React.FC = () => {
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">开始AI创作之旅</h3>
           <p className="text-gray-600 mb-8">登录后即可使用AI生成精美的图片和视频内容</p>
-          <JellyButton
+          <button
             onClick={() => navigate('/login')}
-            className="w-3/4 mx-auto px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold"
+            className="w-3/4 mx-auto px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
           >
             立即登录
-          </JellyButton>
+          </button>
         </div>
       </div>
     )
@@ -200,10 +200,14 @@ const History: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       {/* 头部 */}
-      <motion.div 
+      <div 
         className="safe-area-top px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-white/60"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
+          transition: 'all 0.3s ease-out',
+          willChange: 'transform, opacity'
+        }}
       >
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-semibold text-gray-800">创作历史</h1>
@@ -248,11 +252,15 @@ const History: React.FC = () => {
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
 
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20" style={{
+        WebkitOverflowScrolling: 'touch',
+        scrollBehavior: 'smooth',
+        willChange: 'transform'
+      }}>
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -263,34 +271,43 @@ const History: React.FC = () => {
         ) : filteredHistory.length === 0 ? (
           <div className="flex-1 flex items-center justify-center px-6 py-12">
             <div className="text-center space-y-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
+              <div 
                 className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'scale(1)' : 'scale(0.9)',
+                  transition: 'all 0.5s ease-out',
+                  willChange: 'transform, opacity'
+                }}
               >
                 <Clock className="text-gray-400" size={32} />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+              </div>
+              <div 
                 className="space-y-2"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'all 0.3s ease-out 0.2s',
+                  willChange: 'transform, opacity'
+                }}
               >
                 <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
                 <p className="text-sm text-gray-500 max-w-xs mx-auto">
                   还没有创作记录，开始你的第一次AI创作之旅吧
                 </p>
-              </motion.div>
-              <JellyButton
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
+              </div>
+              <button
                 onClick={() => navigate('/create')}
-                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft"
+                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'all 0.3s ease-out 0.3s',
+                  willChange: 'transform, opacity'
+                }}
               >
                 开始创作
-              </JellyButton>
+              </button>
             </div>
           </div>
         ) : (
