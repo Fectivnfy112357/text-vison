@@ -10,6 +10,7 @@ import { Template } from '../lib/api'
 interface TemplateCardProps {
   template: Template
   index: number
+  onUseTemplate: (template: Template) => void
   getCategoryIcon: (categoryName: string) => string
   formatNumber: (num: number) => string
 }
@@ -17,6 +18,7 @@ interface TemplateCardProps {
 
 const TemplateCard: React.FC<TemplateCardProps> = memo(({
   template,
+  onUseTemplate,
   getCategoryIcon,
   formatNumber
 }) => {
@@ -26,6 +28,11 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = '/placeholder-template.jpg'
   }, [])
+
+  // 处理使用模板
+  const handleUseTemplate = useCallback(() => {
+    onUseTemplate(template)
+  }, [template, onUseTemplate])
 
   // 列表视图
   return (
@@ -82,27 +89,31 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
                 {template.description}
               </p>
             </div>
+            <button
+              onClick={handleUseTemplate}
+              className="ml-3 px-3 py-1.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs font-medium rounded-full hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex-shrink-0"
+            >
+              使用模板
+            </button>
           </div>
           
           {/* 操作栏 */}
-          <div className="mt-4 pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-primary-600 bg-primary-50 px-3 py-1 rounded-full font-medium">
-                  {getCategoryIcon(template.category || '')} {template.category}
-                </span>
-                <div className={`w-2 h-2 rounded-full ${
-                  template.type === 'image' ? 'bg-blue-400' : 'bg-purple-400'
-                }`} />
-                <span className="text-xs text-gray-500 font-medium">
-                  {template.type === 'image' ? '图片' : '视频'}
-                </span>
-              </div>
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <Eye size={14} className="text-primary-500" />
-                  <span className="font-medium">{formatNumber(template.usageCount || 0)}</span>
-                </div>
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-primary-600 bg-primary-50 px-3 py-1 rounded-full font-medium">
+                {getCategoryIcon(template.category || '')} {template.category}
+              </span>
+              <div className={`w-2 h-2 rounded-full ${
+                template.type === 'image' ? 'bg-blue-400' : 'bg-purple-400'
+              }`} />
+              <span className="text-xs text-gray-500 font-medium">
+                {template.type === 'image' ? '图片' : '视频'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-1">
+                <Eye size={14} className="text-primary-500" />
+                <span className="font-medium">{formatNumber(template.usageCount || 0)}</span>
               </div>
             </div>
           </div>

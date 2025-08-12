@@ -6,6 +6,7 @@ import {
   X
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
+import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
@@ -47,8 +48,10 @@ const Templates: React.FC = () => {
     loadCategories,
     searchTemplates,
     setSelectedCategory,
-    setSearchQuery
+    setSearchQuery,
+    useTemplate
   } = useTemplateStore()
+  const { isAuthenticated } = useAuthStore()
   
   // 状态管理
   const [localSearchQuery, setLocalSearchQuery] = useState('')
@@ -95,6 +98,26 @@ const Templates: React.FC = () => {
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
     setSelectedCategory(category)
   }, [setSelectedCategory])
+
+  // 处理模板使用 - 使用useCallback优化
+  const handleUseTemplate = useCallback(async (template: Template) => {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      await useTemplate(template.id)
+      navigate('/create', { 
+        state: { 
+          template,
+          type: template.type || 'image'
+        } 
+      })
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || error.toString())
+    }
+  }, [isAuthenticated, useTemplate, navigate])
 
   
   // 格式化数字 - 使用useCallback优化
@@ -283,6 +306,7 @@ const Templates: React.FC = () => {
                   <TemplateCard
                     template={template}
                     index={index}
+                    onUseTemplate={handleUseTemplate}
                     getCategoryIcon={getCategoryIcon}
                     formatNumber={formatNumber}
                   />
