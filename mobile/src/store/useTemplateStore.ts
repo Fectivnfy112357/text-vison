@@ -47,7 +47,10 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
   // 加载模板列表
   loadTemplates: async (params) => {
-    set({ isLoading: true, error: null })
+    const currentPage = params?.page || 1
+    const isLoadMore = currentPage > 1
+    
+    set({ isLoading: !isLoadMore, error: null })
     try {
       const response = await templateAPI.getTemplates(params)
 
@@ -56,15 +59,19 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
       let total = 0
 
       if (response?.data) {
-        templatesArray = response.data.records
-        total = response.data.total
+        templatesArray = response.data.records || []
+        total = response.data.total || 0
       }
 
+      // 如果是加载更多，则合并数据；否则替换数据
+      const existingTemplates = isLoadMore ? get().templates : []
+      const mergedTemplates = isLoadMore ? [...existingTemplates, ...templatesArray] : templatesArray
+
       set({
-        templates: templatesArray,
+        templates: mergedTemplates,
         pagination: {
           ...get().pagination,
-          page: params?.page || 1,
+          page: currentPage,
           total: total,
         },
         isLoading: false
@@ -111,7 +118,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   // 搜索模板
   searchTemplates: async (query: string) => {
     if (!query.trim()) {
-      get().loadTemplates()
+      get().loadTemplates({ page: 1 })
       return
     }
 

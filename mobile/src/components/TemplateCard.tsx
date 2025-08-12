@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useRef } from 'react'
+import React, { memo, useCallback, useRef, useState } from 'react'
 
 import { 
   Eye, 
@@ -23,10 +23,18 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   formatNumber
 }) => {
   const cardRef = useRef<HTMLDivElement>(null)
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
+  // 处理图片加载成功
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true)
+  }, [])
 
   // 处理图片加载错误
-  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.src = '/placeholder-template.jpg'
+  const handleImageError = useCallback(() => {
+    setImageError(true)
+    setImageLoaded(true)
   }, [])
 
   // 处理使用模板
@@ -39,19 +47,48 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
     <div
       ref={cardRef}
       className="group"
+      style={{
+        willChange: 'transform',
+        contain: 'layout style paint'
+      }}
     >
       <div className="card-glow overflow-hidden">
         {/* 大图展示区域 */}
         <div className="relative aspect-[16/9] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           {template.imageUrl ? (
-            <img
-              src={template.imageUrl}
-              alt={template.title}
-              className="w-full h-full object-cover"
-              onError={handleImageError}
-              loading="lazy"
-              decoding="async"
-            />
+            <>
+              {/* 图片加载状态 */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
+                    <div className="text-xs text-gray-500">加载中...</div>
+                  </div>
+                </div>
+              )}
+              
+              {/* 实际图片 - 移除lazy加载，改为立即加载 */}
+              <img
+                src={template.imageUrl}
+                alt={template.title}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                decoding="async"
+              />
+              
+              {/* 图片加载错误占位符 */}
+              {imageError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                  <div className="text-center">
+                    <Sparkles className="text-gray-400 mb-2" size={32} />
+                    <div className="text-xs text-gray-500">图片加载失败</div>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">

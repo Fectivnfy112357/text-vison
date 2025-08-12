@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useRef, useEffect, useState } from 'react'
+import React, { memo, useCallback, useRef } from 'react'
 import { 
   Image, 
   Video, 
@@ -30,42 +30,6 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  // 使用Intersection Observer实现懒加载和自动播放
-  useEffect(() => {
-    const element = containerRef.current
-    if (!element) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          // 视频进入视图时尝试播放
-          if (item.type === 'video' && videoRef.current) {
-            videoRef.current.play().catch(() => {
-              // 自动播放失败，静音后再试
-              if (videoRef.current) {
-                videoRef.current.muted = true
-                videoRef.current.play().catch(console.error)
-              }
-            })
-          }
-        }
-      },
-      {
-        root: null,
-        rootMargin: '100px',
-        threshold: 0.5
-      }
-    )
-
-    observer.observe(element)
-
-    return () => {
-      observer.unobserve(element)
-    }
-  }, [item.type])
   // 格式化时间函数
   const formatTime = useCallback((dateString: string) => {
     const date = new Date(dateString)
@@ -109,8 +73,8 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
         isSelected ? 'ring-2 ring-primary-300' : ''
       }`}
       style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+        opacity: 1,
+        transform: 'translateY(0)',
         transition: `all 0.2s ease-out ${Math.min(index * 0.02, 0.3)}s`,
         willChange: 'transform, opacity'
       }}
@@ -126,7 +90,7 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
                 ref={videoRef}
                 src={item.url || ''}
                 className="absolute inset-0 w-full h-full object-cover"
-                preload="auto"
+                preload="metadata"
                 playsInline
                 webkit-playsinline="true"
                 x5-video-player-type="h5"
@@ -134,7 +98,6 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(({
                 x5-playsinline="true"
                 muted
                 loop
-                autoPlay
                 controlsList="nodownload noremoteplayback"
                 disablePictureInPicture
                 poster={item.url || undefined}

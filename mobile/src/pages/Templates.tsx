@@ -44,6 +44,7 @@ const Templates: React.FC = () => {
     selectedCategory, 
     searchQuery,
     isLoading,
+    pagination,
     loadTemplates,
     loadCategories,
     searchTemplates,
@@ -55,15 +56,17 @@ const Templates: React.FC = () => {
   
   // 状态管理
   const [localSearchQuery, setLocalSearchQuery] = useState('')
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
 
-  // 初始化
+  // 初始化 - 分批加载避免阻塞
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([
-          loadTemplates(),
-          loadCategories()
-        ])
+        // 先加载分类
+        await loadCategories()
+        // 再加载第一页模板
+        await loadTemplates({ page: 1 })
       } catch (error) {
         console.error('[Templates] Failed to load data:', error)
       }
@@ -82,11 +85,12 @@ const Templates: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localSearchQuery !== searchQuery) {
+        setHasMore(true) // 重置分页状态
         setSearchQuery(localSearchQuery)
         if (localSearchQuery) {
           searchTemplates(localSearchQuery)
         } else {
-          loadTemplates()
+          loadTemplates({ page: 1 })
         }
       }
     }, 300)
@@ -96,8 +100,73 @@ const Templates: React.FC = () => {
 
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
+    setHasMore(true) // 重置分页状态
     setSelectedCategory(category)
-  }, [setSelectedCategory])
+    // 触发重新加载第一页
+    if (category) {
+      loadTemplates({ categoryId: category.id, page: 1 })
+    } else {
+      loadTemplates({ page: 1 })
+    }
+  }, [setSelectedCategory, loadTemplates])
+
+  // 加载更多数据
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore || isLoading) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextPage = pagination.page + 1
+      const params = {
+        page: nextPage,
+        categoryId: selectedCategory?.id,
+        keyword: searchQuery || undefined
+      }
+      
+      await loadTemplates(params)
+      
+      // 检查是否还有更多数据
+      const totalItems = pagination.total
+      const currentItems = templates.length
+      setHasMore(currentItems < totalItems)
+    } catch (error) {
+      console.error('[Templates] Failed to load more:', error)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [isLoadingMore, hasMore, isLoading, pagination, templates.length, selectedCategory, searchQuery, loadTemplates])
+
+  // 滚动监听 - 使用requestAnimationFrame优化性能
+  useEffect(() => {
+    const scrollElement = document.querySelector('[data-scrollable="true"]')
+    if (!scrollElement) return
+
+    let ticking = false
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const { scrollTop, scrollHeight, clientHeight } = scrollElement
+          const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+          
+          // 当滚动到80%位置时加载更多
+          if (scrollPercentage > 0.8 && hasMore && !isLoadingMore && !isLoading) {
+            loadMore()
+          }
+          
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    // 使用passive事件监听器提升滚动性能
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      scrollElement.removeEventListener('scroll', handleScroll)
+    }
+  }, [loadMore, hasMore, isLoadingMore, isLoading])
 
   // 处理模板使用 - 使用useCallback优化
   const handleUseTemplate = useCallback(async (template: Template) => {
@@ -245,6 +314,7 @@ const Templates: React.FC = () => {
 
       {/* 主内容 */}
       <div 
+        data-scrollable="true"
         className="flex-1 overflow-y-auto pb-20"
         style={{
           WebkitOverflowScrolling: 'touch',
@@ -253,6 +323,7 @@ const Templates: React.FC = () => {
           backfaceVisibility: 'hidden',
           perspective: 1000,
           contain: 'content',
+          willChange: 'transform'
         }}
       >
         {isLoading ? (
@@ -302,7 +373,13 @@ const Templates: React.FC = () => {
           <div className="px-3 py-4">
             <div className="space-y-3 px-3 py-4">
               {sortedTemplates.map((template, index) => (
-                <div key={template.id}>
+                <div 
+                  key={template.id}
+                  style={{
+                    willChange: 'transform',
+                    contain: 'layout style paint'
+                  }}
+                >
                   <TemplateCard
                     template={template}
                     index={index}
@@ -312,6 +389,23 @@ const Templates: React.FC = () => {
                   />
                 </div>
               ))}
+              
+              {/* 加载更多指示器 */}
+              {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm text-gray-500">加载更多...</span>
+                  </div>
+                </div>
+              )}
+              
+              {/* 没有更多数据提示 */}
+              {!hasMore && sortedTemplates.length > 0 && (
+                <div className="flex justify-center py-4">
+                  <span className="text-sm text-gray-400">已加载全部数据</span>
+                </div>
+              )}
             </div>
           </div>
         )}
