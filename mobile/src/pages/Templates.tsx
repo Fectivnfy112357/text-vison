@@ -9,8 +9,7 @@ import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
-import TemplateCard from '../components/TemplateCard'
-import InfiniteScroll from '../components/InfiniteScroll'
+import MasonryTemplateGrid from '../components/MasonryTemplateGrid'
 
 
 
@@ -43,7 +42,7 @@ const Templates: React.FC = () => {
         // 先加载分类
         await loadCategories()
         // 再加载第一页模板
-        await loadTemplates({ page: 1, size: 20 })
+        await loadTemplates({ page: 1, limit: 20 })
       } catch (error) {
         console.error('[Templates] Failed to load data:', error)
       }
@@ -69,7 +68,7 @@ const Templates: React.FC = () => {
         if (localSearchQuery) {
           searchTemplates(localSearchQuery)
         } else {
-          loadTemplates({ page: 1, size: 20 })
+          loadTemplates({ page: 1, limit: 20 })
         }
       }
     }, 300)
@@ -82,9 +81,9 @@ const Templates: React.FC = () => {
     setSelectedCategory(category)
     // 触发重新加载第一页
     if (category) {
-      loadTemplates({ categoryId: category.id, page: 1, size: 20 })
+      loadTemplates({ categoryId: category.id, page: 1, limit: 20 })
     } else {
-      loadTemplates({ page: 1, size: 20 })
+      loadTemplates({ page: 1, limit: 20 })
     }
   }, [setSelectedCategory, loadTemplates])
 
@@ -257,78 +256,62 @@ const Templates: React.FC = () => {
 
       {/* 主内容 */}
       <div className="flex-1 pb-20 overflow-hidden">
-        <InfiniteScroll
-          data={sortedTemplates}
-          pagination={pagination}
-          isLoading={isLoading}
-          isLoadingMore={isLoadingMore}
-          hasMore={pagination.hasNext}
-          onLoadMore={loadMore}
-          onRefresh={() => loadTemplates({ 
-            page: 1, 
-            size: 20,
-            categoryId: selectedCategory?.id, 
-            keyword: searchQuery || undefined 
-          })}
-          emptyComponent={
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center max-w-md mx-auto">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="text-gray-400" size={40} />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  {searchQuery || selectedCategory 
-                    ? `没有找到"${searchQuery || selectedCategory?.name}"相关的模板，试试其他关键词吧`
-                    : '模板库正在整理中，敬请期待更多精彩内容'
-                  }
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {(searchQuery || selectedCategory) && (
-                    <button
-                      onClick={() => {
-                        setSearchQuery('')
-                        setSelectedCategory(null)
-                      }}
-                      className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
-                    >
-                      重置筛选
-                    </button>
-                  )}
-                </div>
+        {sortedTemplates.length === 0 && !isLoading ? (
+          // 空状态
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center max-w-md mx-auto">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="text-gray-400" size={40} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                {searchQuery || selectedCategory 
+                  ? `没有找到"${searchQuery || selectedCategory?.name}"相关的模板，试试其他关键词吧`
+                  : '模板库正在整理中，敬请期待更多精彩内容'
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {(searchQuery || selectedCategory) && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('')
+                      setSelectedCategory(null)
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
+                  >
+                    重置筛选
+                  </button>
+                )}
               </div>
             </div>
-          }
-          loadingComponent={
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="text-primary-400" size={32} />
-                  </div>
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
-                    <div className="w-20 h-20 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">正在加载模板</h3>
-                <p className="text-sm text-gray-500">为您精心挑选优质模板，请稍候...</p>
-              </div>
-            </div>
-          }
-          className="h-full"
-          scrollContainerClassName="px-3 py-4"
-        >
-          {(template, index) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              index={index}
+          </div>
+        ) : (
+          // 瀑布流布局
+          <div className="h-full overflow-y-auto px-2 py-3">
+            <MasonryTemplateGrid
+              templates={sortedTemplates}
               onUseTemplate={handleUseTemplate}
               getCategoryIcon={getCategoryIcon}
               formatNumber={formatNumber}
+              isLoading={isLoading}
+              columnsCount={2}
+              gutter="8px"
+              className="h-full"
             />
-          )}
-        </InfiniteScroll>
+            
+            {/* 加载更多按钮 */}
+            {pagination.hasNext && !isLoadingMore && !isLoading && sortedTemplates.length > 0 && (
+              <div className="flex justify-center py-6">
+                <button
+                  onClick={loadMore}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+                >
+                  <span className="text-sm font-medium">加载更多</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
     </div>

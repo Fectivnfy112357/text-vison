@@ -177,6 +177,10 @@ export interface Template {
   status: number
   createdAt: string
   updatedAt: string
+  // 瀑布流布局支持字段
+  aspectRatio?: number // 宽高比，默认为 16/9 ≈ 1.78
+  imageWidth?: number // 图片原始宽度
+  imageHeight?: number // 图片原始高度
   // 兼容字段
   name?: string
   thumbnail?: string
@@ -308,6 +312,9 @@ export interface GenerationContent {
   status: 'pending' | 'processing' | 'completed' | 'failed'
   progress?: number
   params: ImageGenerationParams | VideoGenerationParams
+  aspectRatio?: number
+  width?: number
+  height?: number
   createdAt: string
   updatedAt: string
 }
