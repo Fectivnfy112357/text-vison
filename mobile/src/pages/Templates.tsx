@@ -10,31 +10,9 @@ import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
+import InfiniteScroll from '../components/InfiniteScroll'
 
 
-// 页面切换动画
-const pageVariants = {
-  initial: { 
-    opacity: 0, 
-    x: 100 
-  },
-  animate: { 
-    opacity: 1, 
-    x: 0,
-    transition: {
-      duration: 0.3,
-      ease: "easeOut"
-    }
-  },
-  exit: { 
-    opacity: 0, 
-    x: -100,
-    transition: {
-      duration: 0.2,
-      ease: "easeIn"
-    }
-  }
-}
 
 const Templates: React.FC = () => {
   const navigate = useNavigate()
@@ -57,7 +35,6 @@ const Templates: React.FC = () => {
   // 状态管理
   const [localSearchQuery, setLocalSearchQuery] = useState('')
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
 
   // 初始化 - 分批加载避免阻塞
   useEffect(() => {
@@ -66,7 +43,7 @@ const Templates: React.FC = () => {
         // 先加载分类
         await loadCategories()
         // 再加载第一页模板
-        await loadTemplates({ page: 1 })
+        await loadTemplates({ page: 1, size: 20 })
       } catch (error) {
         console.error('[Templates] Failed to load data:', error)
       }
@@ -85,12 +62,11 @@ const Templates: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localSearchQuery !== searchQuery) {
-        setHasMore(true) // 重置分页状态
         setSearchQuery(localSearchQuery)
         if (localSearchQuery) {
           searchTemplates(localSearchQuery)
         } else {
-          loadTemplates({ page: 1 })
+          loadTemplates({ page: 1, size: 20 })
         }
       }
     }, 300)
@@ -100,74 +76,38 @@ const Templates: React.FC = () => {
 
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
-    setHasMore(true) // 重置分页状态
     setSelectedCategory(category)
     // 触发重新加载第一页
     if (category) {
-      loadTemplates({ categoryId: category.id, page: 1 })
+      loadTemplates({ categoryId: category.id, page: 1, size: 20 })
     } else {
-      loadTemplates({ page: 1 })
+      loadTemplates({ page: 1, size: 20 })
     }
   }, [setSelectedCategory, loadTemplates])
 
   // 加载更多数据
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore || isLoading) return
+    if (isLoadingMore || !pagination.hasNext || isLoading) return
 
     setIsLoadingMore(true)
     try {
-      const nextPage = pagination.page + 1
+      const nextPage = pagination.current + 1
       const params = {
         page: nextPage,
+        size: pagination.size,
         categoryId: selectedCategory?.id,
         keyword: searchQuery || undefined
       }
       
       await loadTemplates(params)
-      
-      // 检查是否还有更多数据
-      const totalItems = pagination.total
-      const currentItems = templates.length
-      setHasMore(currentItems < totalItems)
     } catch (error) {
       console.error('[Templates] Failed to load more:', error)
     } finally {
       setIsLoadingMore(false)
     }
-  }, [isLoadingMore, hasMore, isLoading, pagination, templates.length, selectedCategory, searchQuery, loadTemplates])
+  }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates])
 
-  // 滚动监听 - 使用requestAnimationFrame优化性能
-  useEffect(() => {
-    const scrollElement = document.querySelector('[data-scrollable="true"]')
-    if (!scrollElement) return
-
-    let ticking = false
-    
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const { scrollTop, scrollHeight, clientHeight } = scrollElement
-          const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
-          
-          // 当滚动到80%位置时加载更多
-          if (scrollPercentage > 0.8 && hasMore && !isLoadingMore && !isLoading) {
-            loadMore()
-          }
-          
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    // 使用passive事件监听器提升滚动性能
-    scrollElement.addEventListener('scroll', handleScroll, { passive: true })
-
-    return () => {
-      scrollElement.removeEventListener('scroll', handleScroll)
-    }
-  }, [loadMore, hasMore, isLoadingMore, isLoading])
-
+  
   // 处理模板使用 - 使用useCallback优化
   const handleUseTemplate = useCallback(async (template: Template) => {
     if (!isAuthenticated) {
@@ -227,7 +167,7 @@ const Templates: React.FC = () => {
   
   return (
     <div 
-      className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
+      className="h-screen flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
     >
       {/* 头部 */}
       <div 
@@ -313,102 +253,86 @@ const Templates: React.FC = () => {
       </div>
 
       {/* 主内容 */}
-      <div 
-        data-scrollable="true"
-        className="flex-1 overflow-y-auto pb-20"
-        style={{
-          WebkitOverflowScrolling: 'touch',
-          scrollBehavior: 'smooth',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          perspective: 1000,
-          contain: 'content',
-          willChange: 'transform'
-        }}
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full py-12">
-            <div className="text-center">
-              <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="text-primary-400" size={32} />
+      <div className="flex-1 pb-20 overflow-hidden">
+        <InfiniteScroll
+          data={sortedTemplates}
+          pagination={pagination}
+          isLoading={isLoading}
+          isLoadingMore={isLoadingMore}
+          hasMore={pagination.hasNext}
+          onLoadMore={loadMore}
+          onRefresh={() => loadTemplates({ 
+            page: 1, 
+            size: 20,
+            categoryId: selectedCategory?.id, 
+            keyword: searchQuery || undefined 
+          })}
+          emptyComponent={
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center max-w-md mx-auto">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="text-gray-400" size={40} />
                 </div>
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
-                  <div className="w-20 h-20 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {searchQuery || selectedCategory 
+                    ? `没有找到"${searchQuery || selectedCategory?.name}"相关的模板，试试其他关键词吧`
+                    : '模板库正在整理中，敬请期待更多精彩内容'
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  {(searchQuery || selectedCategory) && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('')
+                        setSelectedCategory(null)
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
+                    >
+                      重置筛选
+                    </button>
+                  )}
                 </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">正在加载模板</h3>
-              <p className="text-sm text-gray-500">为您精心挑选优质模板，请稍候...</p>
-            </div>
-          </div>
-        ) : sortedTemplates.length === 0 ? (
-          <div className="flex items-center justify-center h-full py-12">
-            <div className="text-center max-w-md mx-auto">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="text-gray-400" size={40} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                {searchQuery || selectedCategory 
-                  ? `没有找到"${searchQuery || selectedCategory?.name}"相关的模板，试试其他关键词吧`
-                  : '模板库正在整理中，敬请期待更多精彩内容'
-                }
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {(searchQuery || selectedCategory) && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery('')
-                      setSelectedCategory(null)
-                    }}
-                    className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
-                  >
-                    重置筛选
-                  </button>
-                )}
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="px-3 py-4">
-            <div className="space-y-3 px-3 py-4">
-              {sortedTemplates.map((template, index) => (
-                <div 
-                  key={template.id}
-                  style={{
-                    willChange: 'transform',
-                    contain: 'layout style paint'
-                  }}
-                >
-                  <TemplateCard
-                    template={template}
-                    index={index}
-                    onUseTemplate={handleUseTemplate}
-                    getCategoryIcon={getCategoryIcon}
-                    formatNumber={formatNumber}
-                  />
-                </div>
-              ))}
-              
-              {/* 加载更多指示器 */}
-              {isLoadingMore && (
-                <div className="flex justify-center py-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm text-gray-500">加载更多...</span>
+          }
+          loadingComponent={
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="text-primary-400" size={32} />
+                  </div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
+                    <div className="w-20 h-20 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
                   </div>
                 </div>
-              )}
-              
-              {/* 没有更多数据提示 */}
-              {!hasMore && sortedTemplates.length > 0 && (
-                <div className="flex justify-center py-4">
-                  <span className="text-sm text-gray-400">已加载全部数据</span>
-                </div>
-              )}
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">正在加载模板</h3>
+                <p className="text-sm text-gray-500">为您精心挑选优质模板，请稍候...</p>
+              </div>
             </div>
-          </div>
-        )}
+          }
+          className="h-full"
+          scrollContainerClassName="px-3 py-4"
+        >
+          {(template, index) => (
+            <div 
+              key={template.id}
+              style={{
+                willChange: 'transform',
+                contain: 'layout style paint'
+              }}
+            >
+              <TemplateCard
+                template={template}
+                index={index}
+                onUseTemplate={handleUseTemplate}
+                getCategoryIcon={getCategoryIcon}
+                formatNumber={formatNumber}
+              />
+            </div>
+          )}
+        </InfiniteScroll>
       </div>
 
     </div>

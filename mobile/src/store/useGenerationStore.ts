@@ -8,12 +8,22 @@ interface GenerationState {
   currentGeneration: GenerationContent | null
   pollingInterval: number | null
   isLoading: boolean
+  isLoadingMore: boolean
   error: string | null
+  pagination: {
+    current: number
+    size: number
+    total: number
+    pages: number
+    hasNext: boolean
+    hasPrevious: boolean
+  }
 }
 
 interface GenerationActions {
   generateContent: (params: GenerateContentRequest) => Promise<GenerationContent | null>
   loadHistory: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }) => Promise<void>
+  loadMoreHistory: () => Promise<void>
   refreshHistory: () => Promise<void>
   removeFromHistory: (id: string) => Promise<void>
   clearHistory: () => Promise<void>
@@ -32,7 +42,16 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
   currentGeneration: null,
   pollingInterval: null,
   isLoading: false,
+  isLoadingMore: false,
   error: null,
+  pagination: {
+    current: 1,
+    size: 20,
+    total: 0,
+    pages: 0,
+    hasNext: false,
+    hasPrevious: false,
+  },
 
   // 清理函数 - 在组件卸载时调用
   destroy: () => {
@@ -106,30 +125,101 @@ export const useGenerationStore = create<GenerationState & GenerationActions>((s
 
   // 加载历史记录
   loadHistory: async (params) => {
-    set({ isLoading: true, error: null })
+    const currentPage = params?.page || 1
+    const isLoadMore = currentPage > 1
+    
+    set({ isLoading: !isLoadMore, isLoadingMore: isLoadMore, error: null })
     try {
       const response = await contentAPI.getUserContents(params)
-      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
-      const historyData = response?.data?.records || []
+      
+      // 处理后端返回的数据结构
+      let historyData: GenerationContent[] = []
+      let paginationData = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false
+      }
+
+      if (response?.data) {
+        historyData = response.data.records || []
+        paginationData = {
+          current: response.data.current || 1,
+          size: response.data.size || 20,
+          total: response.data.total || 0,
+          pages: response.data.pages || 0,
+          hasNext: response.data.hasNext || false,
+          hasPrevious: response.data.hasPrevious || false
+        }
+      }
+
+      // 如果是加载更多，则合并数据；否则替换数据
+      const existingHistory = isLoadMore ? get().history : []
+      const mergedHistory = isLoadMore ? [...existingHistory, ...historyData] : historyData
+
       set({ 
-        history: historyData,
-        isLoading: false 
+        history: mergedHistory,
+        pagination: paginationData,
+        isLoading: false,
+        isLoadingMore: false
       })
     } catch (error: any) {
       set({ 
         error: error.response?.data?.message || error.message || error.toString(),
-        isLoading: false 
+        isLoading: false,
+        isLoadingMore: false
       })
+    }
+  },
+
+  // 加载更多历史记录
+  loadMoreHistory: async () => {
+    const { pagination, isLoadingMore, isLoading } = get()
+    if (isLoadingMore || !pagination.hasNext || isLoading) return
+
+    set({ isLoadingMore: true })
+    try {
+      const nextPage = pagination.current + 1
+      await get().loadHistory({ page: nextPage, size: pagination.size })
+    } catch (error: any) {
+      console.error('[GenerationStore] Failed to load more history:', error)
+      set({ isLoadingMore: false })
     }
   },
 
   // 刷新历史记录
   refreshHistory: async () => {
     try {
-      const response = await contentAPI.getUserContents({ limit: 20 })
-      // 处理后端返回的数据结构 {code, message, data, timestamp, success}
-      const historyData = response?.data?.records || []
-      set({ history: historyData })
+      const response = await contentAPI.getUserContents({ page: 1, size: 20 })
+      // 处理后端返回的数据结构
+      let historyData: GenerationContent[] = []
+      let paginationData = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false
+      }
+
+      if (response?.data) {
+        historyData = response.data.records || []
+        paginationData = {
+          current: response.data.current || 1,
+          size: response.data.size || 20,
+          total: response.data.total || 0,
+          pages: response.data.pages || 0,
+          hasNext: response.data.hasNext || false,
+          hasPrevious: response.data.hasPrevious || false
+        }
+      }
+
+      set({ 
+        history: historyData,
+        pagination: paginationData
+      })
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || error.toString()
       toast.error(errorMessage)

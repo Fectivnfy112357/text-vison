@@ -11,9 +11,12 @@ interface TemplateState {
   isLoading: boolean
   error: string | null
   pagination: {
-    page: number
-    limit: number
+    current: number
+    size: number
     total: number
+    pages: number
+    hasNext: boolean
+    hasPrevious: boolean
   }
 }
 
@@ -40,9 +43,12 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   isLoading: false,
   error: null,
   pagination: {
-    page: 1,
-    limit: 20,
+    current: 1,
+    size: 20,
     total: 0,
+    pages: 0,
+    hasNext: false,
+    hasPrevious: false,
   },
 
   // 加载模板列表
@@ -56,11 +62,25 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
       // 处理后端返回的数据结构 {code, message, data, success}
       let templatesArray: Template[] = []
-      let total = 0
+      let paginationData = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false
+      }
 
       if (response?.data) {
         templatesArray = response.data.records || []
-        total = response.data.total || 0
+        paginationData = {
+          current: response.data.current || 1,
+          size: response.data.size || 20,
+          total: response.data.total || 0,
+          pages: response.data.pages || 0,
+          hasNext: response.data.hasNext || false,
+          hasPrevious: response.data.hasPrevious || false
+        }
       }
 
       // 如果是加载更多，则合并数据；否则替换数据
@@ -69,11 +89,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
       set({
         templates: mergedTemplates,
-        pagination: {
-          ...get().pagination,
-          page: currentPage,
-          total: total,
-        },
+        pagination: paginationData,
         isLoading: false
       })
     } catch (error: any) {
@@ -128,20 +144,30 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
       // 处理后端返回的数据结构 {code, message, data, timestamp, success}
       let templatesArray: Template[] = []
-      let total = 0
+      let paginationData = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false
+      }
 
       if (response?.data) {
         templatesArray = response.data.records || []
-        total = response.data.total || 0
+        paginationData = {
+          current: response.data.current || 1,
+          size: response.data.size || 20,
+          total: response.data.total || 0,
+          pages: response.data.pages || 0,
+          hasNext: response.data.hasNext || false,
+          hasPrevious: response.data.hasPrevious || false
+        }
       }
 
       set({
         templates: templatesArray,
-        pagination: {
-          ...get().pagination,
-          page: 1,
-          total: total,
-        },
+        pagination: paginationData,
         isLoading: false
       })
     } catch (error: any) {
@@ -157,11 +183,6 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   // 设置选中的分类
   setSelectedCategory: (category: TemplateCategory | null) => {
     set({ selectedCategory: category })
-    if (category) {
-      get().loadTemplates({ categoryId: category.id, page: 1 })
-    } else {
-      get().loadTemplates({ page: 1 })
-    }
   },
 
   // 设置搜索查询
@@ -222,9 +243,12 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   resetPagination: () => {
     set({
       pagination: {
-        page: 1,
-        limit: 20,
+        current: 1,
+        size: 20,
         total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false,
       }
     })
   },

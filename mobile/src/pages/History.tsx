@@ -11,6 +11,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
+import InfiniteScroll from '../components/InfiniteScroll'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -20,7 +21,10 @@ const History: React.FC = () => {
   const { 
     history, 
     isLoading, 
+    isLoadingMore,
+    pagination,
     loadHistory, 
+    loadMoreHistory,
     refreshHistory, 
     removeFromHistory
   } = useGenerationStore()
@@ -42,7 +46,7 @@ const History: React.FC = () => {
     if (!isAuthenticated) {
       return
     }
-    loadHistory()
+    loadHistory({ page: 1, size: 20 })
     setIsVisible(true)
     
     // 组件卸载时清理轮询
@@ -197,7 +201,7 @@ const History: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       {/* 头部 */}
       <div 
         className="safe-area-top px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-white/60"
@@ -255,77 +259,59 @@ const History: React.FC = () => {
 
 
       {/* 主内容 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20" style={{
-        WebkitOverflowScrolling: 'touch',
-        scrollBehavior: 'smooth',
-        willChange: 'transform'
-      }}>
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-12 h-12 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-gray-600">加载中...</p>
-            </div>
-          </div>
-        ) : filteredHistory.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center px-6 py-12">
-            <div className="text-center space-y-4">
-              <div 
-                className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'scale(1)' : 'scale(0.9)',
-                  transition: 'all 0.5s ease-out',
-                  willChange: 'transform, opacity'
-                }}
-              >
-                <Clock className="text-gray-400" size={32} />
+      <div className="flex-1 pb-20 overflow-hidden">
+        <InfiniteScroll
+          data={filteredHistory}
+          pagination={pagination}
+          isLoading={isLoading}
+          isLoadingMore={isLoadingMore}
+          hasMore={pagination.hasNext}
+          onLoadMore={loadMoreHistory}
+          onRefresh={() => loadHistory({ page: 1, size: 20, type: filterType === 'all' ? undefined : filterType })}
+          emptyComponent={
+            <div className="flex-1 flex items-center justify-center px-6 py-12">
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="text-gray-400" size={32} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
+                  <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                    还没有创作记录，开始你的第一次AI创作之旅吧
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/create')}
+                  className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
+                >
+                  开始创作
+                </button>
               </div>
-              <div 
-                className="space-y-2"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'all 0.3s ease-out 0.2s',
-                  willChange: 'transform, opacity'
-                }}
-              >
-                <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
-                <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                  还没有创作记录，开始你的第一次AI创作之旅吧
-                </p>
+            </div>
+          }
+          loadingComponent={
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-12 h-12 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-gray-600">加载中...</p>
               </div>
-              <button
-                onClick={() => navigate('/create')}
-                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'all 0.3s ease-out 0.3s',
-                  willChange: 'transform, opacity'
-                }}
-              >
-                开始创作
-              </button>
             </div>
-          </div>
-        ) : (
-          <div className="px-6 py-4">
-            <div className="space-y-4">
-              {filteredHistory.map((item, index) => (
-                <HistoryItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  isSelected={selectedItems.has(item.id)}
-                    onDownload={handleDownload}
-                  onShare={handleShare}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+          }
+          className="h-full"
+          scrollContainerClassName="px-6 py-4"
+        >
+          {(item, index) => (
+            <HistoryItem
+              key={item.id}
+              item={item}
+              index={index}
+              isSelected={selectedItems.has(item.id)}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onDelete={handleDelete}
+            />
+          )}
+        </InfiniteScroll>
       </div>
 
       {/* 点击外部关闭菜单 */}
