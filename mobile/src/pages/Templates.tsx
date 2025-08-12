@@ -61,9 +61,15 @@ const Templates: React.FC = () => {
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
   }, [templates.length]) // 改为依赖数组长度而非整个数组
 
-  // 搜索防抖 - 使用useCallback优化
+  // 搜索防抖 - 优化性能版本
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
       if (localSearchQuery !== searchQuery) {
         setSearchQuery(localSearchQuery)
         if (localSearchQuery) {
@@ -72,10 +78,14 @@ const Templates: React.FC = () => {
           loadTemplates({ page: 1, size: 20 })
         }
       }
-    }, 300)
+    }, 500) // 增加防抖时间，减少频繁触发
 
-    return () => clearTimeout(timer)
-  }, [localSearchQuery, searchQuery, setSearchQuery, searchTemplates, loadTemplates])
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [localSearchQuery]) // 简化依赖项，避免不必要的重新执行
 
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
@@ -126,7 +136,7 @@ const Templates: React.FC = () => {
     }
   }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates, searchTemplates])
 
-  // 滚动事件监听（优化版本）
+  // 滚动事件监听（性能优化版本）
   useEffect(() => {
     const handleScroll = () => {
       const container = scrollContainerRef.current
@@ -136,23 +146,51 @@ const Templates: React.FC = () => {
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       
-      // 当滚动到距离底部300px时触发（增加提前量）
-      if (scrollTop + clientHeight >= scrollHeight - 300 && !isLoadingMore && pagination.hasNext && !isLoading) {
+      // 当滚动到距离底部400px时触发（增加提前量）
+      if (scrollTop + clientHeight >= scrollHeight - 400 && !isLoadingMore && pagination.hasNext && !isLoading) {
         loadMore()
       }
     }
 
-    // 使用节流优化滚动事件
-    const throttledHandleScroll = throttle(handleScroll, 100)
+    // 使用 requestAnimationFrame 优化滚动事件
+    let ticking = false
+    let lastScrollTime = 0
+    const SCROLL_THROTTLE = 150 // 增加节流时间，减少触发频率
     
+    const optimizedHandleScroll = () => {
+      const now = Date.now()
+      
+      // 时间节流，避免频繁触发
+      if (now - lastScrollTime < SCROLL_THROTTLE) {
+        if (!ticking) {
+          ticking = true
+          requestAnimationFrame(() => {
+            handleScroll()
+            ticking = false
+          })
+        }
+        return
+      }
+      
+      lastScrollTime = now
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+      }
+    }
+
     const container = scrollContainerRef.current
     if (container) {
-      container.addEventListener('scroll', throttledHandleScroll)
+      // 使用 passive 事件监听器提升滚动性能
+      container.addEventListener('scroll', optimizedHandleScroll, { passive: true })
     }
 
     return () => {
       if (container) {
-        container.removeEventListener('scroll', throttledHandleScroll)
+        container.removeEventListener('scroll', optimizedHandleScroll)
       }
     }
   }, [loadMore, isLoadingMore, pagination.hasNext, isLoading])

@@ -35,13 +35,14 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   const [isVisible, setIsVisible] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
 
-  // 图片懒加载 - 使用Intersection Observer（优化版本）
+  // 图片懒加载 - 使用Intersection Observer（性能优化版本）
   useEffect(() => {
     if (!template.imageUrl) {
       setIsVisible(true)
       return
     }
 
+    // 增加提前加载距离，提升用户体验
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -50,7 +51,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
         }
       },
       {
-        rootMargin: '150px', // 提前150px加载
+        rootMargin: '300px', // 提前300px加载，给予更多缓冲时间
         threshold: 0.01
       }
     )
@@ -92,7 +93,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
           style={{
             ...getAspectRatioStyle(aspectRatio),
-            contain: 'layout style paint' // 优化布局稳定性
+            contain: 'layout' // 简化 containment，减少性能开销
           }}
         >
           {template.imageUrl ? (
@@ -121,8 +122,8 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
                   loading="lazy"
                   decoding="async"
                   style={{ 
-                    transition: imageLoaded ? 'opacity 0.2s ease-in-out' : 'none',
-                    willChange: 'opacity' // 优化性能
+                    transition: imageLoaded ? 'opacity 0.3s ease-in-out' : 'none',
+                    // 移除 will-change 以减少内存使用
                   }}
                 />
               )}

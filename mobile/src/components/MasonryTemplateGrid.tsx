@@ -43,7 +43,7 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
   const processingRef = useRef(false)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // 增强模板数据，添加宽高比信息（优化版本）
+  // 增强模板数据，添加宽高比信息（性能优化版本）
   const enhanceTemplates = useCallback(async (templatesToEnhance: Template[]) => {
     if (!templatesToEnhance.length || processingRef.current) return []
     
@@ -56,27 +56,21 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     })
 
     try {
-      // 分批处理模板，避免阻塞主线程
-      const batchSize = 5
+      // 减少批量大小，避免阻塞主线程
+      const batchSize = 3
       const enhanced: EnhancedTemplate[] = []
       
-      for (let i = 0; i < templatesToEnhance.length; i += batchSize) {
-        const batch = templatesToEnhance.slice(i, i + batchSize)
+      // 使用 requestIdleCallback 在空闲时处理
+      const processBatch = async (startIndex: number) => {
+        const batch = templatesToEnhance.slice(startIndex, startIndex + batchSize)
         
         const batchEnhanced = await Promise.allSettled(
           batch.map(async (template) => {
+            // 优先使用预定义的宽高比，避免图片加载
             let aspectRatio = template.aspectRatio
-
-            // 如果没有预定义的宽高比，尝试从图片获取
-            if (!aspectRatio && template.imageUrl) {
-              try {
-                const dimensions = await preloadImage(template.imageUrl)
-                aspectRatio = dimensions.aspectRatio
-              } catch (error) {
-                console.warn(`Failed to load image for template ${template.id}:`, error)
-                aspectRatio = generateRandomAspectRatio()
-              }
-            } else if (!aspectRatio) {
+            
+            if (!aspectRatio) {
+              // 如果没有预定义宽高比，使用随机比例而不是加载图片
               aspectRatio = generateRandomAspectRatio()
             }
 
@@ -95,11 +89,22 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
           }
         })
         
-        // 让出主线程
-        await new Promise(resolve => setTimeout(resolve, 0))
+        // 更新状态
+        setEnhancedTemplates(prev => [...prev, ...enhanced.slice(prev.length)])
+        
+        // 继续处理下一批
+        if (startIndex + batchSize < templatesToEnhance.length) {
+          // 使用 setTimeout 让出主线程
+          setTimeout(() => processBatch(startIndex + batchSize), 0)
+        } else {
+          processingRef.current = false
+          setLoadingImages(new Set())
+        }
       }
-
-      setEnhancedTemplates(enhanced)
+      
+      // 开始处理第一批
+      await processBatch(0)
+      
       return enhanced
     } catch (error) {
       console.error('Error enhancing templates:', error)
@@ -109,10 +114,9 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
         imageLoaded: false
       }))
       setEnhancedTemplates(fallbackEnhanced)
-      return fallbackEnhanced
-    } finally {
-      setLoadingImages(new Set())
       processingRef.current = false
+      setLoadingImages(new Set())
+      return fallbackEnhanced
     }
   }, [])
 
