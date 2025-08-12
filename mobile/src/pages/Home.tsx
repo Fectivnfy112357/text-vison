@@ -337,7 +337,7 @@ const Home: React.FC = () => {
               }}
             >
               {/* 模板图片 */}
-              <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-3">
+              <div className="w-full bg-gray-100 rounded-lg overflow-hidden mb-3" style={{ aspectRatio: template.aspectRatio || 'auto' }}>
                 <img
                   src={
                     template.imageUrl ||
@@ -350,6 +350,17 @@ const Home: React.FC = () => {
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = "/placeholder.png";
+                  }}
+                  onLoad={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    const container = img.parentElement;
+                    // 如果没有预设的aspectRatio，则根据实际图片尺寸计算
+                    if (!template.aspectRatio && container) {
+                      const naturalWidth = img.naturalWidth;
+                      const naturalHeight = img.naturalHeight;
+                      const aspectRatio = naturalWidth / naturalHeight;
+                      (container as HTMLElement).style.aspectRatio = aspectRatio.toString();
+                    }
                   }}
                 />
               </div>
