@@ -17,14 +17,11 @@ const Templates: React.FC = () => {
     templates, 
     categories, 
     selectedCategory, 
-    searchQuery,
     isLoading,
     pagination,
     loadTemplates,
     loadCategories,
-    searchTemplates,
     setSelectedCategory,
-    setSearchQuery,
     useTemplate
   } = useTemplateStore()
   const { isAuthenticated } = useAuthStore()
@@ -63,32 +60,7 @@ const Templates: React.FC = () => {
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
   }, [templates]) // 移除selectedCategory依赖，因为API已经返回过滤后的数据
 
-  // 搜索防抖 - 优化性能版本
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-    
-    searchTimeoutRef.current = setTimeout(() => {
-      if (localSearchQuery !== searchQuery) {
-        setSearchQuery(localSearchQuery)
-        if (localSearchQuery) {
-          searchTemplates(localSearchQuery)
-        } else {
-          loadTemplates({ page: 1, size: 20 })
-        }
-      }
-    }, 500) // 增加防抖时间，减少频繁触发
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-    }
-  }, [localSearchQuery]) // 简化依赖项，避免不必要的重新执行
-
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
     console.log('[Templates] handleCategorySelect called', {
@@ -113,8 +85,7 @@ const Templates: React.FC = () => {
       isLoadingMore,
       hasNext: pagination.hasNext,
       isLoading,
-      currentPage: pagination.current,
-      searchQuery
+      currentPage: pagination.current
     })
     
     if (isLoadingMore || !pagination.hasNext || isLoading) {
@@ -127,23 +98,18 @@ const Templates: React.FC = () => {
       const nextPage = pagination.current + 1
       console.log('[Templates] Loading page', nextPage)
       
-      if (searchQuery) {
-        await searchTemplates(searchQuery, nextPage)
-      } else {
-        const params = {
-          page: nextPage,
-          size: pagination.size,
-          categoryId: selectedCategory?.id ? selectedCategory.id.toString() : undefined,
-          keyword: undefined
-        }
-        await loadTemplates(params)
+      const params = {
+        page: nextPage,
+        size: pagination.size,
+        categoryId: selectedCategory?.id ? selectedCategory.id.toString() : undefined
       }
+      await loadTemplates(params)
     } catch (error) {
       console.error('[Templates] Failed to load more:', error)
     } finally {
       setIsLoadingMore(false)
     }
-  }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates, searchTemplates])
+  }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, loadTemplates])
 
   // 滚动事件监听（性能优化版本）
   useEffect(() => {
@@ -365,16 +331,15 @@ const Templates: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无相关模板</h3>
               <p className="text-sm text-gray-500 mb-6">
-                {searchQuery || selectedCategory 
-                  ? `没有找到"${searchQuery || selectedCategory?.name}"相关的模板，试试其他关键词吧`
+                {selectedCategory 
+                  ? `没有找到"${selectedCategory?.name}"相关的模板，试试其他分类吧`
                   : '模板库正在整理中，敬请期待更多精彩内容'
                 }
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {(searchQuery || selectedCategory) && (
+                {selectedCategory && (
                   <button
                     onClick={() => {
-                      setSearchQuery('')
                       setSelectedCategory(null)
                     }}
                     className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium"
