@@ -54,12 +54,17 @@ const Templates: React.FC = () => {
 
   // 排序模板 - 按使用次数排序，添加缓存
   const sortedTemplates = useMemo(() => {
+    console.log('[Templates] Sorting templates', {
+      count: templates.length,
+      firstTemplate: templates[0]?.title,
+      selectedCategory: selectedCategory?.name
+    })
     // 只有在templates数组长度变化时才重新排序
     if (templates.length === 0) return []
     
     const sorted = [...templates]
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-  }, [templates.length]) // 改为依赖数组长度而非整个数组
+  }, [templates, selectedCategory]) // 修复依赖项，确保分类筛选时重新渲染
 
   // 搜索防抖 - 优化性能版本
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -89,11 +94,17 @@ const Templates: React.FC = () => {
 
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
+    console.log('[Templates] handleCategorySelect called', {
+      category: category?.name || '全部',
+      categoryId: category?.id
+    })
     setSelectedCategory(category)
     // 触发重新加载第一页
     if (category) {
+      console.log('[Templates] Loading templates for category:', category.id)
       loadTemplates({ categoryId: category.id, page: 1, size: 20 })
     } else {
+      console.log('[Templates] Loading all templates')
       loadTemplates({ page: 1, size: 20 })
     }
   }, [setSelectedCategory, loadTemplates])
