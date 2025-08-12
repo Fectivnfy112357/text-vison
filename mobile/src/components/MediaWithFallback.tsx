@@ -6,6 +6,8 @@ interface MediaWithFallbackProps {
   type: 'image' | 'video'
   alt?: string
   className?: string
+  style?: React.CSSProperties
+  onLoad?: () => void
   onError?: () => void
 }
 
@@ -14,6 +16,8 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
   type, 
   alt = '媒体内容', 
   className = '',
+  style,
+  onLoad,
   onError 
 }) => {
   const [hasError, setHasError] = useState(false)
@@ -78,7 +82,8 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
   const handleImageLoad = useCallback(() => {
     setIsLoading(false)
     setImageLoaded(true)
-  }, [])
+    onLoad?.()
+  }, [onLoad])
 
   const handleVideoLoadedData = useCallback(() => {
     setIsLoading(false)
@@ -165,7 +170,8 @@ const MediaWithFallback: React.FC<MediaWithFallbackProps> = ({
               loading="lazy"
               decoding="async"
               style={{
-                willChange: 'opacity'
+                willChange: 'opacity',
+                ...style
               }}
             />
           </>

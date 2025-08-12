@@ -11,7 +11,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
-import InfiniteScroll from '../components/InfiniteScroll'
+import MasonryHistoryGrid from '../components/MasonryHistoryGrid'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -260,58 +260,54 @@ const History: React.FC = () => {
 
       {/* 主内容 */}
       <div className="flex-1 pb-20 overflow-hidden">
-        <InfiniteScroll
-          data={filteredHistory}
-          pagination={pagination}
-          isLoading={isLoading}
-          isLoadingMore={isLoadingMore}
-          hasMore={pagination.hasNext}
-          onLoadMore={loadMoreHistory}
-          onRefresh={() => loadHistory({ page: 1, size: 20, type: filterType === 'all' ? undefined : filterType })}
-          emptyComponent={
-            <div className="flex-1 flex items-center justify-center px-6 py-12">
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="text-gray-400" size={32} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
-                  <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                    还没有创作记录，开始你的第一次AI创作之旅吧
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate('/create')}
-                  className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
-                >
-                  开始创作
-                </button>
+        {filteredHistory.length === 0 && !isLoading ? (
+          // 空状态
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center max-w-md mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="text-gray-400" size={32} />
               </div>
-            </div>
-          }
-          loadingComponent={
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-12 h-12 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-gray-600">加载中...</p>
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-gray-700">暂无创作历史</h3>
+                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                  还没有创作记录，开始你的第一次AI创作之旅吧
+                </p>
               </div>
+              <button
+                onClick={() => navigate('/create')}
+                className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
+              >
+                开始创作
+              </button>
             </div>
-          }
-          className="h-full"
-          scrollContainerClassName="px-6 py-4"
-        >
-          {(item, index) => (
-            <HistoryItem
-              key={item.id}
-              item={item}
-              index={index}
-              isSelected={selectedItems.has(item.id)}
+          </div>
+        ) : (
+          // 瀑布流布局
+          <div className="h-full overflow-y-auto px-2 py-3">
+            <MasonryHistoryGrid
+              history={filteredHistory}
               onDownload={handleDownload}
               onShare={handleShare}
               onDelete={handleDelete}
+              isLoading={isLoading}
+              columnsCount={2}
+              gutter="8px"
+              className="h-full"
             />
-          )}
-        </InfiniteScroll>
+            
+            {/* 加载更多按钮 */}
+            {pagination.hasNext && !isLoadingMore && !isLoading && filteredHistory.length > 0 && (
+              <div className="flex justify-center py-6">
+                <button
+                  onClick={loadMoreHistory}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+                >
+                  <span className="text-sm font-medium">加载更多</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 点击外部关闭菜单 */}
