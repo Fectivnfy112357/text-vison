@@ -126,7 +126,7 @@ const Templates: React.FC = () => {
     }
   }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates, searchTemplates])
 
-  // 滚动事件监听
+  // 滚动事件监听（优化版本）
   useEffect(() => {
     const handleScroll = () => {
       const container = scrollContainerRef.current
@@ -136,34 +136,52 @@ const Templates: React.FC = () => {
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       
-      console.log('[Templates] Scroll event', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        distanceFromBottom: scrollHeight - (scrollTop + clientHeight),
-        isLoadingMore,
-        hasNext: pagination.hasNext,
-        isLoading
-      })
-      
-      // 当滚动到距离底部200px时触发
-      if (scrollTop + clientHeight >= scrollHeight - 200 && !isLoadingMore && pagination.hasNext && !isLoading) {
-        console.log('[Templates] Scroll threshold reached, triggering loadMore')
+      // 当滚动到距离底部300px时触发（增加提前量）
+      if (scrollTop + clientHeight >= scrollHeight - 300 && !isLoadingMore && pagination.hasNext && !isLoading) {
         loadMore()
       }
     }
 
+    // 使用节流优化滚动事件
+    const throttledHandleScroll = throttle(handleScroll, 100)
+    
     const container = scrollContainerRef.current
     if (container) {
-      container.addEventListener('scroll', handleScroll)
+      container.addEventListener('scroll', throttledHandleScroll)
     }
 
     return () => {
       if (container) {
-        container.removeEventListener('scroll', handleScroll)
+        container.removeEventListener('scroll', throttledHandleScroll)
       }
     }
   }, [loadMore, isLoadingMore, pagination.hasNext, isLoading])
+
+  // 节流函数
+  const throttle = <T extends (...args: any[]) => void>(
+    func: T,
+    delay: number
+  ): T => {
+    let timeoutId: NodeJS.Timeout | null = null
+    let lastExecTime = 0
+    
+    return ((...args: any[]) => {
+      const currentTime = Date.now()
+      
+      if (currentTime - lastExecTime > delay) {
+        func(...args)
+        lastExecTime = currentTime
+      } else {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        timeoutId = setTimeout(() => {
+          func(...args)
+          lastExecTime = Date.now()
+        }, delay - (currentTime - lastExecTime))
+      }
+    }) as T
+  }
 
   
   // 处理模板使用 - 使用useCallback优化
@@ -357,8 +375,9 @@ const Templates: React.FC = () => {
               gutter="8px"
               className="h-full"
               hasMore={pagination.hasNext}
+              onLoadMore={loadMore}
             />
-            </div>
+          </div>
         )}
       </div>
 

@@ -8,6 +8,83 @@ export interface ImageDimensions {
   aspectRatio: number
 }
 
+// 图片缓存
+const imageCache = new Map<string, ImageDimensions>()
+
+// 预加载队列
+class ImagePreloadQueue {
+  private queue: Array<{ url: string; resolve: Function; reject: Function }> = []
+  private activeLoading = 0
+  private maxConcurrent = 2 // 最大并发数
+
+  add(url: string): Promise<ImageDimensions> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ url, resolve, reject })
+      this.process()
+    })
+  }
+
+  private process() {
+    while (this.activeLoading < this.maxConcurrent && this.queue.length > 0) {
+      const { url, resolve, reject } = this.queue.shift()!
+      this.activeLoading++
+      
+      this.loadImage(url)
+        .then(resolve)
+        .catch(reject)
+        .finally(() => {
+          this.activeLoading--
+          this.process()
+        })
+    }
+  }
+
+  private async loadImage(url: string): Promise<ImageDimensions> {
+    // 检查缓存
+    if (imageCache.has(url)) {
+      return imageCache.get(url)!
+    }
+
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      
+      img.onload = () => {
+        const dimensions: ImageDimensions = {
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          aspectRatio: img.naturalWidth / img.naturalHeight
+        }
+        
+        // 缓存结果
+        imageCache.set(url, dimensions)
+        resolve(dimensions)
+      }
+      
+      img.onerror = () => {
+        reject(new Error(`Failed to load image: ${url}`))
+      }
+      
+      img.src = url
+    })
+  }
+}
+
+const preloadQueue = new ImagePreloadQueue()
+
+// 清理缓存（内存管理）
+export function clearImageCache() {
+  imageCache.clear()
+}
+
+// 限制缓存大小
+const MAX_CACHE_SIZE = 100
+function manageCacheSize() {
+  if (imageCache.size > MAX_CACHE_SIZE) {
+    const keysToDelete = Array.from(imageCache.keys()).slice(0, imageCache.size - MAX_CACHE_SIZE)
+    keysToDelete.forEach(key => imageCache.delete(key))
+  }
+}
+
 /**
  * 计算图片宽高比
  * @param width 图片宽度
@@ -20,29 +97,16 @@ export function calculateAspectRatio(width: number, height: number): number {
 }
 
 /**
- * 预加载图片并获取尺寸
+ * 预加载图片并获取尺寸（使用队列和缓存）
  * @param imageUrl 图片URL
  * @returns Promise<ImageDimensions>
  */
 export function preloadImage(imageUrl: string): Promise<ImageDimensions> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    
-    img.onload = () => {
-      const dimensions: ImageDimensions = {
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-        aspectRatio: calculateAspectRatio(img.naturalWidth, img.naturalHeight)
-      }
-      resolve(dimensions)
-    }
-    
-    img.onerror = () => {
-      reject(new Error(`Failed to load image: ${imageUrl}`))
-    }
-    
-    img.src = imageUrl
-  })
+  // 管理缓存大小
+  manageCacheSize()
+  
+  // 使用队列加载
+  return preloadQueue.add(imageUrl)
 }
 
 /**

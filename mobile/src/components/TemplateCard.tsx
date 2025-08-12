@@ -35,8 +35,13 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   const [isVisible, setIsVisible] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
 
-  // 图片懒加载 - 使用Intersection Observer
+  // 图片懒加载 - 使用Intersection Observer（优化版本）
   useEffect(() => {
+    if (!template.imageUrl) {
+      setIsVisible(true)
+      return
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -45,8 +50,8 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
         }
       },
       {
-        rootMargin: '100px', // 提前100px加载
-        threshold: 0.1
+        rootMargin: '150px', // 提前150px加载
+        threshold: 0.01
       }
     )
 
@@ -55,7 +60,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
     }
 
     return () => observer.disconnect()
-  }, [])
+  }, [template.imageUrl])
 
   // 处理图片加载成功
   const handleImageLoad = useCallback(() => {
@@ -85,7 +90,10 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
         {/* 大图展示区域 */}
         <div 
           className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
-          style={getAspectRatioStyle(aspectRatio)}
+          style={{
+            ...getAspectRatioStyle(aspectRatio),
+            contain: 'layout style paint' // 优化布局稳定性
+          }}
         >
           {template.imageUrl ? (
             <>
@@ -105,7 +113,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
                   ref={imageRef}
                   src={template.imageUrl}
                   alt={template.title}
-                  className={`w-full h-full object-cover ${
+                  className={`w-full h-full object-cover absolute inset-0 ${
                     imageLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
                   onLoad={handleImageLoad}
@@ -113,7 +121,8 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
                   loading="lazy"
                   decoding="async"
                   style={{ 
-                    transition: imageLoaded ? 'opacity 0.2s ease-in-out' : 'none' 
+                    transition: imageLoaded ? 'opacity 0.2s ease-in-out' : 'none',
+                    willChange: 'opacity' // 优化性能
                   }}
                 />
               )}
