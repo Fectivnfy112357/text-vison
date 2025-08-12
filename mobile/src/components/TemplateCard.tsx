@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useRef, useState } from 'react'
+import React, { memo, useCallback, useRef, useState, useEffect } from 'react'
 
 import { 
   Eye, 
@@ -25,6 +25,30 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   const cardRef = useRef<HTMLDivElement>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const imageRef = useRef<HTMLImageElement>(null)
+
+  // 图片懒加载 - 使用Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      {
+        rootMargin: '100px', // 提前100px加载
+        threshold: 0.1
+      }
+    )
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
 
   // 处理图片加载成功
   const handleImageLoad = useCallback(() => {
@@ -37,20 +61,16 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
     setImageLoaded(true)
   }, [])
 
-  // 处理使用模板
+  // 处理使用模板 - 减少依赖项
   const handleUseTemplate = useCallback(() => {
     onUseTemplate(template)
-  }, [template, onUseTemplate])
+  }, [onUseTemplate]) // 移除template依赖，因为template.id作为key已经足够
 
   // 列表视图
   return (
     <div
       ref={cardRef}
       className="group"
-      style={{
-        willChange: 'transform',
-        contain: 'layout style paint'
-      }}
     >
       <div className="card-glow overflow-hidden">
         {/* 大图展示区域 */}
@@ -58,26 +78,33 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           {template.imageUrl ? (
             <>
               {/* 图片加载状态 */}
-              {!imageLoaded && (
+              {isVisible && !imageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                   <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
+                    <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
                     <div className="text-xs text-gray-500">加载中...</div>
                   </div>
                 </div>
               )}
               
-              {/* 实际图片 - 移除lazy加载，改为立即加载 */}
-              <img
-                src={template.imageUrl}
-                alt={template.title}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                decoding="async"
-              />
+              {/* 实际图片 - 懒加载 */}
+              {isVisible && (
+                <img
+                  ref={imageRef}
+                  src={template.imageUrl}
+                  alt={template.title}
+                  className={`w-full h-full object-cover ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  loading="lazy"
+                  decoding="async"
+                  style={{ 
+                    transition: imageLoaded ? 'opacity 0.2s ease-in-out' : 'none' 
+                  }}
+                />
+              )}
               
               {/* 图片加载错误占位符 */}
               {imageError && (
@@ -85,6 +112,16 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
                   <div className="text-center">
                     <Sparkles className="text-gray-400 mb-2" size={32} />
                     <div className="text-xs text-gray-500">图片加载失败</div>
+                  </div>
+                </div>
+              )}
+              
+              {/* 占位符 - 图片未加载时显示 */}
+              {!isVisible && (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Sparkles className="text-gray-300 mb-2" size={32} />
+                    <div className="text-xs text-gray-400">模板预览</div>
                   </div>
                 </div>
               )}
@@ -128,7 +165,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
             </div>
             <button
               onClick={handleUseTemplate}
-              className="ml-3 px-3 py-1.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs font-medium rounded-full hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex-shrink-0"
+              className="ml-3 px-3 py-1.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs font-medium rounded-full hover:shadow-lg transition-shadow duration-200 flex-shrink-0"
             >
               使用模板
             </button>

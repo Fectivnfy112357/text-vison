@@ -52,11 +52,14 @@ const Templates: React.FC = () => {
   }, [])
 
 
-  // 排序模板 - 按使用次数排序
+  // 排序模板 - 按使用次数排序，添加缓存
   const sortedTemplates = useMemo(() => {
+    // 只有在templates数组长度变化时才重新排序
+    if (templates.length === 0) return []
+    
     const sorted = [...templates]
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-  }, [templates])
+  }, [templates.length]) // 改为依赖数组长度而非整个数组
 
   // 搜索防抖 - 使用useCallback优化
   useEffect(() => {
@@ -316,21 +319,14 @@ const Templates: React.FC = () => {
           scrollContainerClassName="px-3 py-4"
         >
           {(template, index) => (
-            <div 
+            <TemplateCard
               key={template.id}
-              style={{
-                willChange: 'transform',
-                contain: 'layout style paint'
-              }}
-            >
-              <TemplateCard
-                template={template}
-                index={index}
-                onUseTemplate={handleUseTemplate}
-                getCategoryIcon={getCategoryIcon}
-                formatNumber={formatNumber}
-              />
-            </div>
+              template={template}
+              index={index}
+              onUseTemplate={handleUseTemplate}
+              getCategoryIcon={getCategoryIcon}
+              formatNumber={formatNumber}
+            />
           )}
         </InfiniteScroll>
       </div>

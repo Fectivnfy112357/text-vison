@@ -53,27 +53,27 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   const [showRefreshButton, setShowRefreshButton] = useState(false)
   const [lastScrollTop, setLastScrollTop] = useState(0)
 
-  // 处理滚动加载更多
+  // 处理滚动加载更多 - 优化性能
   const handleScroll = useCallback(async () => {
     if (!scrollContainerRef.current || isLoading || isLoadingMore || !hasMore) return
 
     const container = scrollContainerRef.current
     const { scrollTop, scrollHeight, clientHeight } = container
     
-    // 计算滚动位置
-    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+    // 简化计算，只使用剩余滚动距离判断
     const remainingScroll = scrollHeight - (scrollTop + clientHeight)
     
     // 当滚动到指定位置时加载更多
-    if (scrollPercentage > threshold || remainingScroll < 200) {
+    if (remainingScroll < 300) {
       await onLoadMore()
     }
 
-    // 显示/隐藏刷新按钮
-    const shouldShowRefresh = scrollTop > 200 && Math.abs(scrollTop - lastScrollTop) > 50
-    setShowRefreshButton(shouldShowRefresh)
-    setLastScrollTop(scrollTop)
-  }, [isLoading, isLoadingMore, hasMore, onLoadMore, threshold])
+    // 简化刷新按钮逻辑
+    const shouldShowRefresh = scrollTop > 300
+    if (shouldShowRefresh !== showRefreshButton) {
+      setShowRefreshButton(shouldShowRefresh)
+    }
+  }, [isLoading, isLoadingMore, hasMore, onLoadMore, showRefreshButton])
 
   // 处理刷新
   const handleRefresh = useCallback(async () => {
@@ -97,20 +97,37 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
     }
   }, [onRefresh, isRefreshing])
 
-  // 设置滚动监听
+  // 设置滚动监听 - 增强性能优化
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
     let ticking = false
+    let lastScrollTime = 0
+    const SCROLL_THROTTLE = 100 // 100ms节流
     
     const optimizedHandleScroll = () => {
+      const now = Date.now()
+      
+      // 时间节流，避免频繁触发
+      if (now - lastScrollTime < SCROLL_THROTTLE) {
+        if (!ticking) {
+          ticking = true
+          requestAnimationFrame(() => {
+            handleScroll()
+            ticking = false
+          })
+        }
+        return
+      }
+      
+      lastScrollTime = now
       if (!ticking) {
+        ticking = true
         requestAnimationFrame(() => {
           handleScroll()
           ticking = false
         })
-        ticking = true
       }
     }
 
