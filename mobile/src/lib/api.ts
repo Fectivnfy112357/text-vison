@@ -389,7 +389,7 @@ export const contentAPI = {
   getArtStyles: (): Promise<ApiResponse<ArtStyle[]>> => 
     request('GET', '/art-styles'),
   
-  getUserContents: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }): Promise<PaginatedResponse<GenerationContent>> => 
+  getUserContents: (params?: { page?: number; size?: number; type?: 'image' | 'video' }): Promise<PaginatedResponse<GenerationContent>> => 
     request('GET', '/contents', params),
   
   getContent: (id: string): Promise<ApiResponse<GenerationContent>> => 

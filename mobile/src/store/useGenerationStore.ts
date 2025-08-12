@@ -22,7 +22,7 @@ interface GenerationState {
 
 interface GenerationActions {
   generateContent: (params: GenerateContentRequest) => Promise<GenerationContent | null>
-  loadHistory: (params?: { page?: number; limit?: number; type?: 'image' | 'video' }) => Promise<void>
+  loadHistory: (params?: { page?: number; size?: number; type?: 'image' | 'video' }) => Promise<void>
   loadMoreHistory: () => Promise<void>
   refreshHistory: () => Promise<void>
   removeFromHistory: (id: string) => Promise<void>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   Search, 
@@ -39,6 +39,7 @@ const History: React.FC = () => {
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null)
   const [_isSelectionMode, _setIsSelectionMode] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   
   // 初始化
@@ -54,6 +55,45 @@ const History: React.FC = () => {
       // destroy 方法将在 useGenerationStore 中实现
     }
   }, [isAuthenticated, loadHistory])
+
+  // 滚动事件监听
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      
+      console.log('[History] Scroll event', {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        distanceFromBottom: scrollHeight - (scrollTop + clientHeight),
+        isLoadingMore,
+        hasNext: pagination.hasNext,
+        isLoading
+      })
+      
+      // 当滚动到距离底部200px时触发
+      if (scrollTop + clientHeight >= scrollHeight - 200 && !isLoadingMore && pagination.hasNext && !isLoading) {
+        console.log('[History] Scroll threshold reached, triggering loadMoreHistory')
+        loadMoreHistory()
+      }
+    }
+
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [loadMoreHistory, isLoadingMore, pagination.hasNext, isLoading])
 
   // 过滤和排序历史记录
   const filteredHistory = React.useMemo(() => {
@@ -283,7 +323,10 @@ const History: React.FC = () => {
           </div>
         ) : (
           // 瀑布流布局
-          <div className="h-full overflow-y-auto px-2 py-3">
+          <div 
+            ref={scrollContainerRef}
+            className="h-full overflow-y-auto px-2 py-3"
+          >
             <MasonryHistoryGrid
               history={filteredHistory}
               onDownload={handleDownload}
@@ -294,18 +337,6 @@ const History: React.FC = () => {
               gutter="8px"
               className="h-full"
             />
-            
-            {/* 加载更多按钮 */}
-            {pagination.hasNext && !isLoadingMore && !isLoading && filteredHistory.length > 0 && (
-              <div className="flex justify-center py-6">
-                <button
-                  onClick={loadMoreHistory}
-                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
-                >
-                  <span className="text-sm font-medium">加载更多</span>
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
