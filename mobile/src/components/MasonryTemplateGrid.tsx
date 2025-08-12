@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Masonry from 'react-responsive-masonry'
 import { Template } from '../lib/api'
 import { 
@@ -16,6 +16,7 @@ interface MasonryTemplateGridProps {
   columnsCount?: number
   gutter?: string
   className?: string
+  hasMore?: boolean
 }
 
 interface EnhancedTemplate extends Template {
@@ -31,7 +32,8 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
   isLoading = false,
   columnsCount = 2,
   gutter = '16px',
-  className = ''
+  className = '',
+  hasMore = false
 }) => {
   const [enhancedTemplates, setEnhancedTemplates] = useState<EnhancedTemplate[]>([])
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
@@ -101,6 +103,7 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     }
   }, [templates, enhanceTemplates])
 
+  
   // 处理图片加载完成
   const handleImageLoad = useCallback((templateId: number) => {
     setEnhancedTemplates(prev => 
@@ -164,8 +167,8 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     )
   }
 
-  // 空状态
-  if (enhancedTemplates.length === 0) {
+  // 空状态 - 只有在不是加载状态且没有数据时才显示
+  if (enhancedTemplates.length === 0 && !isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center max-w-md mx-auto">
@@ -198,7 +201,8 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
           </div>
         </div>
       )}
-    </div>
+      
+          </div>
   )
 }
 

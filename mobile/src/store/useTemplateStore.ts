@@ -21,10 +21,10 @@ interface TemplateState {
 }
 
 interface TemplateActions {
-  loadTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; limit?: number }) => Promise<void>
+  loadTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; size?: number }) => Promise<void>
   loadPopularTemplates: (limit?: number) => Promise<void>
   loadCategories: () => Promise<void>
-  searchTemplates: (query: string) => Promise<void>
+  searchTemplates: (query: string, page?: number) => Promise<void>
   setSelectedCategory: (category: TemplateCategory | null) => void
   setSearchQuery: (query: string) => void
   useTemplate: (id: string | number) => Promise<Template | null>
@@ -56,9 +56,16 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     const currentPage = params?.page || 1
     const isLoadMore = currentPage > 1
     
+    console.log('[TemplateStore] loadTemplates called', {
+      params,
+      currentPage,
+      isLoadMore
+    })
+    
     set({ isLoading: !isLoadMore, error: null })
     try {
       const response = await templateAPI.getTemplates(params)
+      console.log('[TemplateStore] API response', response)
 
       // 处理后端返回的数据结构 {code, message, data, success}
       let templatesArray: Template[] = []
@@ -83,6 +90,12 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
         }
       }
 
+      console.log('[TemplateStore] Processed data', {
+        templatesArray: templatesArray.length,
+        paginationData,
+        isLoadMore
+      })
+
       // 如果是加载更多，则合并数据；否则替换数据
       const existingTemplates = isLoadMore ? get().templates : []
       const mergedTemplates = isLoadMore ? [...existingTemplates, ...templatesArray] : templatesArray
@@ -93,6 +106,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
         isLoading: false
       })
     } catch (error: any) {
+      console.error('[TemplateStore] Error:', error)
       set({
         error: error.response?.data?.message || error.response?.data?.error || error.message || error.toString(),
         isLoading: false,
@@ -132,7 +146,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   },
 
   // 搜索模板
-  searchTemplates: async (query: string) => {
+  searchTemplates: async (query: string, page: number = 1) => {
     if (!query.trim()) {
       get().loadTemplates({ page: 1 })
       return
@@ -140,7 +154,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
     set({ isLoading: true, error: null, searchQuery: query })
     try {
-      const response = await templateAPI.searchTemplates(query)
+      const response = await templateAPI.searchTemplates(query, { page, size: 20 })
 
       // 处理后端返回的数据结构 {code, message, data, timestamp, success}
       let templatesArray: Template[] = []

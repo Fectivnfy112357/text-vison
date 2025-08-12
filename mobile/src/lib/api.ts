@@ -342,7 +342,7 @@ export const authAPI = {
 
 // 模板API
 export const templateAPI = {
-  getTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Template>> => 
+  getTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; size?: number }): Promise<PaginatedResponse<Template>> => 
     request('GET', '/templates', params),
   
   getTemplate: (id: string): Promise<ApiResponse<Template>> => 
@@ -354,8 +354,8 @@ export const templateAPI = {
   getTemplatesByCategory: (category: string): Promise<ApiResponse<Template[]>> => 
     request('GET', `/templates/category/${category}`),
   
-  searchTemplates: (query: string): Promise<PaginatedResponse<Template>> => 
-    request('GET', '/templates/search', { keyword: query }),
+  searchTemplates: (query: string, params?: { page?: number; size?: number }): Promise<PaginatedResponse<Template>> => 
+    request('GET', '/templates/search', { keyword: query, ...params }),
   
   useTemplate: (id: string): Promise<ApiResponse<void>> => 
     request('POST', `/templates/${id}/use`),

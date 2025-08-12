@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   Search, 
@@ -34,6 +34,7 @@ const Templates: React.FC = () => {
   // 状态管理
   const [localSearchQuery, setLocalSearchQuery] = useState('')
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // 初始化 - 分批加载避免阻塞
   useEffect(() => {
@@ -42,7 +43,7 @@ const Templates: React.FC = () => {
         // 先加载分类
         await loadCategories()
         // 再加载第一页模板
-        await loadTemplates({ page: 1, limit: 20 })
+        await loadTemplates({ page: 1, size: 20 })
       } catch (error) {
         console.error('[Templates] Failed to load data:', error)
       }
@@ -68,7 +69,7 @@ const Templates: React.FC = () => {
         if (localSearchQuery) {
           searchTemplates(localSearchQuery)
         } else {
-          loadTemplates({ page: 1, limit: 20 })
+          loadTemplates({ page: 1, size: 20 })
         }
       }
     }, 300)
@@ -81,33 +82,88 @@ const Templates: React.FC = () => {
     setSelectedCategory(category)
     // 触发重新加载第一页
     if (category) {
-      loadTemplates({ categoryId: category.id, page: 1, limit: 20 })
+      loadTemplates({ categoryId: category.id, page: 1, size: 20 })
     } else {
-      loadTemplates({ page: 1, limit: 20 })
+      loadTemplates({ page: 1, size: 20 })
     }
   }, [setSelectedCategory, loadTemplates])
 
   // 加载更多数据
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !pagination.hasNext || isLoading) return
+    console.log('[Templates] loadMore called', {
+      isLoadingMore,
+      hasNext: pagination.hasNext,
+      isLoading,
+      currentPage: pagination.current,
+      searchQuery
+    })
+    
+    if (isLoadingMore || !pagination.hasNext || isLoading) {
+      console.log('[Templates] loadMore blocked by conditions')
+      return
+    }
 
     setIsLoadingMore(true)
     try {
       const nextPage = pagination.current + 1
-      const params = {
-        page: nextPage,
-        size: pagination.size,
-        categoryId: selectedCategory?.id,
-        keyword: searchQuery || undefined
-      }
+      console.log('[Templates] Loading page', nextPage)
       
-      await loadTemplates(params)
+      if (searchQuery) {
+        await searchTemplates(searchQuery, nextPage)
+      } else {
+        const params = {
+          page: nextPage,
+          size: pagination.size,
+          categoryId: selectedCategory?.id,
+          keyword: undefined
+        }
+        await loadTemplates(params)
+      }
     } catch (error) {
       console.error('[Templates] Failed to load more:', error)
     } finally {
       setIsLoadingMore(false)
     }
-  }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates])
+  }, [isLoadingMore, pagination.hasNext, isLoading, pagination.current, pagination.size, selectedCategory, searchQuery, loadTemplates, searchTemplates])
+
+  // 滚动事件监听
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      
+      console.log('[Templates] Scroll event', {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        distanceFromBottom: scrollHeight - (scrollTop + clientHeight),
+        isLoadingMore,
+        hasNext: pagination.hasNext,
+        isLoading
+      })
+      
+      // 当滚动到距离底部200px时触发
+      if (scrollTop + clientHeight >= scrollHeight - 200 && !isLoadingMore && pagination.hasNext && !isLoading) {
+        console.log('[Templates] Scroll threshold reached, triggering loadMore')
+        loadMore()
+      }
+    }
+
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [loadMore, isLoadingMore, pagination.hasNext, isLoading])
 
   
   // 处理模板使用 - 使用useCallback优化
@@ -287,7 +343,10 @@ const Templates: React.FC = () => {
           </div>
         ) : (
           // 瀑布流布局
-          <div className="h-full overflow-y-auto px-2 py-3">
+          <div 
+            ref={scrollContainerRef}
+            className="h-full overflow-y-auto px-2 py-3"
+          >
             <MasonryTemplateGrid
               templates={sortedTemplates}
               onUseTemplate={handleUseTemplate}
@@ -297,20 +356,9 @@ const Templates: React.FC = () => {
               columnsCount={2}
               gutter="8px"
               className="h-full"
+              hasMore={pagination.hasNext}
             />
-            
-            {/* 加载更多按钮 */}
-            {pagination.hasNext && !isLoadingMore && !isLoading && sortedTemplates.length > 0 && (
-              <div className="flex justify-center py-6">
-                <button
-                  onClick={loadMore}
-                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
-                >
-                  <span className="text-sm font-medium">加载更多</span>
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
         )}
       </div>
 
