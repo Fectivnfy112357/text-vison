@@ -194,10 +194,11 @@ export interface Template {
 }
 
 export interface TemplateCategory {
-  id: string
+  id: number
   name: string
   description: string
   isEnabled: boolean
+  templateCount?: number
 }
 
 export interface ArtStyle {

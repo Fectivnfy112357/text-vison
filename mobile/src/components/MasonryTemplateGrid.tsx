@@ -43,12 +43,16 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
   const processingRef = useRef(false)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // 增强模板数据，添加宽高比信息（性能优化版本）
-  const enhanceTemplates = useCallback(async (templatesToEnhance: Template[]) => {
-    if (!templatesToEnhance.length || processingRef.current) return []
+  // 增强模板数据，添加宽高比信息（同步处理版本）
+  const enhanceTemplates = useCallback((templatesToEnhance: Template[]) => {
+    console.log('[MasonryTemplateGrid] enhanceTemplates called', {
+      inputCount: templatesToEnhance.length,
+      firstTemplate: templatesToEnhance[0]?.title,
+      enhancedCount: enhancedTemplates.length
+    })
     
-    processingRef.current = true
-
+    if (!templatesToEnhance.length) return []
+    
     setLoadingImages(prev => {
       const newSet = new Set(prev)
       templatesToEnhance.forEach(t => newSet.add(t.id.toString()))
@@ -56,54 +60,32 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     })
 
     try {
-      // 减少批量大小，避免阻塞主线程
-      const batchSize = 3
-      const enhanced: EnhancedTemplate[] = []
-      
-      // 使用 requestIdleCallback 在空闲时处理
-      const processBatch = async (startIndex: number) => {
-        const batch = templatesToEnhance.slice(startIndex, startIndex + batchSize)
+      // 同步处理所有模板数据
+      const enhanced = templatesToEnhance.map(template => {
+        // 优先使用预定义的宽高比，避免图片加载
+        let aspectRatio = template.aspectRatio
         
-        const batchEnhanced = await Promise.allSettled(
-          batch.map(async (template) => {
-            // 优先使用预定义的宽高比，避免图片加载
-            let aspectRatio = template.aspectRatio
-            
-            if (!aspectRatio) {
-              // 如果没有预定义宽高比，使用随机比例而不是加载图片
-              aspectRatio = generateRandomAspectRatio()
-            }
-
-            return {
-              ...template,
-              aspectRatio,
-              imageLoaded: false
-            }
-          })
-        )
-        
-        // 处理成功的结果
-        batchEnhanced.forEach(result => {
-          if (result.status === 'fulfilled') {
-            enhanced.push(result.value)
-          }
-        })
-        
-        // 更新状态
-        setEnhancedTemplates(prev => [...prev, ...enhanced.slice(prev.length)])
-        
-        // 继续处理下一批
-        if (startIndex + batchSize < templatesToEnhance.length) {
-          // 使用 setTimeout 让出主线程
-          setTimeout(() => processBatch(startIndex + batchSize), 0)
-        } else {
-          processingRef.current = false
-          setLoadingImages(new Set())
+        if (!aspectRatio) {
+          // 如果没有预定义宽高比，使用随机比例
+          aspectRatio = generateRandomAspectRatio()
         }
-      }
+
+        return {
+          ...template,
+          aspectRatio,
+          imageLoaded: false
+        }
+      })
       
-      // 开始处理第一批
-      await processBatch(0)
+      console.log('[MasonryTemplateGrid] Enhanced templates', {
+        enhancedCount: enhanced.length,
+        firstEnhanced: enhanced[0]?.title,
+        aspectRatio: enhanced[0]?.aspectRatio
+      })
+      
+      // 立即更新状态
+      setEnhancedTemplates(enhanced)
+      setLoadingImages(new Set())
       
       return enhanced
     } catch (error) {
@@ -114,7 +96,6 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
         imageLoaded: false
       }))
       setEnhancedTemplates(fallbackEnhanced)
-      processingRef.current = false
       setLoadingImages(new Set())
       return fallbackEnhanced
     }
@@ -122,12 +103,18 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
 
   // 当模板数据变化时，重新增强数据
   useEffect(() => {
+    console.log('[MasonryTemplateGrid] useEffect triggered', {
+      templatesLength: templates.length,
+      enhancedTemplatesLength: enhancedTemplates.length,
+      isLoading
+    })
+    
     if (templates.length > 0) {
       enhanceTemplates(templates)
     } else {
       setEnhancedTemplates([])
     }
-  }, [templates, enhanceTemplates])
+  }, [templates, enhanceTemplates, isLoading])
 
   // 内存管理：当组件卸载时清理缓存
   useEffect(() => {
@@ -216,8 +203,18 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     )
   }, [onUseTemplate, getCategoryIcon, formatNumber, handleImageLoad, loadingImages, gutter])
 
+  // 添加调试日志
+  console.log('[MasonryTemplateGrid] Render state', {
+    isLoading,
+    templatesLength: templates.length,
+    enhancedTemplatesLength: enhancedTemplates.length,
+    willShowLoading: isLoading && enhancedTemplates.length === 0,
+    willShowEmpty: enhancedTemplates.length === 0 && !isLoading && templates.length === 0
+  })
+
   // 加载状态
   if (isLoading && enhancedTemplates.length === 0) {
+    console.log('[MasonryTemplateGrid] Showing loading state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -229,7 +226,8 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
   }
 
   // 空状态 - 只有在不是加载状态且没有数据时才显示
-  if (enhancedTemplates.length === 0 && !isLoading) {
+  if (enhancedTemplates.length === 0 && !isLoading && templates.length === 0) {
+    console.log('[MasonryTemplateGrid] Showing empty state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center max-w-md mx-auto">

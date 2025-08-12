@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
-  Search, 
-  Sparkles,
-  X
+  Sparkles
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
 import { useAuthStore } from '../store/useAuthStore'
@@ -32,7 +30,6 @@ const Templates: React.FC = () => {
   const { isAuthenticated } = useAuthStore()
   
   // 状态管理
-  const [localSearchQuery, setLocalSearchQuery] = useState('')
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -64,7 +61,7 @@ const Templates: React.FC = () => {
     
     const sorted = [...templates]
     return sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-  }, [templates, selectedCategory]) // 修复依赖项，确保分类筛选时重新渲染
+  }, [templates]) // 移除selectedCategory依赖，因为API已经返回过滤后的数据
 
   // 搜索防抖 - 优化性能版本
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -96,13 +93,14 @@ const Templates: React.FC = () => {
   const handleCategorySelect = useCallback((category: TemplateCategory | null) => {
     console.log('[Templates] handleCategorySelect called', {
       category: category?.name || '全部',
-      categoryId: category?.id
+      categoryId: category?.id,
+      templateCount: category?.templateCount || 0
     })
     setSelectedCategory(category)
     // 触发重新加载第一页
     if (category) {
       console.log('[Templates] Loading templates for category:', category.id)
-      loadTemplates({ categoryId: category.id, page: 1, size: 20 })
+      loadTemplates({ categoryId: category.id.toString(), page: 1, size: 20 })
     } else {
       console.log('[Templates] Loading all templates')
       loadTemplates({ page: 1, size: 20 })
@@ -135,7 +133,7 @@ const Templates: React.FC = () => {
         const params = {
           page: nextPage,
           size: pagination.size,
-          categoryId: selectedCategory?.id,
+          categoryId: selectedCategory?.id ? selectedCategory.id.toString() : undefined,
           keyword: undefined
         }
         await loadTemplates(params)
@@ -312,28 +310,7 @@ const Templates: React.FC = () => {
             </div>
           </div>
 
-          {/* 高级搜索栏 */}
-          <div className="relative mb-3">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="text-gray-400" size={16} />
-            </div>
-            <input
-              type="text"
-              value={localSearchQuery}
-              onChange={(e) => setLocalSearchQuery(e.target.value)}
-              placeholder="搜索模板名称、描述或标签..."
-              className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 focus:bg-white/90 shadow-soft"
-            />
-            {localSearchQuery && (
-              <button
-                onClick={() => setLocalSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center"
-              >
-                <X size={16} className="text-gray-400 hover:text-gray-600" />
-              </button>
-            )}
-          </div>
-        </div>
+                  </div>
 
         {/* 分类筛选标签 */}
         <div className="px-3 pb-3">
@@ -350,7 +327,7 @@ const Templates: React.FC = () => {
               <span>全部</span>
               {!selectedCategory && (
                 <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">
-                  {templates.length}
+                  {pagination.total}
                 </span>
               )}
             </button>
@@ -368,7 +345,7 @@ const Templates: React.FC = () => {
                 <span>{category.name}</span>
                 {selectedCategory?.id === category.id && (
                   <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">
-                    {templates.length}
+                    {pagination.total}
                   </span>
                 )}
               </button>

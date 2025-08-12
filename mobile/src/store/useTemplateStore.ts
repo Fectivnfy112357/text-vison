@@ -59,13 +59,19 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     console.log('[TemplateStore] loadTemplates called', {
       params,
       currentPage,
-      isLoadMore
+      isLoadMore,
+      selectedCategory: get().selectedCategory?.name
     })
     
     set({ isLoading: !isLoadMore, error: null })
     try {
       const response = await templateAPI.getTemplates(params)
-      console.log('[TemplateStore] API response', response)
+      console.log('[TemplateStore] API response', {
+        response,
+        categoryId: params?.categoryId,
+        returnedTemplates: response?.data?.records?.length || 0,
+        total: response?.data?.total
+      })
 
       // 处理后端返回的数据结构 {code, message, data, success}
       let templatesArray: Template[] = []
@@ -138,6 +144,17 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
       // 处理后端返回的数据结构 {code, message, data, timestamp, success}
       const categoriesArray = response?.data || []
       const enabledCategories = categoriesArray.filter(cat => cat.isEnabled !== false)
+      
+      console.log('[TemplateStore] 加载分类成功', {
+        totalCategories: categoriesArray.length,
+        enabledCategories: enabledCategories.length,
+        categories: enabledCategories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          templateCount: cat.templateCount
+        }))
+      })
+      
       set({ categories: enabledCategories })
     } catch (error: any) {
       console.error('[TemplateStore] 加载分类失败:', error)
