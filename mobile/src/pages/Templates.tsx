@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { 
   Search, 
-  Grid3X3, 
-  List, 
   Sparkles,
   X
 } from 'lucide-react'
 import { useTemplateStore } from '../store/useTemplateStore'
-import { useAuthStore } from '../store/useAuthStore'
 import { Template, TemplateCategory } from '../lib/api'
 import { toast } from 'sonner'
 import TemplateCard from '../components/TemplateCard'
@@ -39,8 +35,6 @@ const pageVariants = {
   }
 }
 
-type ViewMode = 'grid' | 'list'
-
 const Templates: React.FC = () => {
   const navigate = useNavigate()
   const { 
@@ -53,14 +47,10 @@ const Templates: React.FC = () => {
     loadCategories,
     searchTemplates,
     setSelectedCategory,
-    setSearchQuery,
-    useTemplate
+    setSearchQuery
   } = useTemplateStore()
-  const { isAuthenticated } = useAuthStore()
-
+  
   // 状态管理
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [localSearchQuery, setLocalSearchQuery] = useState('')
 
   // 初始化
@@ -106,39 +96,7 @@ const Templates: React.FC = () => {
     setSelectedCategory(category)
   }, [setSelectedCategory])
 
-  // 处理模板使用 - 使用useCallback优化
-  const handleUseTemplate = useCallback(async (template: Template) => {
-    if (!isAuthenticated) {
-      navigate('/login')
-      return
-    }
-
-    try {
-      await useTemplate(template.id)
-      navigate('/create', { 
-        state: { 
-          template,
-          type: template.type || 'image'
-        } 
-      })
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || error.toString())
-    }
-  }, [isAuthenticated, useTemplate, navigate])
-
-  // 处理收藏 - 使用useCallback优化
-  const handleToggleFavorite = useCallback((templateId: string) => {
-    const newFavorites = new Set(favorites)
-    if (newFavorites.has(templateId)) {
-      newFavorites.delete(templateId)
-      toast.success('已取消收藏')
-    } else {
-      newFavorites.add(templateId)
-      toast.success('已添加到收藏')
-    }
-    setFavorites(newFavorites)
-  }, [favorites])
-
+  
   // 格式化数字 - 使用useCallback优化
   const formatNumber = useCallback((num: number) => {
     if (num >= 1000000) {
@@ -176,32 +134,12 @@ const Templates: React.FC = () => {
 
   
   return (
-    <motion.div 
+    <div 
       className="h-full flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      style={{
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        perspective: 1000
-      }}
     >
       {/* 头部 */}
-      <motion.div 
+      <div 
         className="relative safe-area-top bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-transparent backdrop-blur-sm border-b border-white/20"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ 
-          duration: 0.3, 
-          ease: "easeOut" 
-        }}
-        style={{
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          perspective: 1000
-        }}
       >
         {/* 头部标题和操作区 */}
         <div className="px-3 pt-4 pb-2">
@@ -215,22 +153,6 @@ const Templates: React.FC = () => {
                 <p className="text-xs text-gray-500">发现创意灵感，提升创作效率</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="p-2.5 rounded-xl bg-white/80 backdrop-blur-sm shadow-soft hover:bg-white/90 transition-all duration-150 active:scale-95"
-                style={{
-                  transform: 'translateZ(0)',
-                  backfaceVisibility: 'hidden'
-                }}
-              >
-                {viewMode === 'grid' ? (
-                  <List size={16} className="text-gray-600" />
-                ) : (
-                  <Grid3X3 size={16} className="text-gray-600" />
-                )}
-              </button>
-              </div>
           </div>
 
           {/* 高级搜索栏 */}
@@ -244,10 +166,6 @@ const Templates: React.FC = () => {
               onChange={(e) => setLocalSearchQuery(e.target.value)}
               placeholder="搜索模板名称、描述或标签..."
               className="w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 focus:bg-white/90 shadow-soft"
-              style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }}
             />
             {localSearchQuery && (
               <button
@@ -270,10 +188,6 @@ const Templates: React.FC = () => {
                   ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
                   : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
               }`}
-              style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }}
             >
               <span>🌟</span>
               <span>全部</span>
@@ -292,10 +206,6 @@ const Templates: React.FC = () => {
                     ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg'
                     : 'bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft'
                 }`}
-                style={{
-                  transform: 'translateZ(0)',
-                  backfaceVisibility: 'hidden'
-                }}
               >
                 <span>{getCategoryIcon(category.name)}</span>
                 <span>{category.name}</span>
@@ -308,8 +218,7 @@ const Templates: React.FC = () => {
             ))}
           </div>
         </div>
-
-        </motion.div>
+      </div>
 
       {/* 主内容 */}
       <div 
@@ -368,46 +277,23 @@ const Templates: React.FC = () => {
           </div>
         ) : (
           <div className="px-3 py-4">
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 gap-3 px-3 py-4">
-                {sortedTemplates.map((template, index) => (
-                  <div key={template.id}>
-                    <TemplateCard
-                      template={template}
-                      index={index}
-                      viewMode={viewMode}
-                      isFavorite={favorites.has(template.id.toString())}
-                      onUseTemplate={handleUseTemplate}
-                      onToggleFavorite={handleToggleFavorite}
-                      getCategoryIcon={getCategoryIcon}
-                      formatNumber={formatNumber}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3 px-3 py-4">
-                {sortedTemplates.map((template, index) => (
-                  <div key={template.id}>
-                    <TemplateCard
-                      template={template}
-                      index={index}
-                      viewMode={viewMode}
-                      isFavorite={favorites.has(template.id.toString())}
-                      onUseTemplate={handleUseTemplate}
-                      onToggleFavorite={handleToggleFavorite}
-                      getCategoryIcon={getCategoryIcon}
-                      formatNumber={formatNumber}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="space-y-3 px-3 py-4">
+              {sortedTemplates.map((template, index) => (
+                <div key={template.id}>
+                  <TemplateCard
+                    template={template}
+                    index={index}
+                    getCategoryIcon={getCategoryIcon}
+                    formatNumber={formatNumber}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-    </motion.div>
+    </div>
   )
 }
 
