@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import Masonry from 'react-responsive-masonry'
 import { 
-  preloadImage, 
   generateRandomAspectRatio,
   clearImageCache
 } from '../utils/imageUtils'
@@ -36,14 +35,11 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
   columnsCount = 2,
   gutter = '16px',
   className = '',
-  hasMore = false,
-  onLoadMore,
   emptyMessage = '暂无数据',
   loadingMessage = '正在加载...'
 }: CommonMasonryGridProps<T, ID>) => {
   const [enhancedItems, setEnhancedItems] = useState<EnhancedItem<T>[]>([])
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
-  const processingRef = useRef(false)
   const gridRef = useRef<HTMLDivElement>(null)
 
   // 增强数据，添加宽高比信息（同步处理版本）
@@ -126,43 +122,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
       clearImageCache()
     }
   }, [])
-
-  // 节流函数
-  const throttle = <F extends (...args: any[]) => void>(
-    func: F,
-    delay: number
-  ): F => {
-    let timeoutId: NodeJS.Timeout | null = null
-    let lastExecTime = 0
-    
-    return ((...args: any[]) => {
-      const currentTime = Date.now()
-      
-      if (currentTime - lastExecTime > delay) {
-        func(...args)
-        lastExecTime = currentTime
-      } else {
-        if (timeoutId) {
-          clearTimeout(timeoutId)
-        }
-        timeoutId = setTimeout(() => {
-          func(...args)
-          lastExecTime = Date.now()
-        }, delay - (currentTime - lastExecTime))
-      }
-    }) as F
-  }
-
-  // 处理图片加载完成
-  const handleImageLoad = useCallback((itemId: ID) => {
-    setEnhancedItems(prev => 
-      prev.map(item => 
-        getId(item.original) === itemId 
-          ? { ...item, imageLoaded: true }
-          : item
-      )
-    )
-  }, [getId])
 
   // 计算列数（响应式）
   const responsiveColumns = useMemo(() => {

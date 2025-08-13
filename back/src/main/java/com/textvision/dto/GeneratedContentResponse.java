@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * 生成内容响应DTO
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -93,4 +93,10 @@ public class GeneratedContentResponse {
      * 更新时间
      */
     private LocalDateTime updatedAt;
+
+    /**
+     * 宽高比
+     */
+    private String aspectRatio;
+
 }

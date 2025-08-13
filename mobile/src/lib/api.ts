@@ -52,7 +52,7 @@ apiClient.interceptors.response.use(
       // 只有这些认证相关接口的401错误才清空登录状态
       const authRelatedUrls = ['/users/profile', '/users/login', '/users/register']
       const isAuthRelated = authRelatedUrls.some(authUrl => url.includes(authUrl))
-      
+
       if (isAuthRelated) {
         clearToken()
         // 移除强制跳转，让React Router和ProtectedRoute处理页面跳转
@@ -76,7 +76,7 @@ export const request = async <T = any>(
       url,
       ...config,
     }
-    
+
     // 对于GET和DELETE请求，将data作为params传递
     if (method === 'GET' || method === 'DELETE') {
       if (data) {
@@ -86,7 +86,7 @@ export const request = async <T = any>(
       // 对于POST和PUT请求，将data作为请求体传递
       requestConfig.data = data
     }
-    
+
     const response = await apiClient.request(requestConfig)
     return response.data
   } catch (error) {
@@ -178,7 +178,7 @@ export interface Template {
   createdAt: string
   updatedAt: string
   // 瀑布流布局支持字段
-  aspectRatio?: number // 宽高比，默认为 16/9 ≈ 1.78
+  aspectRatio?: string // 宽高比，默认为 16/9 ≈ 1.78
   imageWidth?: number // 图片原始宽度
   imageHeight?: number // 图片原始高度
   // 兼容字段
@@ -313,7 +313,7 @@ export interface GenerationContent {
   status: 'pending' | 'processing' | 'completed' | 'failed'
   progress?: number
   params: ImageGenerationParams | VideoGenerationParams
-  aspectRatio?: number
+  aspectRatio?: string
   width?: number
   height?: number
   createdAt: string
@@ -322,60 +322,60 @@ export interface GenerationContent {
 
 // 认证API
 export const authAPI = {
-  login: (data: LoginRequest): Promise<AuthResponse> => 
+  login: (data: LoginRequest): Promise<AuthResponse> =>
     request('POST', '/users/login', data),
-  
-  register: (data: RegisterRequest): Promise<AuthResponse> => 
+
+  register: (data: RegisterRequest): Promise<AuthResponse> =>
     request('POST', '/users/register', data),
-  
-  getUserInfo: (): Promise<ApiResponse<User>> => 
+
+  getUserInfo: (): Promise<ApiResponse<User>> =>
     request('GET', '/users/profile'),
-  
-  updateUserInfo: (data: Partial<User>): Promise<ApiResponse<User>> => 
+
+  updateUserInfo: (data: Partial<User>): Promise<ApiResponse<User>> =>
     request('PUT', '/users/profile', data),
-  
-  changePassword: (data: { oldPassword: string; newPassword: string }): Promise<ApiResponse<void>> => 
+
+  changePassword: (data: { oldPassword: string; newPassword: string }): Promise<ApiResponse<void>> =>
     request('POST', '/users/password', data),
-  
-  logout: (): Promise<ApiResponse<void>> => 
+
+  logout: (): Promise<ApiResponse<void>> =>
     request('POST', '/users/logout'),
 }
 
 // 模板API
 export const templateAPI = {
-  getTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; size?: number }): Promise<PaginatedResponse<Template>> => 
+  getTemplates: (params?: { categoryId?: string; keyword?: string; page?: number; size?: number }): Promise<PaginatedResponse<Template>> =>
     request('GET', '/templates', params),
-  
-  getTemplate: (id: string): Promise<ApiResponse<Template>> => 
+
+  getTemplate: (id: string): Promise<ApiResponse<Template>> =>
     request('GET', `/templates/${id}`),
-  
-  getPopularTemplates: (limit?: number): Promise<ApiResponse<Template[]>> => 
+
+  getPopularTemplates: (limit?: number): Promise<ApiResponse<Template[]>> =>
     request('GET', '/templates/popular', { limit }),
-  
-  getTemplatesByCategory: (category: string): Promise<ApiResponse<Template[]>> => 
+
+  getTemplatesByCategory: (category: string): Promise<ApiResponse<Template[]>> =>
     request('GET', `/templates/category/${category}`),
-  
-  searchTemplates: (query: string, params?: { page?: number; size?: number }): Promise<PaginatedResponse<Template>> => 
+
+  searchTemplates: (query: string, params?: { page?: number; size?: number }): Promise<PaginatedResponse<Template>> =>
     request('GET', '/templates/search', { keyword: query, ...params }),
-  
-  useTemplate: (id: string): Promise<ApiResponse<void>> => 
+
+  useTemplate: (id: string): Promise<ApiResponse<void>> =>
     request('POST', `/templates/${id}/use`),
 }
 
 // 模板分类API
 export const templateCategoryAPI = {
-  getCategories: (): Promise<ApiResponse<TemplateCategory[]>> => 
+  getCategories: (): Promise<ApiResponse<TemplateCategory[]>> =>
     request('GET', '/template-categories'),
-  
-  getCategoryNames: (): Promise<ApiResponse<string[]>> => 
+
+  getCategoryNames: (): Promise<ApiResponse<string[]>> =>
     request('GET', '/template-categories/names'),
 }
 
 // 内容生成API
 export const contentAPI = {
-  generateContent: (data: GenerateContentRequest): Promise<ApiResponse<GenerationContent>> => 
+  generateContent: (data: GenerateContentRequest): Promise<ApiResponse<GenerationContent>> =>
     request('POST', '/contents/generate', data),
-  
+
   // 保持向后兼容的旧方法
   generateContentLegacy: (data: {
     prompt: string
@@ -384,29 +384,29 @@ export const contentAPI = {
     size?: string
     style?: string
     options?: ImageGenerationParams | VideoGenerationParams
-  }): Promise<ApiResponse<GenerationContent>> => 
+  }): Promise<ApiResponse<GenerationContent>> =>
     request('POST', '/contents/generate', data),
-  
-  getArtStyles: (): Promise<ApiResponse<ArtStyle[]>> => 
-    request('GET', '/art-styles'),
-  
-  getUserContents: (params?: { page?: number; size?: number; type?: 'image' | 'video' }): Promise<PaginatedResponse<GenerationContent>> => 
-    request('GET', '/contents', params),
-  
-  getContent: (id: string): Promise<ApiResponse<GenerationContent>> => 
-    request('GET', `/contents/${id}`),
-  
-  getRecentContents: (limit?: number): Promise<ApiResponse<GenerationContent[]>> => 
-    request('GET', '/contents/recent', { limit }),
-  
-  deleteContent: (id: string): Promise<ApiResponse<void>> => 
-    request('DELETE', `/contents/${id}`),
-  
-  batchDeleteContents: (ids: string[]): Promise<ApiResponse<void>> => 
-    request('POST', '/contents/batch-delete', { ids }),
-  
 
-  
+  getArtStyles: (): Promise<ApiResponse<ArtStyle[]>> =>
+    request('GET', '/art-styles'),
+
+  getUserContents: (params?: { page?: number; size?: number; type?: 'image' | 'video' }): Promise<PaginatedResponse<GenerationContent>> =>
+    request('GET', '/contents', params),
+
+  getContent: (id: string): Promise<ApiResponse<GenerationContent>> =>
+    request('GET', `/contents/${id}`),
+
+  getRecentContents: (limit?: number): Promise<ApiResponse<GenerationContent[]>> =>
+    request('GET', '/contents/recent', { limit }),
+
+  deleteContent: (id: string): Promise<ApiResponse<void>> =>
+    request('DELETE', `/contents/${id}`),
+
+  batchDeleteContents: (ids: string[]): Promise<ApiResponse<void>> =>
+    request('POST', '/contents/batch-delete', { ids }),
+
+
+
   getUserStats: (): Promise<ApiResponse<{
     totalCount: number
     imageCount: number
@@ -415,9 +415,9 @@ export const contentAPI = {
     failedCount: number
     processingCount: number
     todayCount: number
-  }>> => 
+  }>> =>
     request('GET', '/contents/stats'),
-  
+
   getUserHistoryStats: (params?: { days?: number }): Promise<ApiResponse<{
     dailyStats: Array<{
       date: string
@@ -427,7 +427,7 @@ export const contentAPI = {
       images: number
       videos: number
     }>
-  }>> => 
+  }>> =>
     request('GET', '/contents/history-stats', params),
 }
 

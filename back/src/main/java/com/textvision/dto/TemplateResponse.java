@@ -1,5 +1,6 @@
 package com.textvision.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -7,7 +8,7 @@ import java.util.List;
 
 /**
  * 模板响应DTO
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -18,6 +19,11 @@ public class TemplateResponse {
      * 模板ID
      */
     private Long id;
+
+    /**
+     * 模板宽高比
+     */
+    private String aspectRatio;
 
     /**
      * 模板标题

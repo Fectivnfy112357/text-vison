@@ -30,8 +30,8 @@ class ImagePreloadQueue {
       this.activeLoading++
       
       this.loadImage(url)
-        .then(resolve)
-        .catch(reject)
+        .then((dimensions: ImageDimensions) => resolve(dimensions))
+        .catch((error: any) => reject(error))
         .finally(() => {
           this.activeLoading--
           this.process()

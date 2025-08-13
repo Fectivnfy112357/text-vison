@@ -327,11 +327,11 @@ const History: React.FC = () => {
             ref={scrollContainerRef}
             className="h-full overflow-y-auto px-2 py-3"
           >
-            <CommonMasonryGrid<GenerationContent, string>
+            <CommonMasonryGrid
               items={filteredHistory}
               renderItem={(enhancedItem, index) => (
                 <HistoryItem
-                  item={enhancedItem.original}
+                  item={enhancedItem.original as GenerationContent}
                   index={index}
                   isSelected={false}
                   onDownload={handleDownload}
@@ -344,8 +344,23 @@ const History: React.FC = () => {
                   isLoading={false}
                 />
               )}
-              getAspectRatio={(item) => item.aspectRatio || (item.type === 'video' ? 16/9 : 16/9)}
-              getId={(item) => item.id}
+                  getAspectRatio={(item: any) => {
+                try {
+                  const ratioStr = (item as GenerationContent).aspectRatio;
+                  // 如果没有定义宽高比，使用默认的9/16
+                  if (!ratioStr) return 1/1;
+
+                  // 分割比例字符串
+                  const parts = ratioStr.split(":");
+                  const width = parseFloat(parts[0]);
+                  const height = parseFloat(parts[1]);
+                  return width / height;
+                } catch (error) {
+                  // 任何错误情况下都返回1:1的比例
+                  return 1;
+                }
+              }}
+              getId={(item: any) => (item as GenerationContent).id}
               isLoading={isLoading}
               columnsCount={2}
               gutter="8px"

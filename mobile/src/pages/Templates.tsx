@@ -197,32 +197,6 @@ const Templates: React.FC = () => {
     };
   }, [loadMore, isLoadingMore, pagination.hasNext, isLoading]);
 
-  // 节流函数
-  const throttle = <T extends (...args: any[]) => void>(
-    func: T,
-    delay: number
-  ): T => {
-    let timeoutId: NodeJS.Timeout | null = null;
-    let lastExecTime = 0;
-
-    return ((...args: any[]) => {
-      const currentTime = Date.now();
-
-      if (currentTime - lastExecTime > delay) {
-        func(...args);
-        lastExecTime = currentTime;
-      } else {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-          func(...args);
-          lastExecTime = Date.now();
-        }, delay - (currentTime - lastExecTime));
-      }
-    }) as T;
-  };
-
   // 处理模板使用 - 使用useCallback优化
   const handleUseTemplate = useCallback(
     async (template: Template) => {
@@ -399,9 +373,22 @@ const Templates: React.FC = () => {
                   isLoading={false}
                 />
               )}
-              getAspectRatio={(item: any) =>
-                (item as Template).aspectRatio || 9 / 16
-              }
+              getAspectRatio={(item: any) => {
+                try {
+                  const ratioStr = (item as Template).aspectRatio;
+                  // 如果没有定义宽高比，使用默认的9/16
+                  if (!ratioStr) return 1 / 1;
+
+                  // 分割比例字符串
+                  const parts = ratioStr.split(":");
+                  const width = parseFloat(parts[0]);
+                  const height = parseFloat(parts[1]);
+                  return width / height;
+                } catch (error) {
+                  // 任何错误情况下都返回1:1的比例
+                  return 1;
+                }
+              }}
               getId={(item: any) => (item as Template).id}
               isLoading={isLoading}
               columnsCount={2}

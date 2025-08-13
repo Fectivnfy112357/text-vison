@@ -32,6 +32,7 @@ public class Template {
      */
     @TableField("aspect_ratio")
     private String aspectRatio;
+
     /**
      * 模板标题
      */
