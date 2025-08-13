@@ -353,7 +353,7 @@ const Create: React.FC = () => {
   // 状态管理
   const [prompt, setPrompt] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  // const [showAdvanced, setShowAdvanced] = useState(false);
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [watermark, setWatermark] = useState(true);
 
@@ -497,7 +497,6 @@ const Create: React.FC = () => {
     setPrompt("");
     setReferenceImage(null);
     setSelectedStyle(null);
-    setShowAdvanced(false);
     setWatermark(true);
     setType("image");
     setGenerateParams({
@@ -668,29 +667,8 @@ const Create: React.FC = () => {
             transition={{ delay: 0.5 }}
           >
             <div className="space-y-3">
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center justify-between w-full p-4 rounded-2xl border-2 border-gray-200 bg-white/50 hover:border-primary-300 hover:bg-primary-50 transition-all duration-300 group"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                    <Settings size={20} className="text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-700">高级设置</p>
-                    <p className="text-sm text-gray-500">自定义生成参数</p>
-                  </div>
-                </div>
-                <ChevronDown
-                  size={20}
-                  className={`text-gray-400 transition-transform duration-300 ${
-                    showAdvanced ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
               <AnimatePresence>
-                {showAdvanced && (
+                {
                   <motion.div
                     initial={{ opacity: 0, height: 0, y: -10 }}
                     animate={{ opacity: 1, height: "auto", y: 0 }}
@@ -1095,7 +1073,7 @@ const Create: React.FC = () => {
                       </div>
                     </div>
                   </motion.div>
-                )}
+                }
               </AnimatePresence>
             </div>
           </motion.div>

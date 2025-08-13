@@ -391,8 +391,7 @@ const Templates: React.FC = () => {
               }}
               getId={(item: any) => (item as Template).id}
               isLoading={isLoading}
-              columnsCount={2}
-              gutter="8px"
+              gutter="12px"
               className="h-full"
               hasMore={pagination.hasNext}
               onLoadMore={loadMore}

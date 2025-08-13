@@ -389,8 +389,7 @@ const History: React.FC = () => {
               }}
               getId={(item: any) => (item as GenerationContent).id}
               isLoading={isLoading}
-              columnsCount={2}
-              gutter="8px"
+              gutter="12px"
               className="h-full"
               emptyMessage="还没有创作记录，开始你的第一次AI创作之旅吧"
               loadingMessage="正在加载历史记录..."
