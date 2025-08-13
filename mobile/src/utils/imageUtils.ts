@@ -130,8 +130,11 @@ export function getAspectRatioClass(aspectRatio: number): string {
  * @returns CSS样式对象
  */
 export function getAspectRatioStyle(aspectRatio: number): React.CSSProperties {
+  // 对于瀑布流，使用 aspect-ratio 属性，让浏览器自动计算高度
   return {
-    aspectRatio: aspectRatio.toString()
+    aspectRatio: aspectRatio.toString(),
+    width: '100%',
+    height: 'auto'
   }
 }
 

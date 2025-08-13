@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 /**
  * 生成内容服务实现类
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -46,6 +46,48 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private final TemplateService templateService;
     private final VolcanoApiService volcanoApiService;
     private final ArtStyleService artStyleService;
+
+    private String convertSizeToAspectRatio(String size) {
+        //1024x1024 （1:1）
+        //864x1152 （3:4）
+        //1152x864 （4:3）
+        //1280x720 （16:9）
+        //720x1280 （9:16）
+        //832x1248 （2:3）
+        //1248x832 （3:2）
+        //1512x648 （21:9）
+        String ratio;
+        switch (size) {
+            case "1024x1024":
+                ratio = "1:1";
+                break;
+            case "864x1152":
+                ratio = "3:4";
+                break;
+            case "1152x864":
+                ratio = "4:3";
+                break;
+            case "1280x720":
+                ratio = "16:9";
+                break;
+            case "720x1280":
+                ratio = "9:16";
+                break;
+            case "832x1248":
+                ratio = "2:3";
+                break;
+            case "1248x832":
+                ratio = "3:2";
+                break;
+            case "1512x648":
+                ratio = "21:9";
+                break;
+            default:
+                ratio = "1:1";
+                break;
+        }
+        return ratio;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -95,8 +137,9 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         content.setReferenceImage(request.getReferenceImage());
         content.setTemplateId(request.getTemplateId());
         content.setStatus("processing");
+        content.setAspectRatio(convertSizeToAspectRatio(request.getSize()));
         content.setUrl(""); // 初始设置为空字符串，生成完成后更新
-        
+
         // 构建生成参数
         Map<String, Object> params = new HashMap<>();
         if ("image".equals(request.getType())) {
@@ -117,23 +160,23 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         // 添加水印参数
         params.put("watermark", request.getWatermark());
         content.setGenerationParams(params);
-        
+
         // 保存到数据库
         save(content);
-        
+
         // 增加模板使用次数
         if (template != null) {
             templateService.incrementUsageCount(template.getId());
         }
-        
+
         // 创建修改后的请求对象用于异步生成
         GenerateContentRequest modifiedRequest = new GenerateContentRequest();
         BeanUtils.copyProperties(request, modifiedRequest);
         modifiedRequest.setPrompt(finalPrompt);
-        
+
         // 异步调用生成API
         asyncGenerateContent(content.getId(), modifiedRequest);
-        
+
         return convertToGeneratedContentResponse(content);
     }
 
@@ -142,11 +185,11 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         Page<GeneratedContent> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
         IPage<GeneratedContent> contentPage = generatedContentMapper.selectUserContentsPage(
                 page, userId, type, status, startTime, endTime, pageRequest.getKeyword());
-        
+
         List<GeneratedContentResponse> responses = contentPage.getRecords().stream()
                 .map(this::convertToGeneratedContentResponse)
                 .collect(Collectors.toList());
-        
+
         return PageResult.of(responses, contentPage.getTotal(), contentPage.getCurrent(), contentPage.getSize());
     }
 
@@ -190,7 +233,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     public long countUserContents(Long userId, String type, String status) {
         LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GeneratedContent::getUserId, userId)
-               .eq(GeneratedContent::getDeleted, 0);
+                .eq(GeneratedContent::getDeleted, 0);
         if (type != null && !type.isEmpty()) {
             wrapper.eq(GeneratedContent::getType, type);
         }
@@ -213,13 +256,13 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
             log.warn("更新生成状态失败，内容不存在: contentId={}", contentId);
             return;
         }
-        
+
         content.setStatus(status);
         content.setUrl(url);
         content.setThumbnail(thumbnail);
         content.setErrorMessage(errorMessage);
         content.setUpdatedAt(LocalDateTime.now());
-        
+
         updateById(content);
         log.info("更新生成状态成功: contentId={}, status={}", contentId, status);
     }
@@ -232,13 +275,13 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
             log.warn("更新生成状态失败，内容不存在: contentId={}", contentId);
             return;
         }
-        
+
         content.setStatus(status);
         content.setUrls(urls);
         content.setThumbnails(thumbnails);
         content.setErrorMessage(errorMessage);
         content.setUpdatedAt(LocalDateTime.now());
-        
+
         // 为了兼容性，如果有URL列表，也设置第一个URL到原字段
         if (urls != null && !urls.isEmpty()) {
             content.setUrl(urls.get(0));
@@ -246,7 +289,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         if (thumbnails != null && !thumbnails.isEmpty()) {
             content.setThumbnail(thumbnails.get(0));
         }
-        
+
         updateById(content);
         log.info("更新生成状态成功: contentId={}, status={}, urlCount={}", contentId, status, urls != null ? urls.size() : 0);
     }
@@ -258,10 +301,10 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     public void asyncGenerateContent(Long contentId, GenerateContentRequest request) {
         try {
             log.info("开始异步生成内容: contentId={}, type={}", contentId, request.getType());
-            
+
             String resultUrl = null;
             String thumbnail = null;
-            
+
             if ("image".equals(request.getType())) {
                 // 调用图片生成API
                 VolcanoApiService.ImageGenerationResult result = volcanoApiService.generateImage(
@@ -274,7 +317,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getGuidanceScale(),
                         request.getWatermark()
                 );
-                
+
                 if (result.isSuccess()) {
                     resultUrl = result.getUrl();
                     thumbnail = result.getUrl(); // 图片没有缩略图，使用原图
@@ -299,15 +342,15 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                         request.getHd(),
                         request.getWatermark()
                 );
-                
+
                 if (result.isSuccess() && result.getTaskId() != null) {
                     // 视频生成任务创建成功，开始轮询查询任务状态
                     log.info("视频生成任务创建成功，开始轮询查询状态: contentId={}, taskId={}", contentId, result.getTaskId());
-                    
+
                     String taskId = result.getTaskId();
                     int maxRetries = 60; // 最多查询60次，每次间隔10秒，总共10分钟
                     int retryCount = 0;
-                    
+
                     while (retryCount < maxRetries) {
                         try {
                             Thread.sleep(10000); // 等待10秒
@@ -315,9 +358,9 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                             Thread.currentThread().interrupt();
                             throw new RuntimeException("任务被中断", e);
                         }
-                        
+
                         VolcanoApiService.VideoGenerationResult queryResult = volcanoApiService.queryVideoTask(taskId);
-                        
+
                         if (queryResult.isSuccess()) {
                             // 任务完成，检查是否有多个URL
                             if (queryResult.getUrls() != null && !queryResult.getUrls().isEmpty()) {
@@ -341,7 +384,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                             throw new RuntimeException("视频生成任务失败: " + queryResult.getErrorMessage());
                         }
                     }
-                    
+
                     if (retryCount >= maxRetries) {
                         throw new RuntimeException("视频生成任务超时，请稍后重试");
                     }
@@ -349,10 +392,10 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                     throw new RuntimeException("视频生成任务创建失败: " + result.getErrorMessage());
                 }
             }
-            
+
             // 更新为成功状态（单个URL的情况）
             updateGenerationStatus(contentId, "completed", resultUrl, thumbnail, null);
-            
+
         } catch (Exception e) {
             log.error("生成内容失败: contentId={}", contentId, e);
             // 更新为失败状态
@@ -366,7 +409,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private GeneratedContentResponse convertToGeneratedContentResponse(GeneratedContent content) {
         GeneratedContentResponse response = new GeneratedContentResponse();
         BeanUtils.copyProperties(content, response);
-        
+
         // 如果style字段存储的是风格ID，需要转换为风格名称
         if (content.getStyle() != null && !content.getStyle().trim().isEmpty()) {
             try {
@@ -385,7 +428,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         } else {
             response.setStyle("默认风格");
         }
-        
+
         return response;
     }
 
@@ -393,8 +436,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime) {
         LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GeneratedContent::getUserId, userId)
-               .ge(GeneratedContent::getCreatedAt, startTime)
-               .le(GeneratedContent::getCreatedAt, endTime);
+                .ge(GeneratedContent::getCreatedAt, startTime)
+                .le(GeneratedContent::getCreatedAt, endTime);
         return count(wrapper);
     }
 
@@ -402,8 +445,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status) {
         LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GeneratedContent::getUserId, userId)
-               .ge(GeneratedContent::getCreatedAt, startTime)
-               .le(GeneratedContent::getCreatedAt, endTime);
+                .ge(GeneratedContent::getCreatedAt, startTime)
+                .le(GeneratedContent::getCreatedAt, endTime);
         if (status != null) {
             wrapper.eq(GeneratedContent::getStatus, status);
         }
@@ -414,8 +457,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     public long countUserContentsByDateRange(Long userId, LocalDateTime startTime, LocalDateTime endTime, String status, String type) {
         LambdaQueryWrapper<GeneratedContent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GeneratedContent::getUserId, userId)
-               .ge(GeneratedContent::getCreatedAt, startTime)
-               .le(GeneratedContent::getCreatedAt, endTime);
+                .ge(GeneratedContent::getCreatedAt, startTime)
+                .le(GeneratedContent::getCreatedAt, endTime);
         if (status != null) {
             wrapper.eq(GeneratedContent::getStatus, status);
         }

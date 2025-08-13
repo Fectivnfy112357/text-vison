@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * 火山引擎API服务
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -43,64 +43,59 @@ public class VolcanoApiService {
 
     /**
      * 生成图片
-     * 
-     * @param prompt 提示词
-     * @param size 尺寸
-     * @param style 风格
-     * @param quality 质量
+     *
+     * @param prompt         提示词
+     * @param size           尺寸
+     * @param style          风格
+     * @param quality        质量
      * @param responseFormat 返回格式
-     * @param seed 随机数种子
-     * @param guidanceScale 引导比例
-     * @param watermark 是否添加水印
+     * @param seed           随机数种子
+     * @param guidanceScale  引导比例
+     * @param watermark      是否添加水印
      * @return 生成结果
      */
-    public ImageGenerationResult generateImage(String prompt, String size, String style, String quality, 
-                                             String responseFormat, Integer seed, Double guidanceScale, Boolean watermark) {
+    public ImageGenerationResult generateImage(String prompt, String size, String style, String quality,
+                                               String responseFormat, Integer seed, Double guidanceScale, Boolean watermark) {
         try {
             String url = baseUrl + imageEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
-            
+
             ImageGenerationRequest request = new ImageGenerationRequest();
             request.setModel(imageModel);
             request.setPrompt(prompt);
-            request.setSize(convertSizeFormat(size));
+            request.setSize(size);
             request.setQuality(quality != null ? quality : "standard");
             request.setN(1);
-            
+
             // 设置返回格式
             if (responseFormat != null && !responseFormat.trim().isEmpty()) {
-                request.setResponseFormat(responseFormat);
+                request.setResponse_format(responseFormat);
             }
-            
+
             // 设置随机数种子
-            if (seed != null && seed >= -1 && seed <= 2147483647) {
+            if (seed != null && seed >= -1) {
                 request.setSeed(seed);
             }
-            
+
             // 设置引导比例
             if (guidanceScale != null && guidanceScale >= 1.0 && guidanceScale <= 10.0) {
-                request.setGuidanceScale(guidanceScale);
+                request.setGuidance_scale(guidanceScale);
             }
-            
+
             // 设置水印参数
             if (watermark != null) {
-                // 根据水印状态调整提示词
-                if (watermark) {
-                    request.setPrompt(prompt + ", with watermark");
-                } else {
-                    request.setPrompt(prompt + ", no watermark");
-                }
+                request.setWatermark(watermark);
             }
-            
+
             // 如果有风格参数，添加到提示词中
             if (style != null && !style.trim().isEmpty()) {
                 request.setPrompt(request.getPrompt() + ", " + style + " style");
             }
-            
+
             log.info("调用火山引擎图片生成API: {}", JSON.toJSONString(request));
-            
+
             String responseJson = HttpUtil.doPostJson(url, headers, request);
-            
+
             // 检查是否为错误响应
             if (responseJson.contains("\"error\"")) {
                 try {
@@ -108,23 +103,23 @@ public class VolcanoApiService {
                     Map<String, Object> error = (Map<String, Object>) errorResponse.get("error");
                     String errorCode = error != null ? (String) error.get("code") : "UnknownError";
                     String errorMessage = error != null ? (String) error.get("message") : "图片生成失败";
-                    
+
                     log.error("火山引擎图片生成失败: errorCode={}, errorMessage={}", errorCode, errorMessage);
-                    
+
                     // 将敏感内容错误转换为中文提示
                     if ("OutputImageSensitiveContentDetected".equals(errorCode)) {
                         errorMessage = "生成内容包含敏感信息，请修改提示词后重试";
                     }
-                    
+
                     return createErrorResult(errorMessage);
                 } catch (Exception e) {
                     log.error("解析错误响应失败: {}", responseJson, e);
                     return createErrorResult("图片生成失败: " + responseJson);
                 }
             }
-            
+
             ImageGenerationResponse response = JSON.parseObject(responseJson, ImageGenerationResponse.class);
-            
+
             if (response != null && response.getData() != null && !response.getData().isEmpty()) {
                 ImageData imageData = response.getData().get(0);
                 ImageGenerationResult result = new ImageGenerationResult();
@@ -144,82 +139,82 @@ public class VolcanoApiService {
 
     /**
      * 生成视频
-     * 
-     * @param prompt 提示词
-     * @param model 模型名称
-     * @param resolution 分辨率
-     * @param duration 时长（秒）
-     * @param ratio 视频比例
-     * @param fps 帧率
-     * @param cameraFixed 是否固定摄像头
-     * @param cfgScale CFG Scale参数
-     * @param count 生成数量
+     *
+     * @param prompt          提示词
+     * @param model           模型名称
+     * @param resolution      分辨率
+     * @param duration        时长（秒）
+     * @param ratio           视频比例
+     * @param fps             帧率
+     * @param cameraFixed     是否固定摄像头
+     * @param cfgScale        CFG Scale参数
+     * @param count           生成数量
      * @param firstFrameImage 首帧图片
-     * @param lastFrameImage 尾帧图片
-     * @param hd 是否高清
-     * @param watermark 是否添加水印
+     * @param lastFrameImage  尾帧图片
+     * @param hd              是否高清
+     * @param watermark       是否添加水印
      * @return 生成结果
      */
-    public VideoGenerationResult generateVideo(String prompt, String model, String resolution, 
-                                             Integer duration, String ratio, Integer fps, 
-                                             Boolean cameraFixed, Double cfgScale, Integer count,
-                                             String firstFrameImage, String lastFrameImage, Boolean hd, Boolean watermark) {
+    public VideoGenerationResult generateVideo(String prompt, String model, String resolution,
+                                               Integer duration, String ratio, Integer fps,
+                                               Boolean cameraFixed, Double cfgScale, Integer count,
+                                               String firstFrameImage, String lastFrameImage, Boolean hd, Boolean watermark) {
         try {
             String url = baseUrl + videoEndpoint;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
-            
+
             // 构建符合火山引擎API规范的请求格式
             VideoGenerationRequest request = new VideoGenerationRequest();
             // 使用传入的模型，如果为空则使用默认模型
             request.setModel(model != null ? model : videoModel);
-            
+
             // 构建content数组
             java.util.List<VideoContent> contentList = new java.util.ArrayList<>();
-            
+
             // 添加文本内容
             VideoContent textContent = new VideoContent();
             textContent.setType("text");
-            
+
             // 构建包含参数的文本
             StringBuilder textBuilder = new StringBuilder(prompt);
-            
+
             // 添加分辨率参数
             if (resolution != null) {
                 textBuilder.append(" --rs ").append(resolution);
             }
-            
+
             // 添加时长参数
             if (duration != null) {
                 textBuilder.append(" --dur ").append(duration);
             } else {
                 textBuilder.append(" --dur 5");
             }
-            
+
             // 添加比例参数
             if (ratio != null) {
                 textBuilder.append(" --ratio ").append(ratio);
             }
-            
+
             // 添加帧率参数
             if (fps != null) {
                 textBuilder.append(" --fps ").append(fps);
             }
-            
+
             // 添加固定摄像头参数
             if (cameraFixed != null) {
                 textBuilder.append(" --cf ").append(cameraFixed ? "true" : "false");
             }
-            
+
             // 添加CFG Scale参数
             if (cfgScale != null) {
                 textBuilder.append(" --cfg ").append(cfgScale);
             }
-            
+
             // 添加生成数量参数
             if (count != null && count > 1) {
                 textBuilder.append(" --n ").append(count);
             }
-            
+
             // 添加水印参数
             if (watermark != null) {
                 if (watermark) {
@@ -228,10 +223,10 @@ public class VolcanoApiService {
                     textBuilder.append(" --wm false");
                 }
             }
-            
+
             textContent.setText(textBuilder.toString());
             contentList.add(textContent);
-            
+
             // 添加首帧图片
             if (firstFrameImage != null && !firstFrameImage.trim().isEmpty()) {
                 VideoContent firstFrameContent = new VideoContent();
@@ -242,7 +237,7 @@ public class VolcanoApiService {
                 firstFrameContent.setRole("first_frame");
                 contentList.add(firstFrameContent);
             }
-            
+
             // 添加尾帧图片
             if (lastFrameImage != null && !lastFrameImage.trim().isEmpty()) {
                 VideoContent lastFrameContent = new VideoContent();
@@ -253,14 +248,14 @@ public class VolcanoApiService {
                 lastFrameContent.setRole("last_frame");
                 contentList.add(lastFrameContent);
             }
-            
+
             request.setContent(contentList);
-            
+
             log.info("调用火山引擎视频生成API: {}", JSON.toJSONString(request));
-            
+
             String responseJson = HttpUtil.doPostJson(url, headers, request);
             log.debug("火山引擎视频生成API响应: {}", responseJson);
-            
+
             // 检查是否为错误响应
             if (responseJson.contains("\"error\"")) {
                 try {
@@ -268,24 +263,24 @@ public class VolcanoApiService {
                     Map<String, Object> error = (Map<String, Object>) errorResponse.get("error");
                     String errorCode = error != null ? (String) error.get("code") : "UnknownError";
                     String errorMessage = error != null ? (String) error.get("message") : "视频生成失败";
-                    
+
                     log.error("火山引擎视频生成失败: errorCode={}, errorMessage={}", errorCode, errorMessage);
-                    
+
                     // 将敏感内容错误转换为中文提示
                     if ("OutputVideoSensitiveContentDetected".equals(errorCode)) {
                         errorMessage = "生成内容包含敏感信息，请修改提示词后重试";
                     }
-                    
+
                     return createVideoErrorResult(errorMessage);
                 } catch (Exception e) {
                     log.error("解析错误响应失败: {}", responseJson, e);
                     return createVideoErrorResult("视频生成失败: " + responseJson);
                 }
             }
-            
+
             // 火山引擎视频生成API返回任务ID，需要后续查询任务状态
             VideoGenerationTaskResponse response = JSON.parseObject(responseJson, VideoGenerationTaskResponse.class);
-            
+
             if (response != null && response.getId() != null) {
                 // 返回任务创建成功的结果，URL暂时为空
                 VideoGenerationResult result = new VideoGenerationResult();
@@ -307,7 +302,7 @@ public class VolcanoApiService {
 
     /**
      * 查询视频生成任务状态
-     * 
+     *
      * @param taskId 任务ID
      * @return 查询结果
      */
@@ -315,17 +310,17 @@ public class VolcanoApiService {
         try {
             String url = baseUrl + videoQueryEndpoint + "/" + taskId;
             Map<String, String> headers = HttpUtil.buildHeaders(apiKey);
-            
+
             log.debug("查询视频生成任务状态: taskId={}, url={}", taskId, url);
-            
+
             String responseJson = HttpUtil.doGet(url, headers);
             log.debug("火山引擎视频任务查询API响应: {}", responseJson);
-            
+
             VideoTaskQueryResponse response = JSON.parseObject(responseJson, VideoTaskQueryResponse.class);
-            
+
             VideoGenerationResult result = new VideoGenerationResult();
             result.setTaskId(taskId);
-            
+
             if (response != null) {
                 if ("succeeded".equals(response.getStatus())) {
                     // 任务完成，提取视频URL
@@ -335,14 +330,14 @@ public class VolcanoApiService {
                         if (videoUrl.startsWith("`") && videoUrl.endsWith("`")) {
                             videoUrl = videoUrl.substring(1, videoUrl.length() - 1).trim();
                         }
-                        
+
                         // 检查是否包含多个视频URL（以逗号或分号分隔）
                         if (videoUrl.contains(",") || videoUrl.contains(";")) {
                             // 多个视频URL
                             String[] urlArray = videoUrl.split("[,;]");
                             java.util.List<String> urls = new java.util.ArrayList<>();
                             java.util.List<String> thumbnails = new java.util.ArrayList<>();
-                            
+
                             for (String u : urlArray) {
                                 String cleanUrl = u.trim();
                                 if (!cleanUrl.isEmpty()) {
@@ -351,7 +346,7 @@ public class VolcanoApiService {
                                     thumbnails.add(cleanUrl); // 暂时使用视频URL作为缩略图
                                 }
                             }
-                            
+
                             result.setSuccess(true);
                             result.setUrls(urls);
                             result.setThumbnails(thumbnails);
@@ -384,7 +379,7 @@ public class VolcanoApiService {
                 result.setSuccess(false);
                 result.setErrorMessage("查询响应为空");
             }
-            
+
             return result;
         } catch (Exception e) {
             log.error("查询视频生成任务异常: taskId={}", taskId, e);
@@ -410,47 +405,6 @@ public class VolcanoApiService {
         return result;
     }
 
-    /**
-     * 转换尺寸格式
-     * 将前端传来的格式（如landscape_16_9）转换为火山引擎API要求的格式（如1280x720）
-     * 
-     * @param size 前端传来的尺寸格式
-     * @return 火山引擎API要求的尺寸格式
-     */
-    private String convertSizeFormat(String size) {
-        if (size == null || size.trim().isEmpty()) {
-            return "1024x1024";
-        }
-        
-        // 如果已经是WIDTHxHEIGHT格式，直接返回
-        if (size.matches("\\d+x\\d+")) {
-            return size;
-        }
-        
-        // 转换预定义的尺寸格式
-        switch (size.toLowerCase()) {
-            case "square":
-            case "square_hd":
-                return "1024x1024";
-            case "portrait_4_3":
-                return "864x1152";
-            case "landscape_4_3":
-                return "1152x864";
-            case "portrait_16_9":
-                return "720x1280";
-            case "landscape_16_9":
-                return "1280x720";
-            case "portrait_2_3":
-                return "832x1248";
-            case "landscape_3_2":
-                return "1248x832";
-            case "landscape_21_9":
-                return "1512x648";
-            default:
-                log.warn("未知的尺寸格式: {}, 使用默认尺寸 1024x1024", size);
-                return "1024x1024";
-        }
-    }
 
     // 请求和响应数据类
     @Data
@@ -460,9 +414,11 @@ public class VolcanoApiService {
         private String size;
         private String quality;
         private Integer n;
-        private String responseFormat;
+        private String response_format;
         private Integer seed;
-        private Double guidanceScale;
+        private Double guidance_scale;
+        private Boolean watermark;
+
     }
 
     @Data
@@ -532,7 +488,7 @@ public class VolcanoApiService {
         private VideoImageUrl image_url;
         private String role; // first_frame, last_frame
     }
-    
+
     @Data
     public static class VideoImageUrl {
         private String url;

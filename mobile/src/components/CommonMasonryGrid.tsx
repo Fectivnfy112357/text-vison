@@ -1,69 +1,74 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import Masonry from 'react-responsive-masonry'
-import { Template } from '../lib/api'
 import { 
   preloadImage, 
   generateRandomAspectRatio,
   clearImageCache
 } from '../utils/imageUtils'
-import TemplateCard from './TemplateCard'
 
-interface MasonryTemplateGridProps {
-  templates: Template[]
-  onUseTemplate: (template: Template) => void
-  getCategoryIcon: (categoryName: string) => string
-  formatNumber: (num: number) => string
+interface CommonMasonryGridProps<T, ID> {
+  items: T[]
+  renderItem: (item: EnhancedItem<T>, index: number) => React.ReactNode
+  getAspectRatio: (item: T) => number
+  getId: (item: T) => ID
   isLoading?: boolean
   columnsCount?: number
   gutter?: string
   className?: string
   hasMore?: boolean
   onLoadMore?: () => void
+  emptyMessage?: string
+  loadingMessage?: string
 }
 
-interface EnhancedTemplate extends Template {
+export interface EnhancedItem<T> {
+  original: T
   aspectRatio: number
   imageLoaded: boolean
 }
 
-const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
-  templates,
-  onUseTemplate,
-  getCategoryIcon,
-  formatNumber,
+const CommonMasonryGrid = <T extends {}, ID extends string | number>({
+  items,
+  renderItem,
+  getAspectRatio,
+  getId,
   isLoading = false,
   columnsCount = 2,
   gutter = '16px',
   className = '',
   hasMore = false,
-  onLoadMore
-}) => {
-  const [enhancedTemplates, setEnhancedTemplates] = useState<EnhancedTemplate[]>([])
+  onLoadMore,
+  emptyMessage = '暂无数据',
+  loadingMessage = '正在加载...'
+}: CommonMasonryGridProps<T, ID>) => {
+  const [enhancedItems, setEnhancedItems] = useState<EnhancedItem<T>[]>([])
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
   const processingRef = useRef(false)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // 增强模板数据，添加宽高比信息（同步处理版本）
-  const enhanceTemplates = useCallback((templatesToEnhance: Template[]) => {
-    console.log('[MasonryTemplateGrid] enhanceTemplates called', {
-      inputCount: templatesToEnhance.length,
-      firstTemplate: templatesToEnhance[0]?.title,
-      enhancedCount: enhancedTemplates.length
+  // 增强数据，添加宽高比信息（同步处理版本）
+  const enhanceItems = useCallback((itemsToEnhance: T[]) => {
+    console.log('[CommonMasonryGrid] enhanceItems called', {
+      inputCount: itemsToEnhance.length,
+      enhancedCount: enhancedItems.length
     })
     
-    if (!templatesToEnhance.length) return []
+    if (!itemsToEnhance.length) return []
     
     setLoadingImages(prev => {
       const newSet = new Set(prev)
-      templatesToEnhance.forEach(t => newSet.add(t.id.toString()))
+      itemsToEnhance.forEach(item => {
+        const id = getId(item)
+        newSet.add(id.toString())
+      })
       return newSet
     })
 
     try {
-      // 同步处理所有模板数据
-      const enhanced = templatesToEnhance.map(template => {
-        // 优先使用预定义的宽高比，避免图片加载
-        let aspectRatio = template.aspectRatio
+      // 同步处理所有项目数据
+      const enhanced = itemsToEnhance.map(item => {
+        // 获取宽高比，优先使用预定义的，避免图片加载
+        let aspectRatio = getAspectRatio(item)
         
         if (!aspectRatio) {
           // 如果没有预定义宽高比，使用随机比例
@@ -71,50 +76,49 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
         }
 
         return {
-          ...template,
+          original: item,
           aspectRatio,
           imageLoaded: false
         }
       })
       
-      console.log('[MasonryTemplateGrid] Enhanced templates', {
+      console.log('[CommonMasonryGrid] Enhanced items', {
         enhancedCount: enhanced.length,
-        firstEnhanced: enhanced[0]?.title,
-        aspectRatio: enhanced[0]?.aspectRatio
+        firstAspectRatio: enhanced[0]?.aspectRatio
       })
       
       // 立即更新状态
-      setEnhancedTemplates(enhanced)
+      setEnhancedItems(enhanced)
       setLoadingImages(new Set())
       
       return enhanced
     } catch (error) {
-      console.error('Error enhancing templates:', error)
-      const fallbackEnhanced = templatesToEnhance.map(template => ({
-        ...template,
-        aspectRatio: template.aspectRatio || 16/9,
+      console.error('Error enhancing items:', error)
+      const fallbackEnhanced = itemsToEnhance.map(item => ({
+        original: item,
+        aspectRatio: getAspectRatio(item) || 16/9,
         imageLoaded: false
       }))
-      setEnhancedTemplates(fallbackEnhanced)
+      setEnhancedItems(fallbackEnhanced)
       setLoadingImages(new Set())
       return fallbackEnhanced
     }
-  }, [])
+  }, [getAspectRatio, getId, enhancedItems.length])
 
-  // 当模板数据变化时，重新增强数据
+  // 当数据变化时，重新增强数据
   useEffect(() => {
-    console.log('[MasonryTemplateGrid] useEffect triggered', {
-      templatesLength: templates.length,
-      enhancedTemplatesLength: enhancedTemplates.length,
+    console.log('[CommonMasonryGrid] useEffect triggered', {
+      itemsLength: items.length,
+      enhancedItemsLength: enhancedItems.length,
       isLoading
     })
     
-    if (templates.length > 0) {
-      enhanceTemplates(templates)
+    if (items.length > 0) {
+      enhanceItems(items)
     } else {
-      setEnhancedTemplates([])
+      setEnhancedItems([])
     }
-  }, [templates, enhanceTemplates, isLoading])
+  }, [items, enhanceItems, isLoading])
 
   // 内存管理：当组件卸载时清理缓存
   useEffect(() => {
@@ -123,12 +127,11 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     }
   }, [])
 
-  
   // 节流函数
-  const throttle = <T extends (...args: any[]) => void>(
-    func: T,
+  const throttle = <F extends (...args: any[]) => void>(
+    func: F,
     delay: number
-  ): T => {
+  ): F => {
     let timeoutId: NodeJS.Timeout | null = null
     let lastExecTime = 0
     
@@ -147,21 +150,19 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
           lastExecTime = Date.now()
         }, delay - (currentTime - lastExecTime))
       }
-    }) as T
+    }) as F
   }
 
-  
-  
   // 处理图片加载完成
-  const handleImageLoad = useCallback((templateId: number) => {
-    setEnhancedTemplates(prev => 
-      prev.map(template => 
-        template.id === templateId 
-          ? { ...template, imageLoaded: true }
-          : template
+  const handleImageLoad = useCallback((itemId: ID) => {
+    setEnhancedItems(prev => 
+      prev.map(item => 
+        getId(item.original) === itemId 
+          ? { ...item, imageLoaded: true }
+          : item
       )
     )
-  }, [])
+  }, [getId])
 
   // 计算列数（响应式）
   const responsiveColumns = useMemo(() => {
@@ -175,67 +176,64 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
     return columnsCount
   }, [columnsCount])
 
-  // 渲染单个模板卡片（优化版本）
-  const renderTemplateCard = useCallback((template: EnhancedTemplate) => {
-    const isLoadingImage = loadingImages.has(template.id.toString())
+  // 渲染单个项目卡片（优化版本）
+  const renderItemCard = useCallback((enhancedItem: EnhancedItem<T>, index: number) => {
+    const itemId = getId(enhancedItem.original)
+    const isLoadingImage = loadingImages.has(itemId.toString())
+    
+    // 调试日志
+    console.log(`[CommonMasonryGrid] Rendering item ${itemId}`, {
+      aspectRatio: enhancedItem.aspectRatio,
+      isLoadingImage
+    })
     
     return (
       <div 
-        key={template.id}
-        className="break-inside-avoid mb-4"
+        key={itemId.toString()}
         style={{ 
           marginBottom: gutter,
           opacity: isLoadingImage ? 0.6 : 1,
           transition: 'opacity 0.3s ease'
         }}
       >
-        <TemplateCard
-          template={template}
-          index={0}
-          onUseTemplate={onUseTemplate}
-          getCategoryIcon={getCategoryIcon}
-          formatNumber={formatNumber}
-          aspectRatio={template.aspectRatio}
-          onImageLoad={() => handleImageLoad(template.id)}
-          isLoading={isLoadingImage}
-        />
+        {renderItem(enhancedItem, index)}
       </div>
     )
-  }, [onUseTemplate, getCategoryIcon, formatNumber, handleImageLoad, loadingImages, gutter])
+  }, [renderItem, getId, loadingImages, gutter])
 
   // 添加调试日志
-  console.log('[MasonryTemplateGrid] Render state', {
+  console.log('[CommonMasonryGrid] Render state', {
     isLoading,
-    templatesLength: templates.length,
-    enhancedTemplatesLength: enhancedTemplates.length,
-    willShowLoading: isLoading && enhancedTemplates.length === 0,
-    willShowEmpty: enhancedTemplates.length === 0 && !isLoading && templates.length === 0
+    itemsLength: items.length,
+    enhancedItemsLength: enhancedItems.length,
+    willShowLoading: isLoading && enhancedItems.length === 0,
+    willShowEmpty: enhancedItems.length === 0 && !isLoading && items.length === 0
   })
 
   // 加载状态
-  if (isLoading && enhancedTemplates.length === 0) {
-    console.log('[MasonryTemplateGrid] Showing loading state')
+  if (isLoading && enhancedItems.length === 0) {
+    console.log('[CommonMasonryGrid] Showing loading state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">正在加载模板...</p>
+          <p className="text-gray-600">{loadingMessage}</p>
         </div>
       </div>
     )
   }
 
   // 空状态 - 只有在不是加载状态且没有数据时才显示
-  if (enhancedTemplates.length === 0 && !isLoading && templates.length === 0) {
-    console.log('[MasonryTemplateGrid] Showing empty state')
+  if (enhancedItems.length === 0 && !isLoading && items.length === 0) {
+    console.log('[CommonMasonryGrid] Showing empty state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center max-w-md mx-auto">
           <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
             <div className="text-4xl">📭</div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无模板</h3>
-          <p className="text-sm text-gray-500">模板库正在整理中，敬请期待</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">暂无数据</h3>
+          <p className="text-sm text-gray-500">{emptyMessage}</p>
         </div>
       </div>
     )
@@ -253,13 +251,12 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
       <Masonry
         columnsCount={responsiveColumns}
         gutter={gutter}
-        className="masonry-grid"
       >
-        {enhancedTemplates.map(renderTemplateCard)}
+        {enhancedItems.map((item, index) => renderItemCard(item, index))}
       </Masonry>
       
       {/* 加载更多指示器 */}
-      {isLoading && enhancedTemplates.length > 0 && (
+      {isLoading && enhancedItems.length > 0 && (
         <div className="flex justify-center py-8">
           <div className="flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
@@ -271,4 +268,4 @@ const MasonryTemplateGrid: React.FC<MasonryTemplateGridProps> = ({
   )
 }
 
-export default MasonryTemplateGrid
+export default memo(CommonMasonryGrid)

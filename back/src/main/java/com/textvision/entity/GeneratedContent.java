@@ -129,4 +129,10 @@ public class GeneratedContent {
     @TableLogic
     @TableField("deleted")
     private Integer deleted;
+
+    /**
+     * 宽高比
+     */
+    @TableField("aspect_ratio")
+    private String aspectRatio;
 }

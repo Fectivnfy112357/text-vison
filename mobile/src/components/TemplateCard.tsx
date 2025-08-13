@@ -91,10 +91,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
         {/* 大图展示区域 */}
         <div 
           className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
-          style={{
-            ...getAspectRatioStyle(aspectRatio),
-            contain: 'layout' // 简化 containment，减少性能开销
-          }}
+          style={getAspectRatioStyle(aspectRatio)}
         >
           {template.imageUrl ? (
             <>

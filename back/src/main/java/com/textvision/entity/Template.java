@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * 模板实体类
- * 
+ *
  * @author TextVision Team
  * @since 1.0.0
  */
@@ -27,6 +27,11 @@ public class Template {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 模板宽高比
+     */
+    @TableField("aspect_ratio")
+    private String aspectRatio;
     /**
      * 模板标题
      */

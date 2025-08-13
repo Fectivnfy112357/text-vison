@@ -11,7 +11,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
-import MasonryHistoryGrid from '../components/MasonryHistoryGrid'
+import CommonMasonryGrid, { EnhancedItem } from '../components/CommonMasonryGrid'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -327,15 +327,31 @@ const History: React.FC = () => {
             ref={scrollContainerRef}
             className="h-full overflow-y-auto px-2 py-3"
           >
-            <MasonryHistoryGrid
-              history={filteredHistory}
-              onDownload={handleDownload}
-              onShare={handleShare}
-              onDelete={handleDelete}
+            <CommonMasonryGrid<GenerationContent, string>
+              items={filteredHistory}
+              renderItem={(enhancedItem, index) => (
+                <HistoryItem
+                  item={enhancedItem.original}
+                  index={index}
+                  isSelected={false}
+                  onDownload={handleDownload}
+                  onShare={handleShare}
+                  onDelete={handleDelete}
+                  aspectRatio={enhancedItem.aspectRatio}
+                  onImageLoad={() => {
+                    // 处理图片加载完成，这里可以添加额外的逻辑
+                  }}
+                  isLoading={false}
+                />
+              )}
+              getAspectRatio={(item) => item.aspectRatio || (item.type === 'video' ? 16/9 : 16/9)}
+              getId={(item) => item.id}
               isLoading={isLoading}
               columnsCount={2}
               gutter="8px"
               className="h-full"
+              emptyMessage="还没有创作记录，开始你的第一次AI创作之旅吧"
+              loadingMessage="正在加载历史记录..."
             />
           </div>
         )}
