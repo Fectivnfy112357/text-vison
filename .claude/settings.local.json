@@ -3,7 +3,8 @@
   "permissions": {
     "allow": [
       "Bash(rm:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(del:*)"
     ],
     "deny": []
   }

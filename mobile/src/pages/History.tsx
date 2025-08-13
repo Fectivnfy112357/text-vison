@@ -56,7 +56,7 @@ const History: React.FC = () => {
     }
   }, [isAuthenticated, loadHistory])
 
-  // 滚动事件监听
+  // 滚动事件监听（性能优化版本）
   useEffect(() => {
     const handleScroll = () => {
       const container = scrollContainerRef.current
@@ -66,40 +66,65 @@ const History: React.FC = () => {
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       
-      console.log('[History] Scroll event', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        distanceFromBottom: scrollHeight - (scrollTop + clientHeight),
-        isLoadingMore,
-        hasNext: pagination.hasNext,
-        isLoading
-      })
-      
-      // 当滚动到距离底部200px时触发
-      if (scrollTop + clientHeight >= scrollHeight - 200 && !isLoadingMore && pagination.hasNext && !isLoading) {
-        console.log('[History] Scroll threshold reached, triggering loadMoreHistory')
+      // 当滚动到距离底部400px时触发（增加提前量）
+      if (scrollTop + clientHeight >= scrollHeight - 400 && !isLoadingMore && pagination.hasNext && !isLoading) {
         loadMoreHistory()
+      }
+    }
+
+    // 使用 requestAnimationFrame 优化滚动事件
+    let ticking = false
+    let lastScrollTime = 0
+    const SCROLL_THROTTLE = 150 // 增加节流时间，减少触发频率
+
+    const optimizedHandleScroll = () => {
+      const now = Date.now()
+
+      // 时间节流，避免频繁触发
+      if (now - lastScrollTime < SCROLL_THROTTLE) {
+        if (!ticking) {
+          ticking = true
+          requestAnimationFrame(() => {
+            handleScroll()
+            ticking = false
+          })
+        }
+        return
+      }
+
+      lastScrollTime = now
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
       }
     }
 
     const container = scrollContainerRef.current
     if (container) {
-      container.addEventListener('scroll', handleScroll)
+      // 使用 passive 事件监听器提升滚动性能
+      container.addEventListener('scroll', optimizedHandleScroll, {
+        passive: true
+      })
     }
 
     return () => {
       if (container) {
-        container.removeEventListener('scroll', handleScroll)
+        container.removeEventListener('scroll', optimizedHandleScroll)
       }
     }
   }, [loadMoreHistory, isLoadingMore, pagination.hasNext, isLoading])
 
-  // 过滤和排序历史记录
+  // 过滤和排序历史记录（性能优化版本）
   const filteredHistory = React.useMemo(() => {
-    if (!history || !Array.isArray(history)) {
+    if (!history || !Array.isArray(history) || history.length === 0) {
       return []
     }
+    
+    // 缓存搜索查询，避免重复toLowerCase操作
+    const cachedSearchQuery = searchQuery ? searchQuery.toLowerCase() : ''
     
     let filtered = history.filter(item => {
       // 类型过滤
@@ -108,26 +133,28 @@ const History: React.FC = () => {
       }
       
       // 搜索过滤
-      if (searchQuery) {
-        return item.prompt.toLowerCase().includes(searchQuery.toLowerCase())
+      if (cachedSearchQuery) {
+        return item.prompt.toLowerCase().includes(cachedSearchQuery)
       }
       
       return true
     })
 
-    // 排序
-    filtered.sort((a, b) => {
-      switch (sortType) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        case 'name':
-          return a.prompt.localeCompare(b.prompt)
-        default:
-          return 0
-      }
-    })
+    // 排序 - 只有在过滤结果不为空时才进行排序
+    if (filtered.length > 0) {
+      filtered.sort((a, b) => {
+        switch (sortType) {
+          case 'newest':
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          case 'oldest':
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          case 'name':
+            return a.prompt.localeCompare(b.prompt)
+          default:
+            return 0
+        }
+      })
+    }
 
     return filtered
   }, [history, filterType, searchQuery, sortType])
