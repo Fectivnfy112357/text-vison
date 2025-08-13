@@ -152,7 +152,9 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
         style={{ 
           marginBottom: gutter,
           opacity: isLoadingImage ? 0.6 : 1,
-          transition: 'opacity 0.3s ease'
+          transition: 'opacity 0.3s ease',
+          width: '100%',
+          boxSizing: 'border-box'
         }}
       >
         {renderItem(enhancedItem, index)}
@@ -203,13 +205,15 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
       ref={gridRef}
       className={`w-full ${className}`}
       style={{ 
-        height: '100%'
-        // 移除 overflowY: 'auto' 避免嵌套滚动
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
       <Masonry
         columnsCount={responsiveColumns}
         gutter={gutter}
+        className="flex-1"
       >
         {enhancedItems.map((item, index) => renderItemCard(item, index))}
       </Masonry>

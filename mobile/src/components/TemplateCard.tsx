@@ -85,77 +85,86 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
   return (
     <div
       ref={cardRef}
-      className="group"
+      className="group w-full"
+      style={{ boxSizing: 'border-box' }}
     >
-      <div className="card-glow overflow-hidden">
+      <div className="card-glow overflow-hidden w-full">
         {/* 大图展示区域 */}
         <div 
           className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
           style={getAspectRatioStyle(aspectRatio)}
         >
-          {template.imageUrl ? (
-            <>
-              {/* 图片加载状态 */}
-              {(isVisible && !imageLoaded) || isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <div className="text-center">
-                    <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
-                    <div className="text-xs text-gray-500">加载中...</div>
+          {/* 图片容器 - 使用绝对定位填充整个容器 */}
+          <div className="absolute inset-0">
+            {template.imageUrl ? (
+              <>
+                {/* 图片加载状态 */}
+                {(isVisible && !imageLoaded) || isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 z-10">
+                    <div className="text-center">
+                      <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
+                      <div className="text-xs text-gray-500">加载中...</div>
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              {/* 实际图片 - 懒加载 */}
-              {isVisible && (
-                <img
-                  ref={imageRef}
-                  src={template.imageUrl}
-                  alt={template.title}
-                  className={`w-full h-full object-cover absolute inset-0 ${
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onLoad={handleImageLoad}
-                  onError={handleImageError}
-                  loading="lazy"
-                  decoding="async"
-                  style={{ 
-                    transition: imageLoaded ? 'opacity 0.3s ease-in-out' : 'none',
-                    // 移除 will-change 以减少内存使用
-                  }}
-                />
-              )}
-              
-              {/* 图片加载错误占位符 */}
-              {imageError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <div className="text-center">
-                    <Sparkles className="text-gray-400 mb-2" size={32} />
-                    <div className="text-xs text-gray-500">图片加载失败</div>
+                )}
+                
+                {/* 实际图片 - 懒加载 */}
+                {isVisible && (
+                  <img
+                    ref={imageRef}
+                    src={template.imageUrl}
+                    alt={template.title}
+                    className={`w-full h-full object-cover ${
+                      imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                    loading="lazy"
+                    decoding="async"
+                    style={{ 
+                      transition: imageLoaded ? 'opacity 0.3s ease-in-out' : 'none',
+                      // 确保图片填充整个容器
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  />
+                )}
+                
+                {/* 图片加载错误占位符 */}
+                {imageError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                    <div className="text-center">
+                      <Sparkles className="text-gray-400 mb-2" size={32} />
+                      <div className="text-xs text-gray-500">图片加载失败</div>
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              {/* 占位符 - 图片未加载时显示 */}
-              {!isVisible && (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <Sparkles className="text-gray-300 mb-2" size={32} />
-                    <div className="text-xs text-gray-400">模板预览</div>
+                )}
+                
+                {/* 占位符 - 图片未加载时显示 */}
+                {!isVisible && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <Sparkles className="text-gray-300 mb-2" size={32} />
+                      <div className="text-xs text-gray-400">模板预览</div>
+                    </div>
                   </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                  <Sparkles className="text-gray-400 mb-2" size={32} />
+                  <div className="text-xs text-gray-500">模板预览</div>
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center">
-                <Sparkles className="text-gray-400 mb-2" size={32} />
-                <div className="text-xs text-gray-500">模板预览</div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           
           {/* 顶部标签 */}
-          <div className="absolute top-3 left-3 flex flex-col space-y-1">
+          <div className="absolute top-3 left-3 flex flex-col space-y-1 z-20">
             {template.isPremium && (
               <span className="px-2 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
                 ✨ PRO
@@ -168,8 +177,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
               </span>
             )}
           </div>
-          
-                  </div>
+        </div>
         
         {/* 内容区域 */}
         <div className="p-3">

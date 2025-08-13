@@ -157,9 +157,10 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(
       <>
         <div
           ref={containerRef}
-          className={`card-glow overflow-hidden group cursor-pointer ${
+          className={`card-glow overflow-hidden group cursor-pointer w-full ${
             isSelected ? "ring-2 ring-primary-300" : ""
           }`}
+          style={{ boxSizing: 'border-box' }}
           onClick={handleVideoClick}
         >
           {/* 主要内容区域 */}
@@ -169,92 +170,101 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(
               className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
               style={getAspectRatioStyle(aspectRatio)}
             >
-              {cleanUrl ? (
-                <>
-                  {/* 图片加载状态 */}
-                  {isVisible && !imageLoaded && !imageError && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                      <div className="text-center">
-                        <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
-                        <div className="text-xs text-gray-500">加载中...</div>
+              {/* 图片容器 - 使用绝对定位填充整个容器 */}
+              <div className="absolute inset-0">
+                {cleanUrl ? (
+                  <>
+                    {/* 图片加载状态 */}
+                    {isVisible && !imageLoaded && !imageError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 z-10">
+                        <div className="text-center">
+                          <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
+                          <div className="text-xs text-gray-500">加载中...</div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* 实际图片 - 懒加载 */}
-                  {isVisible && (
-                    <>
-                      {/* 低质量占位图 */}
-                      {!imageLoaded && !imageError && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 filter blur-sm scale-110" />
-                      )}
-                      
-                      <img
-                        src={cleanUrl}
-                        alt={item.prompt || "Generated content"}
-                        className={`w-full h-full object-cover absolute inset-0 ${
-                          imageLoaded ? "opacity-100" : "opacity-0"
-                        }`}
-                        onLoad={handleImageLoad}
-                        onError={handleImageError}
-                        loading="lazy"
-                        decoding="async"
-                        style={{
-                          transition: imageLoaded
-                            ? "opacity 0.2s ease-in-out"
-                            : "none",
-                        }}
-                      />
-                    </>
-                  )}
+                    {/* 实际图片 - 懒加载 */}
+                    {isVisible && (
+                      <>
+                        {/* 低质量占位图 */}
+                        {!imageLoaded && !imageError && (
+                          <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 filter blur-sm scale-110" />
+                        )}
+                        
+                        <img
+                          src={cleanUrl}
+                          alt={item.prompt || "Generated content"}
+                          className={`w-full h-full object-cover ${
+                            imageLoaded ? "opacity-100" : "opacity-0"
+                          }`}
+                          onLoad={handleImageLoad}
+                          onError={handleImageError}
+                          loading="lazy"
+                          decoding="async"
+                          style={{
+                            transition: imageLoaded
+                              ? "opacity 0.2s ease-in-out"
+                              : "none",
+                            // 确保图片填充整个容器
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%'
+                          }}
+                        />
+                      </>
+                    )}
 
-                  {/* 图片加载错误占位符 */}
-                  {imageError && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg flex flex-col items-center justify-center text-center p-4 border border-red-200/50">
-                      <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-2">
-                        <Sparkles size={24} className="text-red-500" />
+                    {/* 图片加载错误占位符 */}
+                    {imageError && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg flex flex-col items-center justify-center text-center p-4 border border-red-200/50">
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-2">
+                          <Sparkles size={24} className="text-red-500" />
+                        </div>
+                        <div className="text-sm font-medium text-red-600 mb-1">
+                          图片加载失败
+                        </div>
+                        <div className="text-xs text-red-500">
+                          链接已过期，无法访问
+                        </div>
                       </div>
-                      <div className="text-sm font-medium text-red-600 mb-1">
-                        图片加载失败
-                      </div>
-                      <div className="text-xs text-red-500">
-                        链接已过期，无法访问
-                      </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* 占位符 - 图片未加载时显示 */}
-                  {!isVisible && (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <Image className="text-gray-300 mb-2" size={32} />
-                        <div className="text-xs text-gray-400">预览</div>
+                    {/* 占位符 - 图片未加载时显示 */}
+                    {!isVisible && (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <Image className="text-gray-300 mb-2" size={32} />
+                          <div className="text-xs text-gray-400">预览</div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* 视频播放覆盖层 */}
-                  {item.type === "video" && imageLoaded && !imageError && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
-                        <Play size={24} className="text-primary-600 ml-1" fill="currentColor" />
+                    {/* 视频播放覆盖层 */}
+                    {item.type === "video" && imageLoaded && !imageError && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                          <Play size={24} className="text-primary-600 ml-1" fill="currentColor" />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <Image className="text-gray-400 mb-2" size={32} />
-                    <div className="text-sm text-gray-500">
-                      {item.type === "image" ? "图片" : "视频"}模板
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <Image className="text-gray-400 mb-2" size={32} />
+                      <div className="text-sm text-gray-500">
+                        {item.type === "image" ? "图片" : "视频"}模板
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* 状态标签 */}
-              <div className="absolute top-3 left-3 flex flex-col space-y-2 z-10">
+              <div className="absolute top-3 left-3 flex flex-col space-y-2 z-20">
                 <span
                   className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
                     item.type === "image"

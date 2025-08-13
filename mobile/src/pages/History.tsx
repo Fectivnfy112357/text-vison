@@ -353,6 +353,7 @@ const History: React.FC = () => {
           <div 
             ref={scrollContainerRef}
             className="h-full overflow-y-auto px-2 py-3"
+            style={{ boxSizing: 'border-box' }}
           >
             <CommonMasonryGrid
               items={filteredHistory}
@@ -390,7 +391,7 @@ const History: React.FC = () => {
               getId={(item: any) => (item as GenerationContent).id}
               isLoading={isLoading}
               gutter="12px"
-              className="h-full"
+              className="h-full w-full"
               emptyMessage="还没有创作记录，开始你的第一次AI创作之旅吧"
               loadingMessage="正在加载历史记录..."
             />

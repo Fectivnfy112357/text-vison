@@ -130,11 +130,23 @@ export function getAspectRatioClass(aspectRatio: number): string {
  * @returns CSS样式对象
  */
 export function getAspectRatioStyle(aspectRatio: number): React.CSSProperties {
-  // 对于瀑布流，使用 aspect-ratio 属性，让浏览器自动计算高度
+  // 对于瀑布流，使用 padding-bottom 技巧确保兼容性
+  // 同时使用 aspect-ratio 属性作为现代浏览器的优化
+  const paddingPercentage = (1 / aspectRatio) * 100
+  
   return {
-    aspectRatio: aspectRatio.toString(),
+    // 使用 padding-bottom 技巧确保宽高比（兼容性更好）
+    paddingBottom: `${paddingPercentage}%`,
+    position: 'relative',
     width: '100%',
-    height: 'auto'
+    height: 0,
+    // 现代浏览器使用 aspect-ratio 属性
+    aspectRatio: aspectRatio.toString(),
+    // 确保容器不会溢出
+    overflow: 'hidden',
+    // 确保容器填充父元素
+    boxSizing: 'border-box',
+    display: 'block'
   }
 }
 

@@ -356,6 +356,7 @@ const Templates: React.FC = () => {
           <div
             ref={scrollContainerRef}
             className="h-full overflow-y-auto px-2 py-3"
+            style={{ boxSizing: 'border-box' }}
           >
             <CommonMasonryGrid
               items={sortedTemplates}
@@ -392,7 +393,7 @@ const Templates: React.FC = () => {
               getId={(item: any) => (item as Template).id}
               isLoading={isLoading}
               gutter="12px"
-              className="h-full"
+              className="h-full w-full"
               hasMore={pagination.hasNext}
               onLoadMore={loadMore}
               emptyMessage="模板库正在整理中，敬请期待"
