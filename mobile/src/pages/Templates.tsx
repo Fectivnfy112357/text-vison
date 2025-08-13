@@ -283,10 +283,10 @@ const Templates: React.FC = () => {
           <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide py-1">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 transition-all duration-150 transform hover:scale-105 ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
                 !selectedCategory
-                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg"
-                  : "bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft"
+                  ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
+                  : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200"
               }`}
             >
               <span>🌟</span>
@@ -301,10 +301,10 @@ const Templates: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 transition-all duration-150 transform hover:scale-105 ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
                   selectedCategory?.id === category.id
-                    ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg"
-                    : "bg-white/70 backdrop-blur-sm text-gray-600 border border-white/60 hover:bg-white/80 hover:shadow-soft"
+                    ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
+                    : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200"
                 }`}
               >
                 <span>{getCategoryIcon(category.name)}</span>

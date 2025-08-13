@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
-  Search, 
   RefreshCw,
   Clock,
   Sparkles
@@ -31,7 +30,6 @@ const History: React.FC = () => {
   const { isAuthenticated } = useAuthStore()
 
   // 状态管理
-  const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [sortType, _setSortType] = useState<SortType>('newest')
   const [_showFilters, _setShowFilters] = useState(false)
@@ -123,18 +121,10 @@ const History: React.FC = () => {
       return []
     }
     
-    // 缓存搜索查询，避免重复toLowerCase操作
-    const cachedSearchQuery = searchQuery ? searchQuery.toLowerCase() : ''
-    
     let filtered = history.filter(item => {
       // 类型过滤
       if (filterType !== 'all' && item.type !== filterType) {
         return false
-      }
-      
-      // 搜索过滤
-      if (cachedSearchQuery) {
-        return item.prompt.toLowerCase().includes(cachedSearchQuery)
       }
       
       return true
@@ -157,7 +147,7 @@ const History: React.FC = () => {
     }
 
     return filtered
-  }, [history, filterType, searchQuery, sortType])
+  }, [history, filterType, sortType])
 
   // 处理刷新
   const handleRefresh = async () => {
@@ -270,54 +260,47 @@ const History: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
       {/* 头部 */}
-      <div 
-        className="safe-area-top px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-white/60"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
-          transition: 'all 0.3s ease-out',
-          willChange: 'transform, opacity'
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-gray-800">创作历史</h1>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="p-2 rounded-xl bg-white/80 backdrop-blur-sm shadow-soft"
-            >
-              <RefreshCw size={18} className={`text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
+      <div className="relative safe-area-top bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-transparent backdrop-blur-sm border-b border-white/20">
+        {/* 头部标题和操作区 */}
+        <div className="px-3 pt-4 pb-2">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                <Clock size={18} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gradient">创作历史</h1>
+                <p className="text-xs text-gray-500">
+                  查看你的AI创作记录
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="p-2 rounded-xl bg-white/80 backdrop-blur-sm"
+              >
+                <RefreshCw size={18} className={`text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 搜索栏 */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索创作内容..."
-            className="w-full pl-10 pr-4 py-3 bg-white/60 border border-white/60 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent"
-          />
-        </div>
-
         {/* 过滤器 */}
-        <div className="flex items-center space-x-3">
-          <div className="flex space-x-2">
+        <div className="px-3 pb-3">
+          <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide py-1">
             {(['all', 'image', 'video'] as FilterType[]).map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium ${
                   filterType === type
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-white/60 text-gray-600'
+                    ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
+                    : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200"
                 }`}
               >
-                {type === 'all' ? '全部' : type === 'image' ? '图片' : '视频'}
+                {type === 'all' ? '🌟 全部' : type === 'image' ? '🖼️ 图片' : '🎬 视频'}
               </button>
             ))}
           </div>
