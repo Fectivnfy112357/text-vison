@@ -65,7 +65,6 @@ public class VolcanoApiService {
             request.setPrompt(prompt);
             request.setSize(size);
             request.setQuality(quality != null ? quality : "standard");
-            request.setN(1);
 
             // 设置返回格式
             if (responseFormat != null && !responseFormat.trim().isEmpty()) {
@@ -413,7 +412,6 @@ public class VolcanoApiService {
         private String prompt;
         private String size;
         private String quality;
-        private Integer n;
         private String response_format;
         private Integer seed;
         private Double guidance_scale;
