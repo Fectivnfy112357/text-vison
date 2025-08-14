@@ -4,6 +4,7 @@ import { Search, ChevronRight, MessageCircle, LifeBuoy, Book, Zap, Shield, Credi
 import { useNavigate } from 'react-router-dom'
 
 const Help: React.FC = () => {
+      
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedSection, setExpandedSection] = useState<string | null>(null)

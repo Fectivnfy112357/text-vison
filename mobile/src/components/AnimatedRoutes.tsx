@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Routes, Route } from 'react-router-dom'
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 
 // 页面组件
 const Home = lazy(() => import('../pages/Home'))
@@ -47,6 +47,20 @@ interface AnimatedRoutesProps {
 
 const AnimatedRoutes: React.FC<AnimatedRoutesProps> = () => {
   const location = useLocation()
+
+  // 路由变化时滚动到顶部
+  useEffect(() => {
+    // 延迟执行以确保 DOM 更新完成
+    const timer = setTimeout(() => {
+      // 查找外层滚动容器
+      const scrollContainer = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0
+      }
+    }, 100) // 100ms 延迟确保动画和 DOM 更新完成
+    
+    return () => clearTimeout(timer)
+  }, [location.pathname])
 
   return (
     <AnimatePresence mode="wait">

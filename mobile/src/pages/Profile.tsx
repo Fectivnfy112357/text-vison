@@ -447,33 +447,6 @@ const Profile: React.FC = () => {
             <h3 className="text-sm font-medium text-gray-700 mb-3">系统设置</h3>
             <div className="card-soft divide-y divide-gray-100">
               <SettingsItem
-                icon={<Bell size={16} className="text-blue-500" />}
-                title="通知设置"
-                description="管理推送和提醒"
-                onClick={() => {
-                  setActiveSetting('notifications')
-                  setShowSettings(true)
-                }}
-              />
-              <SettingsItem
-                icon={<Shield size={16} className="text-green-500" />}
-                title="隐私安全"
-                description="账户安全和隐私设置"
-                onClick={() => {
-                  setActiveSetting('privacy')
-                  setShowSettings(true)
-                }}
-              />
-              <SettingsItem
-                icon={<Palette size={16} className="text-purple-500" />}
-                title="外观设置"
-                description="主题和显示设置"
-                onClick={() => {
-                  setActiveSetting('appearance')
-                  setShowSettings(true)
-                }}
-              />
-              <SettingsItem
                 icon={<HelpCircle size={16} className="text-gray-500" />}
                 title="帮助中心"
                 description="使用指南和常见问题"
