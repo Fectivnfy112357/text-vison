@@ -337,8 +337,14 @@ const FileUploader = ({
 const Create: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { generateContent, isGenerating, currentGeneration, destroy } =
-    useGenerationStore();
+  const { 
+    generateContent, 
+    isGenerating, 
+    currentGeneration, 
+    destroy, 
+    restorePolling,
+    refreshCurrentGeneration 
+  } = useGenerationStore();
   const {
     artStyles,
     selectedStyle,
@@ -404,11 +410,27 @@ const Create: React.FC = () => {
       }));
     }
 
+    // 恢复轮询状态
+    restorePolling();
+
     // 组件卸载时清理轮询
     return () => {
       destroy();
     };
-  }, [isAuthenticated, location.state, loadArtStyles, destroy]);
+  }, [isAuthenticated, location.state, loadArtStyles, destroy, restorePolling]);
+
+  // 页面获得焦点时刷新生成状态
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshCurrentGeneration();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshCurrentGeneration]);
 
   // 处理参数变化
   const updateParam = (key: keyof GenerateContentRequest, value: any) => {
@@ -1110,9 +1132,20 @@ const Create: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="p-6 rounded-2xl border-2 border-gray-200 bg-white/50 backdrop-blur-sm"
             >
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                生成结果
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  生成结果
+                </h3>
+                {currentGeneration.status === 'processing' && (
+                  <button
+                    onClick={refreshCurrentGeneration}
+                    className="p-2 rounded-lg bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
+                    title="刷新状态"
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                )}
+              </div>
 
               {currentGeneration.status === "completed" &&
               currentGeneration.url ? (

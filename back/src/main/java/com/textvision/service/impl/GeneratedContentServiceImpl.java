@@ -21,14 +21,18 @@ import com.textvision.service.VolcanoApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +51,10 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private final VolcanoApiService volcanoApiService;
     private final ArtStyleService artStyleService;
 
-    private String convertSizeToAspectRatio(String size) {
+    @Resource
+    private Executor taskExecutor;
+
+    private String convertSizeToAspectRatio(GenerateContentRequest request) {
         //1024x1024 （1:1）
         //864x1152 （3:4）
         //1152x864 （4:3）
@@ -56,37 +63,41 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         //832x1248 （2:3）
         //1248x832 （3:2）
         //1512x648 （21:9）
-        String ratio;
-        switch (size) {
-            case "1024x1024":
-                ratio = "1:1";
-                break;
-            case "864x1152":
-                ratio = "3:4";
-                break;
-            case "1152x864":
-                ratio = "4:3";
-                break;
-            case "1280x720":
-                ratio = "16:9";
-                break;
-            case "720x1280":
-                ratio = "9:16";
-                break;
-            case "832x1248":
-                ratio = "2:3";
-                break;
-            case "1248x832":
-                ratio = "3:2";
-                break;
-            case "1512x648":
-                ratio = "21:9";
-                break;
-            default:
-                ratio = "1:1";
-                break;
+        String size = request.getSize();
+        if (size != null) {
+            String ratio;
+            switch (size) {
+                case "1024x1024":
+                    ratio = "1:1";
+                    break;
+                case "864x1152":
+                    ratio = "3:4";
+                    break;
+                case "1152x864":
+                    ratio = "4:3";
+                    break;
+                case "1280x720":
+                    ratio = "16:9";
+                    break;
+                case "720x1280":
+                    ratio = "9:16";
+                    break;
+                case "832x1248":
+                    ratio = "2:3";
+                    break;
+                case "1248x832":
+                    ratio = "3:2";
+                    break;
+                case "1512x648":
+                    ratio = "21:9";
+                    break;
+                default:
+                    ratio = "1:1";
+                    break;
+            }
+            return ratio;
         }
-        return ratio;
+        return Optional.ofNullable(request.getRatio()).orElse("1:1");
     }
 
     @Override
@@ -137,7 +148,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         content.setReferenceImage(request.getReferenceImage());
         content.setTemplateId(request.getTemplateId());
         content.setStatus("processing");
-        content.setAspectRatio(convertSizeToAspectRatio(request.getSize()));
+        content.setAspectRatio(convertSizeToAspectRatio(request));
         content.setUrl(""); // 初始设置为空字符串，生成完成后更新
 
         // 构建生成参数
@@ -297,110 +308,111 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     /**
      * 异步生成内容
      */
-    @Async
     public void asyncGenerateContent(Long contentId, GenerateContentRequest request) {
-        try {
-            log.info("开始异步生成内容: contentId={}, type={}", contentId, request.getType());
+        taskExecutor.execute(() -> {
+            try {
+                log.info("开始异步生成内容: contentId={}, type={}", contentId, request.getType());
 
-            String resultUrl = null;
-            String thumbnail = null;
+                String resultUrl = null;
+                String thumbnail = null;
 
-            if ("image".equals(request.getType())) {
-                // 调用图片生成API
-                VolcanoApiService.ImageGenerationResult result = volcanoApiService.generateImage(
-                        request.getPrompt(),
-                        request.getSize(),
-                        request.getStyle(),
-                        request.getQuality(),
-                        request.getResponseFormat(),
-                        request.getSeed(),
-                        request.getGuidanceScale(),
-                        request.getWatermark()
-                );
+                if ("image".equals(request.getType())) {
+                    // 调用图片生成API
+                    VolcanoApiService.ImageGenerationResult result = volcanoApiService.generateImage(
+                            request.getPrompt(),
+                            request.getSize(),
+                            request.getStyle(),
+                            request.getQuality(),
+                            request.getResponseFormat(),
+                            request.getSeed(),
+                            request.getGuidanceScale(),
+                            request.getWatermark()
+                    );
 
-                if (result.isSuccess()) {
-                    resultUrl = result.getUrl();
-                    thumbnail = result.getUrl(); // 图片没有缩略图，使用原图
+                    if (result.isSuccess()) {
+                        resultUrl = result.getUrl();
+                        thumbnail = result.getUrl(); // 图片没有缩略图，使用原图
+                    } else {
+                        // 图片生成失败
+                        throw new RuntimeException(result.getErrorMessage());
+                    }
                 } else {
-                    // 图片生成失败
-                    throw new RuntimeException(result.getErrorMessage());
-                }
-            } else {
-                // 调用视频生成API
-                VolcanoApiService.VideoGenerationResult result = volcanoApiService.generateVideo(
-                        request.getPrompt(),
-                        request.getModel(),
-                        request.getResolution(),
-                        request.getDuration(),
-                        request.getRatio(),
-                        request.getFps(),
-                        request.getCameraFixed(),
-                        request.getCfgScale(),
-                        request.getCount(),
-                        request.getFirstFrameImage(),
-                        request.getLastFrameImage(),
-                        request.getHd(),
-                        request.getWatermark()
-                );
+                    // 调用视频生成API
+                    VolcanoApiService.VideoGenerationResult result = volcanoApiService.generateVideo(
+                            request.getPrompt(),
+                            request.getModel(),
+                            request.getResolution(),
+                            request.getDuration(),
+                            request.getRatio(),
+                            request.getFps(),
+                            request.getCameraFixed(),
+                            request.getCfgScale(),
+                            request.getCount(),
+                            request.getFirstFrameImage(),
+                            request.getLastFrameImage(),
+                            request.getHd(),
+                            request.getWatermark()
+                    );
 
-                if (result.isSuccess() && result.getTaskId() != null) {
-                    // 视频生成任务创建成功，开始轮询查询任务状态
-                    log.info("视频生成任务创建成功，开始轮询查询状态: contentId={}, taskId={}", contentId, result.getTaskId());
+                    if (result.isSuccess() && result.getTaskId() != null) {
+                        // 视频生成任务创建成功，开始轮询查询任务状态
+                        log.info("视频生成任务创建成功，开始轮询查询状态: contentId={}, taskId={}", contentId, result.getTaskId());
 
-                    String taskId = result.getTaskId();
-                    int maxRetries = 60; // 最多查询60次，每次间隔10秒，总共10分钟
-                    int retryCount = 0;
+                        String taskId = result.getTaskId();
+                        int maxRetries = 60; // 最多查询60次，每次间隔10秒，总共10分钟
+                        int retryCount = 0;
 
-                    while (retryCount < maxRetries) {
-                        try {
-                            Thread.sleep(10000); // 等待10秒
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new RuntimeException("任务被中断", e);
-                        }
-
-                        VolcanoApiService.VideoGenerationResult queryResult = volcanoApiService.queryVideoTask(taskId);
-
-                        if (queryResult.isSuccess()) {
-                            // 任务完成，检查是否有多个URL
-                            if (queryResult.getUrls() != null && !queryResult.getUrls().isEmpty()) {
-                                // 多个视频URL
-                                log.info("视频生成任务完成: contentId={}, taskId={}, urlCount={}", contentId, taskId, queryResult.getUrls().size());
-                                updateGenerationStatus(contentId, "completed", queryResult.getUrls(), queryResult.getThumbnails(), null);
-                                return;
-                            } else {
-                                // 单个视频URL
-                                resultUrl = queryResult.getUrl();
-                                thumbnail = queryResult.getThumbnail();
-                                log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
-                                break;
+                        while (retryCount < maxRetries) {
+                            try {
+                                Thread.sleep(10000); // 等待10秒
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                throw new RuntimeException("任务被中断", e);
                             }
-                        } else if ("PROCESSING".equals(queryResult.getErrorMessage())) {
-                            // 任务进行中，继续等待
-                            retryCount++;
-                            log.debug("视频生成任务进行中: contentId={}, taskId={}, retry={}/{}", contentId, taskId, retryCount, maxRetries);
-                        } else {
-                            // 任务失败
-                            throw new RuntimeException("视频生成任务失败: " + queryResult.getErrorMessage());
+
+                            VolcanoApiService.VideoGenerationResult queryResult = volcanoApiService.queryVideoTask(taskId);
+
+                            if (queryResult.isSuccess()) {
+                                // 任务完成，检查是否有多个URL
+                                if (queryResult.getUrls() != null && !queryResult.getUrls().isEmpty()) {
+                                    // 多个视频URL
+                                    log.info("视频生成任务完成: contentId={}, taskId={}, urlCount={}", contentId, taskId, queryResult.getUrls().size());
+                                    updateGenerationStatus(contentId, "completed", queryResult.getUrls(), queryResult.getThumbnails(), null);
+                                    return;
+                                } else {
+                                    // 单个视频URL
+                                    resultUrl = queryResult.getUrl();
+                                    thumbnail = queryResult.getThumbnail();
+                                    log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
+                                    break;
+                                }
+                            } else if ("PROCESSING".equals(queryResult.getErrorMessage())) {
+                                // 任务进行中，继续等待
+                                retryCount++;
+                                log.debug("视频生成任务进行中: contentId={}, taskId={}, retry={}/{}", contentId, taskId, retryCount, maxRetries);
+                            } else {
+                                // 任务失败
+                                throw new RuntimeException("视频生成任务失败: " + queryResult.getErrorMessage());
+                            }
                         }
-                    }
 
-                    if (retryCount >= maxRetries) {
-                        throw new RuntimeException("视频生成任务超时，请稍后重试");
+                        if (retryCount >= maxRetries) {
+                            throw new RuntimeException("视频生成任务超时，请稍后重试");
+                        }
+                    } else {
+                        throw new RuntimeException("视频生成任务创建失败: " + result.getErrorMessage());
                     }
-                } else {
-                    throw new RuntimeException("视频生成任务创建失败: " + result.getErrorMessage());
                 }
+
+                // 更新为成功状态（单个URL的情况）
+                updateGenerationStatus(contentId, "completed", resultUrl, thumbnail, null);
+
+            } catch (Exception e) {
+                log.error("生成内容失败: contentId={}", contentId, e);
+                // 更新为失败状态
+                updateGenerationStatus(contentId, "failed", (String) null, null, e.getMessage());
             }
-
-            // 更新为成功状态（单个URL的情况）
-            updateGenerationStatus(contentId, "completed", resultUrl, thumbnail, null);
-
-        } catch (Exception e) {
-            log.error("生成内容失败: contentId={}", contentId, e);
-            // 更新为失败状态
-            updateGenerationStatus(contentId, "failed", (String) null, null, e.getMessage());
-        }
+        });
     }
 
     /**
