@@ -52,11 +52,7 @@ const Templates: React.FC = () => {
 
   // 排序模板 - 按使用次数排序，添加缓存
   const sortedTemplates = useMemo(() => {
-    console.log("[Templates] Sorting templates", {
-      count: templates.length,
-      firstTemplate: templates[0]?.title,
-      selectedCategory: selectedCategory?.name,
-    });
+ 
     // 只有在templates数组长度变化时才重新排序
     if (templates.length === 0) return [];
 
@@ -67,22 +63,15 @@ const Templates: React.FC = () => {
   // 处理分类选择 - 使用useCallback优化
   const handleCategorySelect = useCallback(
     (category: TemplateCategory | null) => {
-      console.log("[Templates] handleCategorySelect called", {
-        category: category?.name || "全部",
-        categoryId: category?.id,
-        templateCount: category?.templateCount || 0,
-      });
       setSelectedCategory(category);
       // 触发重新加载第一页
       if (category) {
-        console.log("[Templates] Loading templates for category:", category.id);
         loadTemplates({
           categoryId: category.id.toString(),
           page: 1,
           size: 20,
         });
       } else {
-        console.log("[Templates] Loading all templates");
         loadTemplates({ page: 1, size: 20 });
       }
     },
@@ -91,22 +80,13 @@ const Templates: React.FC = () => {
 
   // 加载更多数据
   const loadMore = useCallback(async () => {
-    console.log("[Templates] loadMore called", {
-      isLoadingMore,
-      hasNext: pagination.hasNext,
-      isLoading,
-      currentPage: pagination.current,
-    });
-
     if (isLoadingMore || !pagination.hasNext || isLoading) {
-      console.log("[Templates] loadMore blocked by conditions");
       return;
     }
 
     setIsLoadingMore(true);
     try {
       const nextPage = pagination.current + 1;
-      console.log("[Templates] Loading page", nextPage);
 
       const params = {
         page: nextPage,

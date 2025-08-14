@@ -44,11 +44,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
 
   // 增强数据，添加宽高比信息（同步处理版本）
   const enhanceItems = useCallback((itemsToEnhance: T[]) => {
-    console.log('[CommonMasonryGrid] enhanceItems called', {
-      inputCount: itemsToEnhance.length,
-      enhancedCount: enhancedItems.length
-    })
-    
     if (!itemsToEnhance.length) return []
     
     setLoadingImages(prev => {
@@ -78,11 +73,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
         }
       })
       
-      console.log('[CommonMasonryGrid] Enhanced items', {
-        enhancedCount: enhanced.length,
-        firstAspectRatio: enhanced[0]?.aspectRatio
-      })
-      
       // 立即更新状态
       setEnhancedItems(enhanced)
       setLoadingImages(new Set())
@@ -103,11 +93,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
 
   // 当数据变化时，重新增强数据
   useEffect(() => {
-    console.log('[CommonMasonryGrid] useEffect triggered', {
-      itemsLength: items.length,
-      enhancedItemsLength: enhancedItems.length,
-      isLoading
-    })
     
     if (items.length > 0) {
       enhanceItems(items)
@@ -140,12 +125,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
     const itemId = getId(enhancedItem.original)
     const isLoadingImage = loadingImages.has(itemId.toString())
     
-    // 调试日志
-    console.log(`[CommonMasonryGrid] Rendering item ${itemId}`, {
-      aspectRatio: enhancedItem.aspectRatio,
-      isLoadingImage
-    })
-    
     return (
       <div 
         key={itemId.toString()}
@@ -162,18 +141,8 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
     )
   }, [renderItem, getId, loadingImages, gutter])
 
-  // 添加调试日志
-  console.log('[CommonMasonryGrid] Render state', {
-    isLoading,
-    itemsLength: items.length,
-    enhancedItemsLength: enhancedItems.length,
-    willShowLoading: isLoading && enhancedItems.length === 0,
-    willShowEmpty: enhancedItems.length === 0 && !isLoading && items.length === 0
-  })
-
   // 加载状态
   if (isLoading && enhancedItems.length === 0) {
-    console.log('[CommonMasonryGrid] Showing loading state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -186,7 +155,6 @@ const CommonMasonryGrid = <T extends {}, ID extends string | number>({
 
   // 空状态 - 只有在不是加载状态且没有数据时才显示
   if (enhancedItems.length === 0 && !isLoading && items.length === 0) {
-    console.log('[CommonMasonryGrid] Showing empty state')
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center max-w-md mx-auto">

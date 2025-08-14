@@ -289,32 +289,32 @@ const HistoryItem: React.FC<HistoryItemProps> = memo(
                   </div>
                 </div>
 
-                {/* 快速操作按钮 */}
-                <div className="flex items-center space-x-1 pt-2 border-t border-gray-100">
+                {/* 快速操作按钮 - 响应式布局 */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-1">
                   {item.url && (
                     <>
                       <button
                         onClick={handleDownload}
-                        className="flex items-center space-x-1 px-2 py-1 text-xs bg-primary-50 text-primary-600 rounded-md"
+                        className="flex-1 flex flex-col items-center justify-center py-1.5 text-xs bg-primary-50 text-primary-600 rounded-md min-w-0"
                       >
-                        <Download size={10} />
-                        <span>下载</span>
+                        <Download size={12} />
+                        <span className="mt-0.5 leading-none">下载</span>
                       </button>
                       <button
                         onClick={handleShare}
-                        className="flex items-center space-x-1 px-2 py-1 text-xs bg-secondary-50 text-secondary-600 rounded-md"
+                        className="flex-1 flex flex-col items-center justify-center py-1.5 text-xs bg-secondary-50 text-secondary-600 rounded-md min-w-0"
                       >
-                        <Share2 size={10} />
-                        <span>分享</span>
+                        <Share2 size={12} />
+                        <span className="mt-0.5 leading-none">分享</span>
                       </button>
                     </>
                   )}
                   <button
                     onClick={handleDelete}
-                    className="flex items-center space-x-1 px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded-md"
+                    className="flex-1 flex flex-col items-center justify-center py-1.5 text-xs bg-gray-50 text-gray-600 rounded-md min-w-0"
                   >
-                    <Trash2 size={10} />
-                    <span>删除</span>
+                    <Trash2 size={12} />
+                    <span className="mt-0.5 leading-none">删除</span>
                   </button>
                 </div>
               </div>

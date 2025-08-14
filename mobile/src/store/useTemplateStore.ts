@@ -56,22 +56,9 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     const currentPage = params?.page || 1
     const isLoadMore = currentPage > 1
     
-    console.log('[TemplateStore] loadTemplates called', {
-      params,
-      currentPage,
-      isLoadMore,
-      selectedCategory: get().selectedCategory?.name
-    })
-    
     set({ isLoading: !isLoadMore, error: null })
     try {
       const response = await templateAPI.getTemplates(params)
-      console.log('[TemplateStore] API response', {
-        response,
-        categoryId: params?.categoryId,
-        returnedTemplates: response?.data?.records?.length || 0,
-        total: response?.data?.total
-      })
 
       // 处理后端返回的数据结构 {code, message, data, success}
       let templatesArray: Template[] = []
@@ -95,12 +82,6 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
           hasPrevious: response.data.hasPrevious || false
         }
       }
-
-      console.log('[TemplateStore] Processed data', {
-        templatesArray: templatesArray.length,
-        paginationData,
-        isLoadMore
-      })
 
       // 如果是加载更多，则合并数据；否则替换数据
       const existingTemplates = isLoadMore ? get().templates : []
@@ -144,16 +125,6 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
       // 处理后端返回的数据结构 {code, message, data, timestamp, success}
       const categoriesArray = response?.data || []
       const enabledCategories = categoriesArray.filter(cat => cat.isEnabled !== false)
-      
-      console.log('[TemplateStore] 加载分类成功', {
-        totalCategories: categoriesArray.length,
-        enabledCategories: enabledCategories.length,
-        categories: enabledCategories.map(cat => ({
-          id: cat.id,
-          name: cat.name,
-          templateCount: cat.templateCount
-        }))
-      })
       
       set({ categories: enabledCategories })
     } catch (error: any) {
