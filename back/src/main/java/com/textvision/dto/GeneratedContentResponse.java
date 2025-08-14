@@ -75,7 +75,7 @@ public class GeneratedContentResponse {
     private Map<String, Object> generationParams;
 
     /**
-     * 状态：generating-生成中，completed-完成，failed-失败
+     * 状态：processing-处理中，completed-完成，failed-失败
      */
     private String status;
 
