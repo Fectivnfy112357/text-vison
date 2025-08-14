@@ -8,6 +8,11 @@ export default defineConfig({
     react(),
     tsconfigPaths()
   ],
+  resolve: {
+    alias: {
+      'prop-types': 'prop-types'
+    }
+  },
   server: {
     port: 5174,
     host: '0.0.0.0',

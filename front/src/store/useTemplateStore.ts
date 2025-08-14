@@ -15,6 +15,7 @@ export interface Template {
   size: string;
   views: number;
   isPopular?: boolean;
+  aspectRatio?: string;
 }
 
 export interface Category {
@@ -85,7 +86,8 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           style: template.style || '默认风格',
           size: template.size || 'landscape_16_9',
           views: template.usageCount || 0,
-          isPopular: template.isPopular || false
+          isPopular: template.isPopular || false,
+          aspectRatio: template.aspectRatio || '16:9'
         }));
       
       set({ 

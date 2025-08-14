@@ -1,11 +1,38 @@
 import { useState, useEffect, useMemo, memo } from 'react';
+import Masonry from 'react-responsive-masonry';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { calculateHeight } from '@/utils/aspectRatio';
 
 export default function Templates() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [columnsCount, setColumnsCount] = useState(3);
+
+  // 响应式列数调整 - 最多5列，1700px以上显示5列
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      
+      // 根据屏幕宽度自适应，1700px以上显示5列
+      if (width >= 1700) {
+        setColumnsCount(5);
+      } else if (width >= 1440) {
+        setColumnsCount(4);
+      } else if (width >= 1280) {
+        setColumnsCount(3);
+      } else if (width >= 768) {
+        setColumnsCount(2);
+      } else {
+        setColumnsCount(1);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
 
   const {
     templates,
@@ -56,6 +83,103 @@ export default function Templates() {
     templates.filter(t => t && t.isPopular).slice(0, 6),
     [templates]
   );
+
+// 瀑布流模板卡片组件
+const MasonryTemplateCard = memo(({ template, onUseTemplate, baseWidth = 300 }: { 
+  template: any, 
+  onUseTemplate: (template: any) => void,
+  baseWidth?: number
+}) => {
+  // 计算图片容器高度
+  const imageHeight = calculateHeight(baseWidth, template.aspectRatio || '16:9');
+  const totalHeight = imageHeight + 140; // 图片高度 + 内容区域高度
+
+  return (
+    <div
+      className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
+      style={{ 
+        contain: 'layout style paint',
+        width: `${baseWidth}px`,
+        height: `${totalHeight}px`
+      }}
+    >
+      {/* 图片容器 - 根据宽高比动态计算高度 */}
+      <div 
+        className="relative overflow-hidden bg-gray-100"
+        style={{ height: `${imageHeight}px` }}
+      >
+        <img
+          src={template.preview || '/placeholder-template.png'}
+          alt={template.title || '模板预览'}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-template.png';
+          }}
+        />
+
+        {/* 类型标识 */}
+        <div className="absolute top-3 left-3 z-20">
+          <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center space-x-1">
+            {template.type === 'video' ? (
+              <Video className="w-3 h-3 text-white" />
+            ) : (
+              <ImageIcon className="w-3 h-3 text-white" />
+            )}
+            <span className="text-xs text-white capitalize">
+              {template.type === 'video' ? '视频' : '图片'}
+            </span>
+          </div>
+        </div>
+
+        {/* 悬停操作 */}
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
+          <Link
+            to={`/generate?template=${template.id}`}
+            onClick={() => onUseTemplate(template)}
+            className="bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-150 flex items-center space-x-2"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span className="text-base">使用模板</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* 内容区域 */}
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 mb-2">{template.title || '未命名模板'}</h3>
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description || '暂无描述'}</p>
+
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+            {template.categoryId || '其他'}
+          </span>
+          <div className="flex items-center space-x-3">
+            <span className="flex items-center space-x-1">
+              <Eye className="w-3 h-3" />
+              <span>{template.views || 0}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 标签显示 */}
+        {template.tags && template.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {template.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+              <span key={tagIndex} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                {tag}
+              </span>
+            ))}
+            {template.tags.length > 3 && (
+              <span className="text-gray-400 text-xs">+{template.tags.length - 3}</span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
 
 // 优化的模板卡片组件，避免视图切换时的闪烁
 const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTemplate: (template: any) => void }) => (
@@ -211,11 +335,13 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
   </div>
 ));
 
+MasonryTemplateCard.displayName = 'MasonryTemplateCard';
+TemplateCard.displayName = 'TemplateCard';
 TemplateListItem.displayName = 'TemplateListItem';
 
   return (
     <div className="template-page min-h-screen pt-8 pb-8 flex flex-col">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
+      <div className="max-w-full mx-auto px-6 sm:px-12 lg:px-16 flex-1 flex flex-col w-full">
         {/* 页面标题 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -349,19 +475,26 @@ TemplateListItem.displayName = 'TemplateListItem';
           </div>
         ) : (
           <div className="template-container min-h-[600px] w-full">
-            {/* 网格视图 */}
+            {/* 瀑布流视图 */}
             <div
-              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full ${
+              className={`w-full ${
                 viewMode === 'grid' ? 'block' : 'hidden'
               }`}
             >
-              {filteredTemplates.map((template) => (
-                <TemplateCard
-                  key={template.id}
-                  template={template}
-                  onUseTemplate={handleUseTemplate}
-                />
-              ))}
+              <Masonry
+                columnsCount={columnsCount}
+                gutter="16px"
+                className="w-full"
+              >
+                {filteredTemplates.map((template) => (
+                  <MasonryTemplateCard
+                    key={template.id}
+                    template={template}
+                    onUseTemplate={handleUseTemplate}
+                    baseWidth={columnsCount === 5 ? 310 : columnsCount === 4 ? 330 : columnsCount === 3 ? 370 : columnsCount === 2 ? 420 : 350}
+                  />
+                ))}
+              </Masonry>
             </div>
 
             {/* 列表视图 */}
