@@ -62,15 +62,15 @@ const TextVisionSVG = () => {
           d={textPaths.t}
           fill="none"
           stroke="url(#textGradient)"
-          strokeWidth="2.5"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 0.5
+            delay: 0.3
           }}
         />
         
@@ -78,15 +78,15 @@ const TextVisionSVG = () => {
           d={textPaths.e}
           fill="none"
           stroke="url(#textGradient)"
-          strokeWidth="2.5"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 1.3
+            delay: 0.7
           }}
         />
         
@@ -94,15 +94,15 @@ const TextVisionSVG = () => {
           d={textPaths.x}
           fill="none"
           stroke="url(#textGradient)"
-          strokeWidth="2.5"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 2.1
+            delay: 1.1
           }}
         />
         
@@ -110,15 +110,15 @@ const TextVisionSVG = () => {
           d={textPaths.t2}
           fill="none"
           stroke="url(#textGradient)"
-          strokeWidth="2.5"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 2.9
+            delay: 1.5
           }}
         />
         
@@ -126,16 +126,16 @@ const TextVisionSVG = () => {
         <motion.path
           d={textPaths.v}
           fill="none"
-          stroke="url(#visionGradient)"
-          strokeWidth="2.5"
+          stroke="url(#textGradient)"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 4
+            delay: 0.3
           }}
         />
         
@@ -143,32 +143,32 @@ const TextVisionSVG = () => {
         <motion.path
           d="M 290 50 L 300 50 M 295 50 L 295 90 M 290 90 L 300 90"
           fill="none"
-          stroke="url(#visionGradient)"
-          strokeWidth="2.5"
+          stroke="url(#textGradient)"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 4.8
+            delay: 0.7
           }}
         />
         
         <motion.path
           d={textPaths.s}
           fill="none"
-          stroke="url(#visionGradient)"
-          strokeWidth="2.5"
+          stroke="url(#textGradient)"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 1, 
+            duration: 0.5, 
             ease: "easeInOut",
-            delay: 5.4
+            delay: 1.9
           }}
         />
         
@@ -176,32 +176,32 @@ const TextVisionSVG = () => {
         <motion.path
           d={textPaths.o}
           fill="none"
-          stroke="url(#visionGradient)"
-          strokeWidth="2.5"
+          stroke="url(#textGradient)"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.9, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 6.4
+            delay: 1.1
           }}
         />
         
         <motion.path
           d={textPaths.n}
           fill="none"
-          stroke="url(#visionGradient)"
-          strokeWidth="2.5"
+          stroke="url(#textGradient)"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0 }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
           transition={{ 
-            duration: 0.8, 
+            duration: 0.4, 
             ease: "easeInOut",
-            delay: 7.3
+            delay: 2.3
           }}
         />
 
@@ -213,11 +213,6 @@ const TextVisionSVG = () => {
             <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
           
-          <linearGradient id="visionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9333ea" />
-            <stop offset="50%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#ec4899" />
-          </linearGradient>
 
           {/* 发光效果 */}
           <filter id="glow">
