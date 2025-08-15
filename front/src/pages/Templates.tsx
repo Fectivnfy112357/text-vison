@@ -115,7 +115,19 @@ const MasonryTemplateCard = memo(({ template, onUseTemplate, baseWidth = 300 }: 
           loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = '/placeholder-template.png';
+            // 如果已经是占位图，不再尝试重新加载
+            if (target.src.includes('placeholder-template.png')) {
+              target.style.display = 'none';
+              const container = target.parentElement;
+              if (container) {
+                const fallback = document.createElement('div');
+                fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center';
+                fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
+                container.appendChild(fallback);
+              }
+            } else {
+              target.src = '/placeholder-template.png';
+            }
           }}
         />
 
@@ -195,7 +207,19 @@ const TemplateCard = memo(({ template, onUseTemplate }: { template: any, onUseTe
         loading="lazy"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
-          target.src = '/placeholder-template.png';
+          // 如果已经是占位图，不再尝试重新加载
+          if (target.src.includes('placeholder-template.png')) {
+            target.style.display = 'none';
+            const container = target.parentElement;
+            if (container) {
+              const fallback = document.createElement('div');
+              fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center';
+              fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
+              container.appendChild(fallback);
+            }
+          } else {
+            target.src = '/placeholder-template.png';
+          }
         }}
       />
 
@@ -275,7 +299,19 @@ const TemplateListItem = memo(({ template, onUseTemplate }: { template: any, onU
           className="w-full h-full object-cover rounded-lg"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = '/placeholder-template.png';
+            // 如果已经是占位图，不再尝试重新加载
+            if (target.src.includes('placeholder-template.png')) {
+              target.style.display = 'none';
+              const container = target.parentElement;
+              if (container) {
+                const fallback = document.createElement('div');
+                fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center rounded-lg';
+                fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
+                container.appendChild(fallback);
+              }
+            } else {
+              target.src = '/placeholder-template.png';
+            }
           }}
         />
         <div className="absolute top-2 left-2">
