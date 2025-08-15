@@ -12,12 +12,8 @@
   transform: scale(1.05);
 }
 
-.history-card-image:hover {
-  transform: scale(1.05);
-}
-
 /* 防止图片hover时按钮被放大 */
-.history-card-image:hover .action-button {
+.group:hover .action-button {
   transform: scale(1);
 }
 
@@ -67,7 +63,7 @@
 }
 
 .template-card img,
-.history-card-image {
+.group img {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

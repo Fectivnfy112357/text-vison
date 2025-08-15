@@ -15,6 +15,7 @@ export interface GeneratedContent {
   style?: string;
   referenceImage?: string;
   status?: string;
+  aspectRatio?: string;
 }
 
 interface GenerationState {

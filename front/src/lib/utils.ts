@@ -112,7 +112,8 @@ export const formatGeneratedContent = (item: any): any => {
     size: item.size || 'landscape_16_9',
     style: item.style || '默认风格',
     referenceImage: item.referenceImage || undefined,
-    status: item.status || 'completed'
+    status: item.status || 'completed',
+    aspectRatio: item.aspectRatio || undefined
   };
 };
 
