@@ -18,31 +18,31 @@ export default function App() {
   }, [checkAuth]);
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/generate" element={<Generate />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/templates" element={<Templates />} />
-          </Routes>
-        </main>
-        <Footer />
-        <Toaster 
-          position="top-center" 
-          richColors 
-          toastOptions={{
-            style: {
-              pointerEvents: 'auto',
-              userSelect: 'none',
-              cursor: 'default'
-            },
-            className: 'select-none pointer-events-auto'
-          }}
-        />
-      </div>
-    </Router>
+      <Router>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 flex flex-col">
+          <Navbar />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/generate" element={<Generate />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/templates" element={<Templates />} />
+            </Routes>
+          </main>
+          <Footer />
+          <Toaster
+              position="top-center"
+              richColors
+              toastOptions={{
+                style: {
+                  pointerEvents: 'auto',
+                  userSelect: 'none',
+                  cursor: 'default'
+                },
+                className: 'select-none pointer-events-auto'
+              }}
+          />
+        </div>
+      </Router>
   );
 }
