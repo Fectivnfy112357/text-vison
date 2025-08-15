@@ -1,38 +1,12 @@
 import { useState, useEffect, useMemo, memo } from 'react';
-import Masonry from 'react-responsive-masonry';
 import { Search, Filter, Grid, List, Image as ImageIcon, Video, Wand2, Star, Eye } from 'lucide-react';
 import { useTemplateStore } from '@/store/useTemplateStore';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { calculateHeight } from '@/utils/aspectRatio';
+import { parseAspectRatio } from '@/utils/aspectRatio';
 
 export default function Templates() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [columnsCount, setColumnsCount] = useState(3);
-
-  // 响应式列数调整 - 最多5列，1700px以上显示5列
-  useEffect(() => {
-    const updateColumns = () => {
-      const width = window.innerWidth;
-      
-      // 根据屏幕宽度自适应，1700px以上显示5列
-      if (width >= 1700) {
-        setColumnsCount(5);
-      } else if (width >= 1440) {
-        setColumnsCount(4);
-      } else if (width >= 1280) {
-        setColumnsCount(3);
-      } else if (width >= 768) {
-        setColumnsCount(2);
-      } else {
-        setColumnsCount(1);
-      }
-    };
-
-    updateColumns();
-    window.addEventListener('resize', updateColumns);
-    return () => window.removeEventListener('resize', updateColumns);
-  }, []);
 
   const {
     templates,
@@ -85,51 +59,68 @@ export default function Templates() {
   );
 
 // 瀑布流模板卡片组件
-const MasonryTemplateCard = memo(({ template, onUseTemplate, baseWidth = 300 }: { 
+const MasonryTemplateCard = memo(({ template, onUseTemplate }: { 
   template: any, 
-  onUseTemplate: (template: any) => void,
-  baseWidth?: number
+  onUseTemplate: (template: any) => void
 }) => {
-  // 计算图片容器高度
-  const imageHeight = calculateHeight(baseWidth, template.aspectRatio || '16:9');
-  const totalHeight = imageHeight + 140; // 图片高度 + 内容区域高度
-
   return (
-    <div
-      className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group"
-      style={{ 
-        contain: 'layout style paint',
-        width: `${baseWidth}px`,
-        height: `${totalHeight}px`
-      }}
-    >
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group mb-4">
       {/* 图片容器 - 根据宽高比动态计算高度 */}
-      <div 
-        className="relative overflow-hidden bg-gray-100"
-        style={{ height: `${imageHeight}px` }}
-      >
-        <img
-          src={template.preview || '/placeholder-template.png'}
-          alt={template.title || '模板预览'}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          loading="lazy"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            // 如果已经是占位图，不再尝试重新加载
-            if (target.src.includes('placeholder-template.png')) {
-              target.style.display = 'none';
-              const container = target.parentElement;
-              if (container) {
-                const fallback = document.createElement('div');
-                fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center';
-                fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
-                container.appendChild(fallback);
-              }
-            } else {
-              target.src = '/placeholder-template.png';
-            }
-          }}
-        />
+      <div className="relative overflow-hidden bg-gray-100">
+        {template.aspectRatio && template.aspectRatio !== '16:9' ? (
+          <div 
+            className="relative w-full"
+            style={{ 
+              paddingTop: `${(1 / (parseAspectRatio(template.aspectRatio))) * 100}%` 
+            }}
+          >
+            <img
+              src={template.preview || '/placeholder-template.png'}
+              alt={template.title || '模板预览'}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src.includes('placeholder-template.png')) {
+                  target.style.display = 'none';
+                  const container = target.parentElement;
+                  if (container) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center';
+                    fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
+                    container.appendChild(fallback);
+                  }
+                } else {
+                  target.src = '/placeholder-template.png';
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div className="aspect-video">
+            <img
+              src={template.preview || '/placeholder-template.png'}
+              alt={template.title || '模板预览'}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src.includes('placeholder-template.png')) {
+                  target.style.display = 'none';
+                  const container = target.parentElement;
+                  if (container) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-full h-full bg-gray-200 flex items-center justify-center';
+                    fallback.innerHTML = '<div class="text-gray-400 text-sm">图片加载失败</div>';
+                    container.appendChild(fallback);
+                  }
+                } else {
+                  target.src = '/placeholder-template.png';
+                }
+              }}
+            />
+          </div>
+        )}
 
         {/* 类型标识 */}
         <div className="absolute top-3 left-3 z-20">
@@ -517,20 +508,16 @@ TemplateListItem.displayName = 'TemplateListItem';
                 viewMode === 'grid' ? 'block' : 'hidden'
               }`}
             >
-              <Masonry
-                columnsCount={columnsCount}
-                gutter="16px"
-                className="w-full"
-              >
+              <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 2xl:columns-5 gap-4 space-y-4">
                 {filteredTemplates.map((template) => (
-                  <MasonryTemplateCard
-                    key={template.id}
-                    template={template}
-                    onUseTemplate={handleUseTemplate}
-                    baseWidth={columnsCount === 5 ? 310 : columnsCount === 4 ? 330 : columnsCount === 3 ? 370 : columnsCount === 2 ? 420 : 350}
-                  />
+                  <div key={template.id} className="break-inside-avoid">
+                    <MasonryTemplateCard
+                      template={template}
+                      onUseTemplate={handleUseTemplate}
+                    />
+                  </div>
                 ))}
-              </Masonry>
+              </div>
             </div>
 
             {/* 列表视图 */}

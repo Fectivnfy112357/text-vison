@@ -1,10 +1,6 @@
 /* PC端Hover优化样式 */
 
-/* PC端hover效果 */
-.history-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(147, 51, 234, 0.1);
-}
+/* 移除卡片hover效果 */
 
 /* 模板卡片hover效果 */
 .template-card:hover {
@@ -18,6 +14,15 @@
 
 .history-card-image:hover {
   transform: scale(1.05);
+}
+
+/* 防止图片hover时按钮被放大 */
+.history-card-image:hover .action-button {
+  transform: scale(1);
+}
+
+.action-button {
+  border-radius: 50%;
 }
 
 .action-button:hover {
