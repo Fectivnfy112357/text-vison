@@ -10,8 +10,8 @@
   min-height: 100%;
 }
 
-/* 修复绝对定位导致的布局问题 */
-.absolute.pointer-events-none {
+/* 修复绝对定位导致的布局问题 - 但排除背景图元素 */
+.absolute.pointer-events-none:not(.bg-background):not([style*="position: fixed"]):not([style*="background-image"]) {
   height: 0 !important;
   overflow: hidden !important;
 }

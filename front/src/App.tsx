@@ -19,7 +19,7 @@ export default function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1">
           <Routes>
