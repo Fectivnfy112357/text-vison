@@ -10,9 +10,9 @@ import { useTemplateStore } from '@/store/useTemplateStore';
 import TemplateCarousel from '@/components/TemplateCarousel';
 import TextVisionSVG from '@/components/TextVisionSVG';
 
-// 滚动背景图片组件
+// 滚动视差背景组件
 const ScrollBackground = () => {
-  const [currentImage, setCurrentImage] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
   
   // 使用正确的静态资源路径
   const images = [
@@ -25,27 +25,60 @@ const ScrollBackground = () => {
   ];
 
   useEffect(() => {
+    let rafId: number;
+    
     const handleScroll = () => {
-      const scrollPercentage = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-      const imageIndex = Math.min(Math.floor(scrollPercentage * images.length), images.length - 1);
-      setCurrentImage(imageIndex);
+      // 使用 requestAnimationFrame 优化性能
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      
+      rafId = requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
+  // 计算当前应该显示的图片索引
+  const sectionHeight = window.innerHeight;
+  const currentImageIndex = Math.min(Math.floor(scrollY / sectionHeight), images.length - 1);
+  
+  // 计算下一张图片的覆盖进度
+  const nextImageProgress = Math.max(0, Math.min(1, (scrollY % sectionHeight) / sectionHeight));
+
   return (
-    <div className="fixed inset-0 -z-50">
+    <div className="fixed inset-0 -z-50 overflow-hidden">
+      {/* 当前显示的图片 */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
         style={{
-          backgroundImage: `url(${images[currentImage]})`,
+          backgroundImage: `url(${images[currentImageIndex]})`,
+          zIndex: 1,
         }}
       />
       
-      {/* 白色蒙版 */}
-      <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
+      {/* 下一张图片，从顶部向下覆盖 */}
+      {currentImageIndex < images.length - 1 && (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
+          style={{
+            backgroundImage: `url(${images[currentImageIndex + 1]})`,
+            transform: `translateY(${-100 + nextImageProgress * 100}vh)`, // 从-100vh到0vh
+            zIndex: 2,
+          }}
+        />
+      )}
+      
+      {/* 渐变蒙版 */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/70 to-white/60 backdrop-blur-sm" />
     </div>
   );
 };
@@ -300,7 +333,7 @@ export default function Home() {
       </section>
 
       {/* 创作流程展示 */}
-      <section className="py-24 bg-white">
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-20">
             <motion.h2 
@@ -326,7 +359,7 @@ export default function Home() {
       </section>
 
       {/* 精选模板库 */}
-      <section className="py-24 bg-gradient-to-br from-purple-50 to-blue-50">
+      <section className="py-24 bg-gradient-to-br">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-20">
             <motion.h2 
@@ -367,7 +400,7 @@ export default function Home() {
       </section>
 
       {/* 数据统计展示 */}
-      <section className="py-24 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600">
+      <section className="py-24 bg-gradient-to-r from-purple-600">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-20">
             <motion.h2 
@@ -393,7 +426,7 @@ export default function Home() {
       </section>
 
       {/* 行动召唤 */}
-      <section className="py-24 bg-gradient-to-br from-purple-50 to-blue-50">
+      <section className="py-24 bg-gradient-to-br ">
         <div className="max-w-4xl mx-auto text-center px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
