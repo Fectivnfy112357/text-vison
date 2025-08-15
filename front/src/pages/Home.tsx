@@ -56,11 +56,12 @@ const ScrollBackground = () => {
 
   return (
     <div className="fixed inset-0 -z-50 overflow-hidden">
-      {/* 当前显示的图片 */}
+      {/* 当前显示的图片 - 以一半速度向下移动 */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
         style={{
           backgroundImage: `url(${images[currentImageIndex]})`,
+          transform: `translateY(${nextImageProgress * 50}vh)`, // 以一半速度向下移动
           zIndex: 1,
         }}
       />
@@ -77,24 +78,29 @@ const ScrollBackground = () => {
         />
       )}
       
-      {/* 渐变蒙版 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/70 to-white/60 backdrop-blur-sm" />
+      {/* 深色渐变蒙版 - 适配动漫风格 */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-800/80 to-slate-900/85 backdrop-blur-sm" />
     </div>
   );
 };
 
-// 优雅的背景装饰组件
+// 动漫风格背景装饰组件
 const ElegantBackground = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* 几何装饰元素 */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
-      <div className="absolute top-40 right-20 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
-      <div className="absolute bottom-32 left-1/3 w-64 h-64 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-15" />
+      {/* 动漫风格几何装饰元素 */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-cyan-400/20 rounded-full mix-blend-screen filter blur-3xl opacity-30" />
+      <div className="absolute top-40 right-20 w-80 h-80 bg-blue-500/25 rounded-full mix-blend-screen filter blur-3xl opacity-25" />
+      <div className="absolute bottom-32 left-1/3 w-64 h-64 bg-purple-400/20 rounded-full mix-blend-screen filter blur-3xl opacity-20" />
       
-      {/* 精致的线条装饰 */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-300 to-transparent opacity-30" />
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-30" />
+      {/* 神秘的光效线条装饰 */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-60" />
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent opacity-60" />
+      
+      {/* 动漫风格光点效果 */}
+      <div className="absolute top-1/4 right-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-pulse opacity-70" />
+      <div className="absolute top-3/4 left-1/4 w-1 h-1 bg-blue-400 rounded-full animate-pulse opacity-60" />
+      <div className="absolute top-1/2 right-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse opacity-50" />
     </div>
   );
 };
@@ -253,7 +259,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight"
               >
-                <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
                 </span>
               </motion.h1>
               
@@ -261,7 +267,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-xl md:text-2xl lg:text-3xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium"
+                className="text-xl md:text-2xl lg:text-3xl text-slate-200 max-w-4xl mx-auto leading-relaxed font-medium drop-shadow-md"
               >
                 让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品
               </motion.p>
@@ -276,7 +282,7 @@ export default function Home() {
             >
               <Link
                 to="/generate"
-                className="group w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-500 transform hover:scale-105 shadow-xl hover:shadow-2xl flex items-center justify-center space-x-3"
+                className="group w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-cyan-400 hover:to-blue-500 transition-all duration-500 transform hover:scale-105 shadow-xl hover:shadow-cyan-500/25 hover:shadow-2xl flex items-center justify-center space-x-3 border border-cyan-400/30"
               >
                 <Wand2 className="w-5 h-5" />
                 <span>开始创作</span>
@@ -285,7 +291,7 @@ export default function Home() {
               
               <Link
                 to="/templates"
-                className="group w-full sm:w-auto bg-white text-purple-600 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-purple-200 hover:border-purple-400 transition-all duration-500 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
+                className="group w-full sm:w-auto bg-slate-800/80 text-cyan-300 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-cyan-400/30 hover:border-cyan-400/60 hover:bg-slate-700/80 transition-all duration-500 transform hover:scale-105 shadow-lg hover:shadow-cyan-400/20 hover:shadow-xl flex items-center justify-center space-x-3 backdrop-blur-sm"
               >
                 <Lightbulb className="w-5 h-5" />
                 <span>浏览模板</span>
@@ -400,8 +406,14 @@ export default function Home() {
       </section>
 
       {/* 数据统计展示 */}
-      <section className="py-24 bg-gradient-to-r from-purple-600">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section className="py-24 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        {/* 动漫风格装饰元素 */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-cyan-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-purple-400 rounded-full blur-2xl"></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <div className="text-center mb-20">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -409,13 +421,15 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-4xl md:text-5xl font-bold text-white mb-6"
             >
-              创造无限可能
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
+                创造无限可能
+              </span>
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-white/90 max-w-3xl mx-auto"
+              className="text-xl text-slate-300 max-w-3xl mx-auto"
             >
               与全球创作者一起探索AI艺术的边界
             </motion.p>
@@ -426,7 +440,7 @@ export default function Home() {
       </section>
 
       {/* 行动召唤 */}
-      <section className="py-24 bg-gradient-to-br ">
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-4xl mx-auto text-center px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
