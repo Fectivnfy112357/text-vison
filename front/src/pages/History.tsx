@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { Search, Filter, Download, Share2, Trash2, Image as ImageIcon, Video, Calendar, Clock, Loader2, Play } from 'lucide-react';
 import { useGenerationStore } from '@/store/useGenerationStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -39,6 +39,14 @@ export default function History() {
 
   // 添加加载状态追踪
   const [mediaLoadStatus, setMediaLoadStatus] = useState<Record<string, boolean>>({});
+
+  // 优化状态更新函数
+  const updateMediaLoadStatus = useCallback((id: string, status: boolean) => {
+    setMediaLoadStatus(prev => {
+      if (prev[id] === status) return prev;
+      return { ...prev, [id]: status };
+    });
+  }, []);
 
   // 排序选项
   const sortByOptions = [
@@ -203,17 +211,132 @@ export default function History() {
   }
 
   // 瀑布流历史记录卡片组件
-  const MasonryHistoryCard = memo(({ item, onSelectItem, onDownload, onShare, openPreview, mediaLoadStatus, selectedItems }: {
+  const MasonryHistoryCard = memo(({ item, onSelectItem, onDownload, onShare, openPreview, mediaLoadStatus, updateMediaLoadStatus, selectedItems }: {
     item: any;
     onSelectItem: (id: string) => void;
     onDownload: (item: any) => void;
     onShare: (item: any) => void;
     openPreview: (url: string, type: 'image' | 'video', title?: string) => void;
     mediaLoadStatus: Record<string, boolean>;
+    updateMediaLoadStatus: (id: string, status: boolean) => void;
     selectedItems: string[];
   }) => {
+    const handleCardClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (item.status === 'failed') return;
+      if (mediaLoadStatus[item.id] !== false) {
+        if (item.type === 'video') {
+          openPreview(item.url || '', 'video', item.prompt);
+        } else {
+          openPreview(item.url || '', 'image', item.prompt);
+        }
+      }
+    };
+
+    const handleDownloadClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDownload(item);
+    };
+
+    const handleShareClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onShare(item);
+    };
+
+    const handleImageError = () => {
+      updateMediaLoadStatus(item.id, false);
+    };
+
+    const handleImageLoad = () => {
+      updateMediaLoadStatus(item.id, true);
+    };
+
+    const renderContent = () => {
+      if (item.status === 'failed') {
+        return (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
+            <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
+            <p className="text-sm text-red-600 font-medium">生成失败</p>
+            <p className="text-xs text-red-500 mt-1 px-2 text-center">
+              {(item as any).errorMessage || '请修改提示词后重试'}
+            </p>
+          </div>
+        );
+      }
+
+      if (mediaLoadStatus[item.id] === false) {
+        return (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+            <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500">加载失败</p>
+          </div>
+        );
+      }
+
+      return (
+        <>
+          <img
+            src={item.type === 'video' ? (item as any).thumbnail || item.url : item.url || '/placeholder-image.png'}
+            alt={item.prompt || '生成内容'}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            loading="lazy"
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
+          
+          {/* 视频播放按钮 */}
+          {item.type === 'video' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
+                <Play className="w-6 h-6 ml-0.5" />
+              </div>
+            </div>
+          )}
+
+          {/* 视频标识 */}
+          {item.type === 'video' && (
+            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
+              <Video className="w-3 h-3 inline mr-1" />
+              视频
+            </div>
+          )}
+
+          {/* 选择状态 */}
+          <div className="absolute top-2 right-2">
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+              selectedItems.includes(item.id)
+                ? 'bg-purple-600 border-purple-600'
+                : 'bg-white/50 border-white backdrop-blur-sm'
+            }`}>
+              {selectedItems.includes(item.id) && (
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              )}
+            </div>
+          </div>
+
+          {/* 操作按钮 */}
+          <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
+            <button
+              onClick={handleDownloadClick}
+              className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+              title="下载"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleShareClick}
+              className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
+              title="分享"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          </div>
+        </>
+      );
+    };
+
     return (
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl group mb-4">
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden group mb-4 masonry-card">
         {/* 图片容器 - 根据宽高比动态计算高度 */}
         <div className="relative overflow-hidden bg-gray-100">
           {item.aspectRatio && item.aspectRatio !== '16:9' && item.aspectRatio.trim() !== '' ? (
@@ -225,206 +348,18 @@ export default function History() {
             >
               <div
                 className="absolute inset-0 cursor-pointer overflow-hidden bg-gray-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (item.status === 'failed') {
-                    return;
-                  }
-                  if (mediaLoadStatus[item.id] !== false) {
-                    if (item.type === 'video') {
-                      openPreview(item.url || '', 'video', item.prompt);
-                    } else {
-                      openPreview(item.url || '', 'image', item.prompt);
-                    }
-                  }
-                }}
+                onClick={handleCardClick}
               >
-                {item.status === 'failed' ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                    <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
-                    <p className="text-sm text-red-600 font-medium">生成失败</p>
-                    <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                      {(item as any).errorMessage || '请修改提示词后重试'}
-                    </p>
-                  </div>
-                ) : mediaLoadStatus[item.id] === false ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                    <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">加载失败</p>
-                  </div>
-                ) : (
-                  <img
-                    src={item.type === 'video' ? (item as any).thumbnail || item.url : item.url || '/placeholder-image.png'}
-                    alt={item.prompt || '生成内容'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    loading="lazy"
-                    onError={(e) => {
-                      setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
-                    }}
-                    onLoad={(e) => {
-                      setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
-                    }}
-                  />
-                )}
-
-                {/* 视频播放按钮 */}
-                {item.type === 'video' && item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
-                      <Play className="w-6 h-6 ml-0.5" />
-                    </div>
-                  </div>
-                )}
-
-                {/* 视频标识 */}
-                {item.type === 'video' && item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                    <Video className="w-3 h-3 inline mr-1" />
-                    视频
-                  </div>
-                )}
-
-                {/* 选择状态 */}
-                <div className="absolute top-2 right-2">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    selectedItems.includes(item.id)
-                      ? 'bg-purple-600 border-purple-600'
-                      : 'bg-white/50 border-white backdrop-blur-sm'
-                  }`}>
-                    {selectedItems.includes(item.id) && (
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 操作按钮 */}
-                {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownload(item);
-                      }}
-                      className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                      title="下载"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShare(item);
-                      }}
-                      className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                      title="分享"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                {renderContent()}
               </div>
             </div>
           ) : (
             <div className="aspect-video">
               <div
                 className="relative w-full h-full cursor-pointer overflow-hidden bg-gray-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (item.status === 'failed') {
-                    return;
-                  }
-                  if (mediaLoadStatus[item.id] !== false) {
-                    if (item.type === 'video') {
-                      openPreview(item.url || '', 'video', item.prompt);
-                    } else {
-                      openPreview(item.url || '', 'image', item.prompt);
-                    }
-                  }
-                }}
+                onClick={handleCardClick}
               >
-                {item.status === 'failed' ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                    <ImageIcon className="w-12 h-12 text-red-400 mb-2" />
-                    <p className="text-sm text-red-600 font-medium">生成失败</p>
-                    <p className="text-xs text-red-500 mt-1 px-2 text-center">
-                      {(item as any).errorMessage || '请修改提示词后重试'}
-                    </p>
-                  </div>
-                ) : mediaLoadStatus[item.id] === false ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                    <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">加载失败</p>
-                  </div>
-                ) : (
-                  <img
-                    src={item.type === 'video' ? (item as any).thumbnail || item.url : item.url || '/placeholder-image.png'}
-                    alt={item.prompt || '生成内容'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    loading="lazy"
-                    onError={(e) => {
-                      setMediaLoadStatus(prev => ({ ...prev, [item.id]: false }));
-                    }}
-                    onLoad={(e) => {
-                      setMediaLoadStatus(prev => ({ ...prev, [item.id]: true }));
-                    }}
-                  />
-                )}
-
-                {/* 视频播放按钮 */}
-                {item.type === 'video' && item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="bg-white/95 text-gray-800 p-3 rounded-full shadow-xl">
-                      <Play className="w-6 h-6 ml-0.5" />
-                    </div>
-                  </div>
-                )}
-
-                {/* 视频标识 */}
-                {item.type === 'video' && item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-                    <Video className="w-3 h-3 inline mr-1" />
-                    视频
-                  </div>
-                )}
-
-                {/* 选择状态 */}
-                <div className="absolute top-2 right-2">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    selectedItems.includes(item.id)
-                      ? 'bg-purple-600 border-purple-600'
-                      : 'bg-white/50 border-white backdrop-blur-sm'
-                  }`}>
-                    {selectedItems.includes(item.id) && (
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 操作按钮 */}
-                {item.status !== 'failed' && mediaLoadStatus[item.id] !== false && (
-                  <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownload(item);
-                      }}
-                      className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                      title="下载"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShare(item);
-                      }}
-                      className="action-button bg-white/90 text-gray-700 p-2.5 lg:p-2 rounded-full shadow-lg min-w-[40px] min-h-[40px] lg:min-w-auto lg:min-h-auto flex items-center justify-center"
-                      title="分享"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                {renderContent()}
               </div>
             </div>
           )}
@@ -585,6 +520,7 @@ export default function History() {
                     onShare={handleShare}
                     openPreview={openPreview}
                     mediaLoadStatus={mediaLoadStatus}
+                    updateMediaLoadStatus={updateMediaLoadStatus}
                     selectedItems={selectedItems}
                   />
                 </div>

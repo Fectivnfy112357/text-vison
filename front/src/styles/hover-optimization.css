@@ -19,12 +19,37 @@
 
 .action-button {
   border-radius: 50%;
+  transform: scale(1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-button:hover {
   transform: scale(1.1);
   background-color: white;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 确保图片hover效果正常 */
+.group-hover\:scale-105 {
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover .group-hover\:scale-105 {
+  transform: scale(1.05);
+}
+
+/* 修复历史页面卡片闪烁问题 */
+.history-card,
+.masonry-card {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* 优化hover效果性能 - 移除卡片hover效果 */
+.masonry-card {
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .search-input:hover {
