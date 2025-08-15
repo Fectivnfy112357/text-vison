@@ -12,7 +12,8 @@
       "Bash(dir:*)",
       "Bash(curl:*)",
       "Bash(taskkill:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

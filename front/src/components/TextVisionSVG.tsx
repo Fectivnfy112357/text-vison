@@ -20,7 +20,7 @@ const TextVisionSVG = () => {
     // V (右移确保与T字母20px间距)
     v: "M 240 50 L 255 90 M 270 50 L 255 90",
     // I (直接使用line元素，不需要path)
-    // S (重新设计 - 正确的S形，确保统一间距)
+    // S (绘制成2的形状)
     s: "M 325 50 L 345 50 M 345 50 L 345 70 M 345 70 L 325 70 M 325 70 L 325 90 M 325 90 L 345 90",
   
     // O (调整位置确保统一间距)
@@ -126,7 +126,7 @@ const TextVisionSVG = () => {
         <motion.path
           d={textPaths.v}
           fill="none"
-          stroke="url(#textGradient)"
+          stroke="url(#visionGradient)"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -143,7 +143,7 @@ const TextVisionSVG = () => {
         <motion.path
           d="M 290 50 L 300 50 M 295 50 L 295 90 M 290 90 L 300 90"
           fill="none"
-          stroke="url(#textGradient)"
+          stroke="url(#visionGradient)"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -159,24 +159,31 @@ const TextVisionSVG = () => {
         <motion.path
           d={textPaths.s}
           fill="none"
-          stroke="url(#textGradient)"
+          stroke="url(#visionGradient)"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
-          transition={{ 
-            duration: 0.5, 
-            ease: "easeInOut",
-            delay: 1.9
+          initial={{ pathLength: 0, opacity: 0, rotate: 0, scaleX: 1 }}
+          animate={{ 
+            pathLength: isAnimating ? 1 : 0, 
+            opacity: isAnimating ? 1 : 0,
+            rotate: isAnimating ? 180 : 0,
+            scaleX: isAnimating ? -1 : 1
           }}
+          transition={{ 
+            pathLength: { duration: 0.3, ease: "easeInOut", delay: 1.9 },
+            opacity: { duration: 0.3, ease: "easeInOut", delay: 1.9 },
+            rotate: { duration: 0.4, ease: "easeInOut", delay: 2.2 },
+            scaleX: { duration: 0.4, ease: "easeInOut", delay: 2.6 }
+          }}
+          style={{ transformOrigin: "340px 70px" }}
         />
         
                 
         <motion.path
           d={textPaths.o}
           fill="none"
-          stroke="url(#textGradient)"
+          stroke="url(#visionGradient)"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -189,10 +196,10 @@ const TextVisionSVG = () => {
           }}
         />
         
-        <motion.path
+        <motion:path
           d={textPaths.n}
           fill="none"
-          stroke="url(#textGradient)"
+          stroke="url(#visionGradient)"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -205,12 +212,15 @@ const TextVisionSVG = () => {
           }}
         />
 
-        {/* 渐变定义 */}
+        {/* 颜色定义 */}
         <defs>
           <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9333ea" />
-            <stop offset="50%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#ec4899" />
+            <stop offset="0%" stopColor="#d8b4fe" />
+            <stop offset="100%" stopColor="#d8b4fe" />
+          </linearGradient>
+          <linearGradient id="visionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#60a5fa" />
           </linearGradient>
           
 

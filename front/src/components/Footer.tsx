@@ -3,8 +3,18 @@ import { Heart, Github, Mail, Phone } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100 pb-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <footer className="relative bg-gradient-to-r from-purple-50 to-blue-50 border-t border-purple-100 pb-4">
+      {/* 背景图片 */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/static/home4.jpg')"
+        }}
+      />
+      {/* 淡色蒙版 */}
+      <div className="absolute inset-0 bg-white/90" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 品牌信息 */}
           <div className="col-span-1 md:col-span-2">

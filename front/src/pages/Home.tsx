@@ -151,6 +151,16 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
         {/* 精致的Hero区域 */}
         <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          {/* 背景图片 */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('/static/home1.jpg')"
+            }}
+          />
+          {/* 深色蒙版 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/70 via-blue-900/70 to-pink-900/70" />
+          
           <ElegantBackground />
 
           <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 text-center">
@@ -182,14 +192,27 @@ export default function Home() {
                 </span>
                 </motion.h1>
 
-                <motion.p
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-xl md:text-2xl lg:text-3xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium"
+                    className="text-xl md:text-2xl lg:text-3xl bg-gradient-to-r from-pink-400 via-white to-blue-400 bg-clip-text text-transparent max-w-4xl mx-auto leading-relaxed font-medium"
                 >
-                  让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品
-                </motion.p>
+                  {Array.from("让AI为您的创意插上翅膀，将文字转化为令人惊艳的视觉作品").map((char, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ 
+                        duration: 0.5, 
+                        delay: 0.4 + index * 0.05 
+                      }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </motion.div>
               </div>
 
               {/* 高端按钮组 */}
@@ -325,8 +348,18 @@ export default function Home() {
         </section>
 
         {/* 数据统计展示 */}
-        <section className="py-24 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <section className="py-24 relative overflow-hidden">
+          {/* 背景图片 */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('/static/home2.jpg')"
+            }}
+          />
+          {/* 深色蒙版 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-blue-900/80 to-pink-900/80" />
+          
+          <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-20">
               <motion.h2
                   initial={{ opacity: 0, y: 20 }}
