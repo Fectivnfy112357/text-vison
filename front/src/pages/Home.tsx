@@ -10,6 +10,46 @@ import { useTemplateStore } from '@/store/useTemplateStore';
 import TemplateCarousel from '@/components/TemplateCarousel';
 import TextVisionSVG from '@/components/TextVisionSVG';
 
+// 滚动背景图片组件
+const ScrollBackground = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+  
+  // 使用正确的静态资源路径
+  const images = [
+    '/static/home1.jpg',
+    '/static/home2.jpg',
+    '/static/home3.jpg',
+    '/static/home4.jpg',
+    '/static/home5.jpg',
+    '/static/home6.jpg'
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPercentage = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      const imageIndex = Math.min(Math.floor(scrollPercentage * images.length), images.length - 1);
+      setCurrentImage(imageIndex);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 -z-50">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+        style={{
+          backgroundImage: `url(${images[currentImage]})`,
+        }}
+      />
+      
+      {/* 白色蒙版 */}
+      <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
+    </div>
+  );
+};
+
 // 优雅的背景装饰组件
 const ElegantBackground = () => {
   return (
@@ -148,7 +188,9 @@ export default function Home() {
   }, [fetchTemplates]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen relative">
+      {/* 滚动背景图片 */}
+      <ScrollBackground />
       {/* 精致的Hero区域 */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <ElegantBackground />

@@ -5,7 +5,13 @@
       "Bash(rm:*)",
       "WebFetch(domain:github.com)",
       "Bash(del:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(copy:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }
