@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
                         "/api/users/register",
+                        "/api/ftp/download/*",
                         "/api/users/login",
                         "/api/users/check-email",
                         "/api/users/check-username",
@@ -45,6 +46,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/webjars/**",
                         "/favicon.ico",
                         "/error"
+
                 );
     }
 

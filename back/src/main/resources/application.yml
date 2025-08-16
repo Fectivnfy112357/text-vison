@@ -118,7 +118,19 @@ app:
     upload-path: /uploads
     max-size: 10485760  # 10MB
     allowed-types: jpg,jpeg,png,gif,mp4,avi,mov
-  
+    
+# 文件上传配置
+file:
+  # 上传协议：ftp 或 http
+  upload-protocol: ftp
+  # FTP配置
+  ftp:
+    host: 223.72.35.202
+    port: 21
+    username: text_vision
+    password: 9FBbXQhW58fh
+    uploadApiUrl: http://localhost:8999/api/ftp/download/%s
+
   limits:
     daily-generation: 100  # 每日生成限制
     max-prompt-length: 1000  # 提示词最大长度

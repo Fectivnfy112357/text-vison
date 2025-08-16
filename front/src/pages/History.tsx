@@ -395,15 +395,7 @@ export default function History() {
 
   return (
     <div className="history-page min-h-screen relative pt-8 pb-8 flex flex-col">
-      {/* 背景图片 */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-        style={{
-          backgroundImage: "url('/static/home3.jpg')"
-        }}
-      />
-      {/* 淡色蒙版 */}
-      <div className="absolute inset-0 bg-white/85" />
+
       
       <div className="relative max-w-full mx-auto px-6 sm:px-12 lg:px-16 flex-1 flex flex-col w-full">
         {/* 页面标题 */}

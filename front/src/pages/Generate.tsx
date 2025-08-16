@@ -264,15 +264,7 @@ export default function Generate() {
 
   return (
     <div className="min-h-screen relative flex flex-col pt-8 pb-8" style={{ contain: 'layout style paint', overflowAnchor: 'none' }}>
-      {/* 背景图片 */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-        style={{
-          backgroundImage: "url('/static/home1.jpg')"
-        }}
-      />
-      {/* 淡色蒙版 */}
-      <div className="absolute inset-0 bg-white/80" />
+
       
       <div className="relative max-w-7xl mx-auto px-8 w-full flex-1 flex flex-col">
 

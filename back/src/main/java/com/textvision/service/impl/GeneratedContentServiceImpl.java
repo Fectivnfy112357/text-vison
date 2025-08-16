@@ -370,9 +370,9 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                                             byte[] thumbnailData = videoUtil.extractFirstFrame(url);
                                             if (thumbnailData != null) {
                                                 String thumbnailFileName = videoUtil.generateThumbnailFileName(url);
-                                                String thumbnail = ftpUtil.uploadFile(thumbnailFileName, thumbnailData);
-                                                if (thumbnail != null) {
-                                                    thumbnails.add(thumbnail);
+                                                String tempThumbnail = ftpUtil.uploadFile(thumbnailFileName, thumbnailData);
+                                                if (tempThumbnail != null) {
+                                                    thumbnails.add(tempThumbnail);
                                                     log.info("缩略图上传成功: contentId={}, thumbnail={}", contentId, thumbnail);
                                                 } else {
                                                     log.warn("缩略图上传失败: contentId={}", contentId);
