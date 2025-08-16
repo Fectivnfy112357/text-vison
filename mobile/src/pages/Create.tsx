@@ -558,7 +558,7 @@ const Create: React.FC = () => {
             登录后即可使用AI生成精美的图片和视频内容
           </p>
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/mobile/login")}
             className="w-3/4 mx-auto px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold"
           >
             立即登录

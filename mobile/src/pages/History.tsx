@@ -247,7 +247,7 @@ const History: React.FC = () => {
           <h3 className="text-2xl font-bold text-gray-900 mb-3">开始AI创作之旅</h3>
           <p className="text-gray-600 mb-8">登录后即可使用AI生成精美的图片和视频内容</p>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/mobile/login')}
             className="w-3/4 mx-auto px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
           >
             立即登录

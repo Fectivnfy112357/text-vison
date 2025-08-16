@@ -156,7 +156,7 @@ const Login: React.FC = () => {
           <p className="text-gray-600">
             还没有账户？{' '}
             <Link 
-              to="/register" 
+              to="/mobile/register" 
               className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
             >
               立即注册

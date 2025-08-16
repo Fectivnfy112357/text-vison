@@ -1,5 +1,5 @@
 // API 基础配置和工具函数
-const API_BASE_URL = 'http://localhost:8999/api';
+const API_BASE_URL = 'https://www.textvision.top:8998/api';
 
 
 // 获取存储的 JWT token
