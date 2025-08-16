@@ -172,9 +172,11 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout()
+      setShowLogoutConfirm(false)
       // 移除跳转到登录页的逻辑
       toast.success('已安全退出')
     } catch (error: any) {
+      setShowLogoutConfirm(false)
       toast.error(error.response?.data?.message || error.message || error.toString())
     }
   }

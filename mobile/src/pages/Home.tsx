@@ -98,12 +98,16 @@ const Home: React.FC = () => {
   const handleCreateClick = () => {
     if (isAuthenticated) {
       navigate("/mobile/create");
+    } else {
+      navigate("/mobile/login", { state: { redirectTo: "/mobile/create" } });
     }
   };
 
   const handleTemplateClick = (template: Template) => {
     if (isAuthenticated) {
-      navigate("/create", { state: { template } });
+      navigate("/mobile/create", { state: { template } });
+    } else {
+      navigate("/mobile/login", { state: { redirectTo: "/mobile/create", template } });
     }
   };
 
@@ -145,7 +149,13 @@ const Home: React.FC = () => {
                 className="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-sm text-gray-700 border border-gray-200 transform-gpu"
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.95 }}
-                onClick={() => navigate("/create", { state: { prompt: tag } })}
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate("/mobile/create", { state: { prompt: tag } });
+                  } else {
+                    navigate("/mobile/login", { state: { redirectTo: "/mobile/create", prompt: tag } });
+                  }
+                }}
                 style={{
                   willChange: reducedMotion ? "auto" : "transform",
                 }}
@@ -232,7 +242,13 @@ const Home: React.FC = () => {
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-            onClick={() => navigate("/create", { state: { type: "image" } })}
+            onClick={() => {
+              if (isAuthenticated) {
+                navigate("/mobile/create", { state: { type: "image" } });
+              } else {
+                navigate("/mobile/login", { state: { redirectTo: "/mobile/create", type: "image" } });
+              }
+            }}
             style={{
               willChange: reducedMotion ? "auto" : "transform",
             }}
@@ -252,7 +268,13 @@ const Home: React.FC = () => {
             variants={itemVariants}
             whileHover={{ scale: reducedMotion ? 1 : 1.02 }}
             whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-            onClick={() => navigate("/create", { state: { type: "video" } })}
+            onClick={() => {
+              if (isAuthenticated) {
+                navigate("/mobile/create", { state: { type: "video" } });
+              } else {
+                navigate("/mobile/login", { state: { redirectTo: "/mobile/create", type: "video" } });
+              }
+            }}
             style={{
               willChange: reducedMotion ? "auto" : "transform",
             }}
@@ -294,9 +316,13 @@ const Home: React.FC = () => {
                 className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors "
                 variants={itemVariants}
                 whileTap={{ scale: reducedMotion ? 1 : 0.98 }}
-                onClick={() =>
-                  navigate("/create", { state: { prompt: inspiration } })
-                }
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate("/mobile/create", { state: { prompt: inspiration } });
+                  } else {
+                    navigate("/mobile/login", { state: { redirectTo: "/mobile/create", prompt: inspiration } });
+                  }
+                }}
                 style={{
                   willChange: reducedMotion ? "auto" : "transform",
                 }}

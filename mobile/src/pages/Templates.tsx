@@ -179,13 +179,19 @@ const Templates: React.FC = () => {
   const handleUseTemplate = useCallback(
     async (template: Template) => {
       if (!isAuthenticated) {
-        navigate("/mobile/login");
+        navigate("/mobile/login", {
+          state: {
+            redirectTo: "/mobile/create",
+            template,
+            type: template.type || "image",
+          },
+        });
         return;
       }
 
       try {
         await useTemplate(template.id);
-        navigate("/create", {
+        navigate("/mobile/create", {
           state: {
             template,
             type: template.type || "image",
@@ -210,30 +216,7 @@ const Templates: React.FC = () => {
     return num.toString();
   }, []);
 
-  // 获取分类图标 - 使用useMemo优化
-  const getCategoryIcon = useCallback((categoryName: string) => {
-    const iconMap: Record<string, string> = {
-      人物: "👤",
-      风景: "🏞️",
-      动物: "🐾",
-      美食: "🍔",
-      科技: "🔬",
-      艺术: "🎨",
-      商业: "💼",
-      教育: "📚",
-      生活: "🏠",
-      运动: "⚽",
-      音乐: "🎵",
-      电影: "🎬",
-      游戏: "🎮",
-      时尚: "👗",
-      旅行: "✈️",
-      摄影: "📸",
-      设计: "✏️",
-      其他: "📌",
-    };
-    return iconMap[categoryName] || "📁";
-  }, []);
+
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-cream-50 via-mist-50 to-sky-50">
@@ -261,16 +244,15 @@ const Templates: React.FC = () => {
           <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide py-1">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium ${
                 !selectedCategory
                   ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
                   : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200"
               }`}
             >
-              <span>🌟</span>
               <span>全部</span>
               {!selectedCategory && (
-                <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">
+                <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full ml-1.5">
                   {pagination.total}
                 </span>
               )}
@@ -279,16 +261,15 @@ const Templates: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium flex items-center space-x-1.5 ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium ${
                   selectedCategory?.id === category.id
                     ? "bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
                     : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200"
                 }`}
               >
-                <span>{getCategoryIcon(category.name)}</span>
                 <span>{category.name}</span>
                 {selectedCategory?.id === category.id && (
-                  <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">
+                  <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full ml-1.5">
                     {pagination.total}
                   </span>
                 )}
@@ -343,7 +324,6 @@ const Templates: React.FC = () => {
                   template={enhancedItem.original as Template}
                   index={index}
                   onUseTemplate={handleUseTemplate}
-                  getCategoryIcon={getCategoryIcon}
                   formatNumber={formatNumber}
                   aspectRatio={enhancedItem.aspectRatio}
                   onImageLoad={() => {

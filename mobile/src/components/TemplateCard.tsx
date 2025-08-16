@@ -12,7 +12,6 @@ interface TemplateCardProps {
   template: Template
   index: number
   onUseTemplate: (template: Template) => void
-  getCategoryIcon: (categoryName: string) => string
   formatNumber: (num: number) => string
   aspectRatio?: number
   onImageLoad?: () => void
@@ -23,7 +22,6 @@ interface TemplateCardProps {
 const TemplateCard: React.FC<TemplateCardProps> = memo(({
   template,
   onUseTemplate,
-  getCategoryIcon,
   formatNumber,
   aspectRatio = 16/9, // 默认16:9
   onImageLoad,
@@ -202,7 +200,7 @@ const TemplateCard: React.FC<TemplateCardProps> = memo(({
           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <div className="flex items-center space-x-1">
               <span className="text-xs text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full font-medium">
-                {getCategoryIcon(template.category || '')} {template.category}
+                {template.category}
               </span>
               <div className={`w-1.5 h-1.5 rounded-full ${
                 template.type === 'image' ? 'bg-blue-400' : 'bg-purple-400'
