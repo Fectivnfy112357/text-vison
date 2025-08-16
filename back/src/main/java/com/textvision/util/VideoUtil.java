@@ -7,38 +7,36 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
+import java.io.File;
 import java.util.UUID;
-import java.util.Random;
 
 /**
  * 视频处理工具类
  * 用于从视频中提取帧作为缩略图
- * 使用简化版实现，不依赖FFmpeg
  */
 @Slf4j
 @Component
 public class VideoUtil {
 
     /**
-     * 从视频URL提取第一帧作为缩略图（简化版）
-     * 注意：这是一个简化实现，实际使用FFmpeg效果更好
+     * 从视频URL提取第一帧作为缩略图
      *
-     * @param videoUrl 视频URL
+     * @param videoUrl 视频URL（支持本地文件路径和HTTP URL）
      * @return 缩略图的字节数组
      */
     public byte[] extractFirstFrame(String videoUrl) {
         try {
             log.info("开始处理视频URL: {}", videoUrl);
             
-            // 由于无法直接使用FFmpeg，这里创建一个模拟的缩略图
-            // 在实际生产环境中，应该：
-            // 1. 调用FFmpeg命令行工具
-            // 2. 或使用云服务API
-            // 3. 或部署完整的JavaCV环境
+            // 尝试使用JavaCV提取视频帧
+            byte[] frame = extractFrameWithJavaCV(videoUrl);
+            if (frame != null) {
+                log.info("使用JavaCV成功提取视频帧: {}", videoUrl);
+                return frame;
+            }
             
-            // 创建一个默认的缩略图（黑色背景加上文字提示）
+            // JavaCV失败，创建默认缩略图
+            log.warn("JavaCV提取失败，使用默认缩略图: {}", videoUrl);
             BufferedImage thumbnail = createDefaultThumbnail(videoUrl);
             
             // 转换为字节数组
@@ -48,8 +46,72 @@ public class VideoUtil {
             log.info("生成默认缩略图成功: {}", videoUrl);
             return outputStream.toByteArray();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("生成视频缩略图异常: {}", videoUrl, e);
+            return null;
+        }
+    }
+
+    /**
+     * 使用JavaCV提取视频第一帧
+     *
+     * @param videoUrl 视频URL
+     * @return 缩略图的字节数组
+     */
+    private byte[] extractFrameWithJavaCV(String videoUrl) {
+        try {
+            // 检查JavaCV是否可用
+            Class<?> grabberClass = Class.forName("org.bytedeco.javacv.FFmpegFrameGrabber");
+            Class<?> converterClass = Class.forName("org.bytedeco.javacv.Java2DFrameConverter");
+            
+            log.info("尝试使用JavaCV提取视频帧: {}", videoUrl);
+            
+            // 创建视频抓取器
+            Object grabber = grabberClass.getConstructor(String.class).newInstance(videoUrl);
+            grabberClass.getMethod("start").invoke(grabber);
+            
+            // 获取第一帧
+            Object frame = grabberClass.getMethod("grabImage").invoke(grabber);
+            
+            if (frame == null) {
+                log.warn("无法获取视频帧");
+                return null;
+            }
+            
+            // 创建转换器并转换为BufferedImage
+            Object converter = converterClass.getConstructor().newInstance();
+            BufferedImage image = (BufferedImage) converterClass.getMethod("convert", frame.getClass()).invoke(converter, frame);
+            
+            if (image == null) {
+                log.warn("转换帧为BufferedImage失败");
+                return null;
+            }
+            
+            // 调整图像大小
+            int targetWidth = image.getWidth() / 2;
+            int targetHeight = image.getHeight() / 2;
+            BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = resizedImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.drawImage(image, 0, 0, targetWidth, targetHeight, null);
+            g2d.dispose();
+            
+            // 转换为字节数组
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(resizedImage, "jpg", outputStream);
+            
+            // 释放资源
+            grabberClass.getMethod("stop").invoke(grabber);
+            grabberClass.getMethod("release").invoke(grabber);
+            
+            log.info("JavaCV提取成功，图片大小: {} bytes", outputStream.size());
+            return outputStream.toByteArray();
+            
+        } catch (ClassNotFoundException e) {
+            log.debug("JavaCV不可用: {}", e.getMessage());
+            return null;
+        } catch (Exception e) {
+            log.error("使用JavaCV提取视频帧异常: {}", videoUrl, e);
             return null;
         }
     }
@@ -144,45 +206,29 @@ public class VideoUtil {
     }
     
     /**
-     * 调用外部FFmpeg命令提取视频帧（如果系统安装了FFmpeg）
+     * 提取视频第一帧并保存到文件
+     * 
+     * @param videoPath 视频文件路径
+     * @param outputImagePath 输出图片路径
+     * @return 是否成功提取
      */
-    public byte[] extractFirstFrameWithFFmpeg(String videoUrl) {
+    public boolean extractFirstFrameToFile(String videoPath, String outputImagePath) {
         try {
-            // 这里需要系统安装了FFmpeg
-            ProcessBuilder pb = new ProcessBuilder(
-                "ffmpeg",
-                "-i", videoUrl,
-                "-vframes", "1",
-                "-f", "image2pipe",
-                "-vcodec", "mjpeg",
-                "-"
-            );
-            
-            Process process = pb.start();
-            
-            // 读取输出
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            
-            try (java.io.InputStream is = process.getInputStream()) {
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
+            byte[] frameData = extractFirstFrame(videoPath);
+            if (frameData != null) {
+                // 将字节数组保存到文件
+                File outputFile = new File(outputImagePath);
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFile);
+                fos.write(frameData);
+                fos.close();
+                
+                log.info("成功提取第一帧到: {}", outputImagePath);
+                return true;
             }
-            
-            int exitCode = process.waitFor();
-            if (exitCode == 0 && outputStream.size() > 0) {
-                log.info("FFmpeg提取视频帧成功: {}", videoUrl);
-                return outputStream.toByteArray();
-            } else {
-                log.error("FFmpeg执行失败，退出码: {}", exitCode);
-                return null;
-            }
-            
+            return false;
         } catch (Exception e) {
-            log.error("使用FFmpeg提取视频帧异常: {}", videoUrl, e);
-            return null;
+            log.error("提取视频帧到文件异常: {}", e.getMessage(), e);
+            return false;
         }
     }
 }

@@ -12,11 +12,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/', icon: Home, label: '首页' },
-  { path: '/create', icon: Sparkles, label: '创作' },
-  { path: '/history', icon: History, label: '历史' },
-  { path: '/templates', icon: Grid3X3, label: '模板' },
-  { path: '/profile', icon: User, label: '我的' },
+  { path: '/mobile/', icon: Home, label: '首页' },
+  { path: '/mobile/create', icon: Sparkles, label: '创作' },
+  { path: '/mobile/history', icon: History, label: '历史' },
+  { path: '/mobile/templates', icon: Grid3X3, label: '模板' },
+  { path: '/mobile/profile', icon: User, label: '我的' },
 ]
 
 const BottomNavigation: React.FC = () => {

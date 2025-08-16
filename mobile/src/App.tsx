@@ -1,5 +1,5 @@
 import { useEffect, useMemo, lazy, Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 
 // 页面组件 - 使用懒加载优化性能
@@ -45,13 +45,16 @@ function App() {
     <Router>
       <div {...backgroundStyle}>
         <Routes>
+            {/* 根路径重定向到移动端首页 */}
+            <Route path="/" element={<Navigate to="/mobile/" replace />} />
+            
             {/* 认证相关路由 */}
-            <Route path="/login" element={
+            <Route path="/mobile/login" element={
               <Suspense fallback={<PageLoader />}>
                 <Login />
               </Suspense>
             } />
-            <Route path="/register" element={
+            <Route path="/mobile/register" element={
               <Suspense fallback={<PageLoader />}>
                 <Register />
               </Suspense>

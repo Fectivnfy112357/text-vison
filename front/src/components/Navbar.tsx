@@ -28,7 +28,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-purple-100">
+      <nav className="sticky top-0 z-50 bg-gradient-to-r from-pink-100/70 via-blue-100/70 via-purple-100/70 to-rose-100/70 backdrop-blur-md border-b border-purple-100">
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}

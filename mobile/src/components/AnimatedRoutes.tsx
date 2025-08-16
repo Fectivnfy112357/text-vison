@@ -65,35 +65,35 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={
+        <Route path="/mobile/" element={
           <Suspense fallback={<PageLoader />}>
             <AnimatedPage>
               <Home />
             </AnimatedPage>
           </Suspense>
         } />
-        <Route path="/create" element={
+        <Route path="/mobile/create" element={
           <Suspense fallback={<PageLoader />}>
             <AnimatedPage>
               <Create />
             </AnimatedPage>
           </Suspense>
         } />
-        <Route path="/history" element={
+        <Route path="/mobile/history" element={
           <Suspense fallback={<PageLoader />}>
             <AnimatedPage>
               <History />
             </AnimatedPage>
           </Suspense>
         } />
-        <Route path="/templates" element={
+        <Route path="/mobile/templates" element={
           <Suspense fallback={<PageLoader />}>
             <AnimatedPage>
               <Templates />
             </AnimatedPage>
           </Suspense>
         } />
-        <Route path="/profile" element={
+        <Route path="/mobile/profile" element={
           <Suspense fallback={<PageLoader />}>
             <AnimatedPage>
               <Profile />
