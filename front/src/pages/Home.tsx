@@ -109,30 +109,46 @@ const CreativeProcess = () => {
   );
 };
 
-// 精美数据展示组件
-const StatsDisplay = () => {
-  const stats = [
-    { value: "10K+", label: "创作作品", icon: TrendingUp },
-    { value: "5K+", label: "活跃用户", icon: Users },
-    { value: "99%", label: "满意度", icon: Award },
-    { value: "24/7", label: "在线服务", icon: Sparkles }
+// AI创作优势展示组件
+const CreativeAdvantages = () => {
+  const advantages = [
+    { 
+      title: "极速生成", 
+      description: "秒级响应，实时预览创作效果", 
+      icon: Zap 
+    },
+    { 
+      title: "多样风格", 
+      description: "从写实到抽象，覆盖各种艺术风格", 
+      icon: Palette 
+    },
+    { 
+      title: "智能优化", 
+      description: "AI自动优化，提升作品质量", 
+      icon: Wand2 
+    },
+    { 
+      title: "无限创意", 
+      description: "突破想象边界，释放创作潜能", 
+      icon: Lightbulb 
+    }
   ];
 
   return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-        {stats.map((stat, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {advantages.map((advantage, index) => (
             <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-center"
+                className="text-center group"
             >
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <stat.icon className="w-8 h-8 text-white" />
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
+                <advantage.icon className="w-10 h-10 text-white" />
               </div>
-              <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-              <div className="text-white/80 text-sm">{stat.label}</div>
+              <h3 className="text-2xl font-bold text-white mb-3">{advantage.title}</h3>
+              <p className="text-white/80 text-sm leading-relaxed max-w-xs mx-auto">{advantage.description}</p>
             </motion.div>
         ))}
       </div>
@@ -379,7 +395,7 @@ export default function Home() {
               </motion.p>
             </div>
 
-            <StatsDisplay />
+            <CreativeAdvantages />
           </div>
         </section>
 

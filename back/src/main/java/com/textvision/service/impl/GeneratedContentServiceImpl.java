@@ -18,6 +18,8 @@ import com.textvision.service.ArtStyleService;
 import com.textvision.service.GeneratedContentService;
 import com.textvision.service.TemplateService;
 import com.textvision.service.VolcanoApiService;
+import com.textvision.util.FtpUtil;
+import com.textvision.util.VideoUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +52,8 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private final TemplateService templateService;
     private final VolcanoApiService volcanoApiService;
     private final ArtStyleService artStyleService;
+    private final FtpUtil ftpUtil;
+    private final VideoUtil videoUtil;
 
     @Resource
     private Executor textVisionExecutor;
@@ -357,12 +361,60 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
                                 if (queryResult.getUrls() != null && !queryResult.getUrls().isEmpty()) {
                                     // 多个视频URL
                                     log.info("视频生成任务完成: contentId={}, taskId={}, urlCount={}", contentId, taskId, queryResult.getUrls().size());
-                                    updateGenerationStatus(contentId, "completed", queryResult.getUrls(), queryResult.getThumbnails(), null);
+                                    
+                                    // 为每个视频提取缩略图
+                                    java.util.List<String> thumbnails = new java.util.ArrayList<>();
+                                    for (String url : queryResult.getUrls()) {
+                                        try {
+                                            log.info("开始提取视频缩略图: contentId={}, url={}", contentId, url);
+                                            byte[] thumbnailData = videoUtil.extractFirstFrame(url);
+                                            if (thumbnailData != null) {
+                                                String thumbnailFileName = videoUtil.generateThumbnailFileName(url);
+                                                String thumbnail = ftpUtil.uploadFile(thumbnailFileName, thumbnailData);
+                                                if (thumbnail != null) {
+                                                    thumbnails.add(thumbnail);
+                                                    log.info("缩略图上传成功: contentId={}, thumbnail={}", contentId, thumbnail);
+                                                } else {
+                                                    log.warn("缩略图上传失败: contentId={}", contentId);
+                                                    thumbnails.add(""); // 添加空字符串保持列表长度一致
+                                                }
+                                            } else {
+                                                log.warn("无法提取视频缩略图: contentId={}", contentId);
+                                                thumbnails.add(""); // 添加空字符串保持列表长度一致
+                                            }
+                                        } catch (Exception e) {
+                                            log.error("处理视频缩略图异常: contentId={}", contentId, e);
+                                            thumbnails.add(""); // 添加空字符串保持列表长度一致
+                                        }
+                                    }
+                                    
+                                    updateGenerationStatus(contentId, "completed", queryResult.getUrls(), thumbnails, null);
                                     return;
                                 } else {
                                     // 单个视频URL
                                     resultUrl = queryResult.getUrl();
-                                    thumbnail = queryResult.getThumbnail();
+                                    
+                                    // 提取第一帧作为缩略图并上传到FTP
+                                    if (resultUrl != null && !resultUrl.isEmpty()) {
+                                        try {
+                                            log.info("开始提取视频缩略图: contentId={}, url={}", contentId, resultUrl);
+                                            byte[] thumbnailData = videoUtil.extractFirstFrame(resultUrl);
+                                            if (thumbnailData != null) {
+                                                String thumbnailFileName = videoUtil.generateThumbnailFileName(resultUrl);
+                                                thumbnail = ftpUtil.uploadFile(thumbnailFileName, thumbnailData);
+                                                if (thumbnail != null) {
+                                                    log.info("缩略图上传成功: contentId={}, thumbnail={}", contentId, thumbnail);
+                                                } else {
+                                                    log.warn("缩略图上传失败: contentId={}", contentId);
+                                                }
+                                            } else {
+                                                log.warn("无法提取视频缩略图: contentId={}", contentId);
+                                            }
+                                        } catch (Exception e) {
+                                            log.error("处理视频缩略图异常: contentId={}", contentId, e);
+                                        }
+                                    }
+                                    
                                     log.info("视频生成任务完成: contentId={}, taskId={}, url={}", contentId, taskId, resultUrl);
                                     break;
                                 }

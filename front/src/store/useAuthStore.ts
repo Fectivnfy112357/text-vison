@@ -4,7 +4,7 @@ import { authAPI, clearToken } from '@/lib/api';
 interface User {
   id: string;
   email: string;
-  name: string;
+  username: string;
   avatar?: string;
 }
 
@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user: User = {
         id: userData.id.toString(),
         email: userData.email || email,
-        name: userData.name || '',
+        username: userData.username || '',
         avatar: userData.avatar
       };
       set({ user, isAuthenticated: true, isLoading: false });
@@ -60,10 +60,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async (email: string, password: string, name: string, confirmPassword: string) => {
+  register: async (email: string, password: string, username: string, confirmPassword: string) => {
     set({ isLoading: true });
     try {
-      const response = await authAPI.register(email, password, name, confirmPassword);
+      const response = await authAPI.register(email, password, username, confirmPassword);
       
       // 检查响应数据格式，支持多种可能的数据结构
       let userData;
@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user: User = {
         id: userData.id.toString(),
         email: userData.email || email,
-        name: userData.name || name,
+        username: userData.username || email,
         avatar: userData.avatar
       };
       set({ user, isAuthenticated: true, isLoading: false });
@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user: User = {
         id: userProfile.id.toString(),
         email: userProfile.email,
-        name: userProfile.name,
+        username: userProfile.username,
         avatar: userProfile.avatar
       };
       set({ user, isAuthenticated: true });

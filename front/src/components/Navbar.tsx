@@ -72,7 +72,7 @@ export default function Navbar() {
                     {user.avatar && !avatarErrorRef.current ? (
                       <img
                         src={user.avatar}
-                        alt={user.name || '用户'}
+                        alt={user.username || '用户'}
                         className="w-8 h-8 rounded-full object-cover"
                         onError={() => {
                           avatarErrorRef.current = true;
@@ -83,7 +83,7 @@ export default function Navbar() {
                         <User className="w-4 h-4 text-white" />
                       </div>
                     )}
-                    <span className="text-sm font-medium text-gray-700">{user.name || '用户'}</span>
+                    <span className="text-sm font-medium text-gray-700">{user.username || '用户'}</span>
                   </div>
                   <button
                     onClick={logout}

@@ -15,7 +15,7 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login, register, isLoading } = useAuthStore();
@@ -37,7 +37,7 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
     }
     
     if (mode === 'register') {
-      const nameError = validateRequired(name, '姓名');
+      const nameError = validateRequired(username, '用户名');
       if (nameError) {
         toast.error(nameError);
         return;
@@ -49,14 +49,14 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
         await login(email, password);
         toast.success('登录成功！');
       } else {
-        await register(email, password, name, confirmPassword);
+        await register(email, password, username, confirmPassword);
         toast.success('注册成功！');
       }
       onClose();
       setEmail('');
       setPassword('');
       setConfirmPassword('');
-      setName('');
+      setUsername('');
     } catch (error) {
       console.error(error);
       // 显示具体的错误信息
@@ -96,16 +96,16 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
           {mode === 'register' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                姓名
+                用户名
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="请输入您的姓名"
+                  placeholder="请输入用户名"
                   required
                 />
               </div>

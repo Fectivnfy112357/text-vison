@@ -96,10 +96,10 @@ export const authAPI = {
   },
 
   // 用户注册
-  register: async (email: string, password: string, name: string, confirmPassword: string) => {
+  register: async (email: string, password: string, username: string, confirmPassword: string) => {
     const data = await request('/users/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name, confirmPassword }),
+      body: JSON.stringify({ email, password, username, confirmPassword }),
     });
     
     // 保存 token
