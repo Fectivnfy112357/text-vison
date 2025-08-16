@@ -178,7 +178,7 @@ public class WxAuthServiceImpl implements WxAuthService {
                 newUser.setAvatar("");
             }
 
-            newUser.setPassword(PasswordUtil.encode("textvison123456"));
+            newUser.setPassword(PasswordUtil.encode("text_vision123456"));
             newUser.setStatus(1);
             newUser.setCreatedAt(LocalDateTime.now());
             newUser.setUpdatedAt(LocalDateTime.now());
