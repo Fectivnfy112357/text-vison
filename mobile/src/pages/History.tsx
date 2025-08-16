@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { GenerationContent } from '../lib/api'
 import { toast } from 'sonner'
 import HistoryItem from '../components/HistoryItem'
-import CommonMasonryGrid, { EnhancedItem } from '../components/CommonMasonryGrid'
+import CommonMasonryGrid from '../components/CommonMasonryGrid'
 
 type FilterType = 'all' | 'image' | 'video'
 type SortType = 'newest' | 'oldest' | 'name'
@@ -33,10 +33,7 @@ const History: React.FC = () => {
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [sortType, _setSortType] = useState<SortType>('newest')
   const [_showFilters, _setShowFilters] = useState(false)
-  const [selectedItems, _setSelectedItems] = useState<Set<string>>(new Set())
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null)
-  const [_isSelectionMode, _setIsSelectionMode] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   
@@ -46,7 +43,6 @@ const History: React.FC = () => {
       return
     }
     loadHistory({ page: 1, size: 20 })
-    setIsVisible(true)
     
     // 组件卸载时清理轮询
     return () => {

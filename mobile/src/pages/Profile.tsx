@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   User, 
   Settings, 
   Crown, 
-  Bell, 
-  Shield, 
   HelpCircle, 
   LogOut, 
   Edit3, 
@@ -17,8 +15,7 @@ import {
   Trash2,
   AlertTriangle,
   X,
-  TrendingUp,
-  Palette
+  TrendingUp
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { contentAPI } from '../lib/api'

@@ -9,6 +9,7 @@ export default defineConfig({
     react(),
     tsconfigPaths()
   ],
+  base: '/',
   resolve: {
     alias: {
       'prop-types': 'prop-types'
@@ -22,6 +23,12 @@ export default defineConfig({
   // 静态资源配置
   publicDir: 'public',
   build: {
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 })

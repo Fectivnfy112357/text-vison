@@ -1,6 +1,7 @@
 import { useEffect, useMemo, lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
+import { isPCDevice } from './utils/deviceDetection'
 
 // 页面组件 - 使用懒加载优化性能
 const Login = lazy(() => import('./pages/Login'))
@@ -35,6 +36,50 @@ function App() {
     // 应用启动时检查认证状态
     checkAuth()
   }, [])
+
+  // 设备检测和跳转逻辑
+  useEffect(() => {
+    let timeoutId: number;
+    
+    const checkDevice = () => {
+      // 清除之前的定时器
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // 防抖：延迟检测，避免频繁触发
+      timeoutId = setTimeout(() => {
+        if (isPCDevice()) {
+          window.location.href = 'https://www.textvision.top:666';
+        }
+      }, 300);
+    };
+    
+    // 初始检测
+    checkDevice();
+    
+    // 监听窗口大小变化（F12设备仿真会触发）
+    const handleResize = () => {
+      checkDevice();
+    };
+    
+    // 监听设备方向变化
+    const handleOrientationChange = () => {
+      checkDevice();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // 清理函数
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, []);
 
   // 缓存背景样式，避免重复计算 - 性能优化版本
   const backgroundStyle = useMemo(() => ({

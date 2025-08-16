@@ -340,7 +340,7 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="text-xl text-gray-600 max-w-3xl mx-auto"
               >
-                双向滚动展示，发现更多创作灵感
+                发现更多创作灵感
               </motion.p>
             </div>
 

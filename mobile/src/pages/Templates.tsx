@@ -11,9 +11,7 @@ import { useTemplateStore } from "../store/useTemplateStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { Template, TemplateCategory } from "../lib/api";
 import { toast } from "sonner";
-import CommonMasonryGrid, {
-  EnhancedItem,
-} from "../components/CommonMasonryGrid";
+import CommonMasonryGrid from "../components/CommonMasonryGrid";
 import TemplateCard from "../components/TemplateCard";
 
 const Templates: React.FC = () => {
