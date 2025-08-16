@@ -125,7 +125,7 @@ const Privacy: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                onClick={() => navigate('/change-password')}
+                onClick={() => navigate('/mobile/change-password')}
                 className="w-full card-soft p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-3">

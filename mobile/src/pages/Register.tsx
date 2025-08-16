@@ -224,7 +224,7 @@ const Register: React.FC = () => {
           <p className="text-gray-600">
             已有账户？{' '}
             <Link 
-              to="/login" 
+              to="/mobile/login" 
               className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
             >
               立即登录

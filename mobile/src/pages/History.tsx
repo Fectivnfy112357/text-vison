@@ -324,7 +324,7 @@ const History: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={() => navigate('/create')}
+                onClick={() => navigate('/mobile/create')}
                 className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-soft transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
               >
                 开始创作

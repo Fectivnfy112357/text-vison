@@ -358,7 +358,7 @@ const Profile: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">未登录</h3>
               <p className="text-sm text-gray-500 mb-6">登录后查看个人信息和使用更多功能</p>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/mobile/login')}
                 className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors"
               >
                 立即登录
@@ -450,7 +450,7 @@ const Profile: React.FC = () => {
                 icon={<HelpCircle size={16} className="text-gray-500" />}
                 title="帮助中心"
                 description="使用指南和常见问题"
-                onClick={() => navigate('/help')}
+                onClick={() => navigate('/mobile/help')}
               />
             </div>
           </motion.div>
@@ -587,19 +587,19 @@ const Profile: React.FC = () => {
                         icon={<Key size={16} className="text-blue-500" />}
                         title="修改密码"
                         description="更改登录密码"
-                        onClick={() => navigate('/change-password')}
+                        onClick={() => navigate('/mobile/change-password')}
                       />
                       <SettingsItem
                         icon={<Lock size={16} className="text-green-500" />}
                         title="隐私设置"
                         description="管理个人信息可见性"
-                        onClick={() => navigate('/privacy')}
+                        onClick={() => navigate('/mobile/privacy')}
                       />
                       <SettingsItem
                         icon={<Trash2 size={16} className="text-red-500" />}
                         title="删除账户"
                         description="永久删除账户和数据"
-                        onClick={() => navigate('/delete-account')}
+                        onClick={() => navigate('/mobile/delete-account')}
                         danger
                       />
                     </div>

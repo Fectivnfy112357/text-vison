@@ -129,7 +129,7 @@ file:
     port: 21
     username: text_vision
     password: 9FBbXQhW58fh
-    uploadApiUrl: https://textvision.top:8999/api/ftp/download/%s
+    uploadApiUrl: https://www.textvision.top:8998/api/ftp/download/%s
 
   limits:
     daily-generation: 100  # 每日生成限制

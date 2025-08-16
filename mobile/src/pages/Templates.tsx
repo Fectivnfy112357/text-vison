@@ -181,7 +181,7 @@ const Templates: React.FC = () => {
   const handleUseTemplate = useCallback(
     async (template: Template) => {
       if (!isAuthenticated) {
-        navigate("/login");
+        navigate("/mobile/login");
         return;
       }
 

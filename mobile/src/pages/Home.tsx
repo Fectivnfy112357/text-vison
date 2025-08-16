@@ -97,7 +97,7 @@ const Home: React.FC = () => {
 
   const handleCreateClick = () => {
     if (isAuthenticated) {
-      navigate("/create");
+      navigate("/mobile/create");
     }
   };
 
