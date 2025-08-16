@@ -121,7 +121,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
         isAuthenticated: false,
         error: null
       })
-      toast.success('已退出登录')
+      // 移除toast提示，避免与Profile.tsx中的提示重复
     }
   },
 
