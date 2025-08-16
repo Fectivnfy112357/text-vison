@@ -22,11 +22,12 @@ const TextVisionSVG = () => {
     // I (直接使用line元素，不需要path)
     // S (绘制成2的形状)
     s: "M 325 50 L 345 50 M 345 50 L 345 70 M 345 70 L 325 70 M 325 70 L 325 90 M 325 90 L 345 90",
-  
+    // I (在S和O之间，增加间距)
+    i2: "M 370 50 L 380 50 M 375 50 L 375 90 M 370 90 L 380 90",
     // O (调整位置确保统一间距)
-    o: "M 365 50 L 385 50 L 385 90 L 365 90 L 365 50",
+    o: "M 400 50 L 420 50 L 420 90 L 400 90 L 400 50",
     // N (调整位置确保统一间距)
-    n: "M 410 50 L 410 90 M 410 50 L 435 90 M 435 50 L 435 90"
+    n: "M 440 50 L 440 90 M 440 50 L 465 90 M 465 50 L 465 90"
   };
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const TextVisionSVG = () => {
   return (
     <div ref={containerRef} className="w-full max-w-4xl mx-auto">
       <svg
-        viewBox="0 0 455 120"
+        viewBox="0 0 485 120"
         className="w-full h-auto"
         preserveAspectRatio="xMidYMid meet"
       >
@@ -122,6 +123,8 @@ const TextVisionSVG = () => {
           }}
         />
         
+
+        
         {/* VISION - 每个字母分别动画 */}
         <motion.path
           d={textPaths.v}
@@ -179,6 +182,23 @@ const TextVisionSVG = () => {
           style={{ transformOrigin: "340px 70px" }}
         />
         
+        {/* I 字母 - 在S和O之间 */}
+        <motion.path
+          d={textPaths.i2}
+          fill="none"
+          stroke="url(#visionGradient)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: isAnimating ? 1 : 0, opacity: isAnimating ? 1 : 0 }}
+          transition={{ 
+            duration: 0.4, 
+            ease: "easeInOut",
+            delay: 1.3
+          }}
+        />
+        
                 
         <motion.path
           d={textPaths.o}
@@ -196,7 +216,7 @@ const TextVisionSVG = () => {
           }}
         />
         
-        <motion:path
+        <motion.path
           d={textPaths.n}
           fill="none"
           stroke="url(#visionGradient)"

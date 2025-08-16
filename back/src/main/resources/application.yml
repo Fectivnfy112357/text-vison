@@ -15,9 +15,9 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://223.72.35.202:3306/text_vision?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: text_vision
-    password: GfkWXKfZ34YK7i68
+    url: jdbc:mysql://127.0.0.1:3306/text_vision?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20

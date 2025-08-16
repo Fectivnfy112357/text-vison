@@ -244,7 +244,7 @@ export default function Home() {
 
           {/* 优雅的滚动指示器 */}
           <motion.div
-              className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
+              className="absolute bottom-20 left-1/2 transform -translate-x-1/2"
               animate={{ y: [0, 8, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           >

@@ -20,8 +20,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 public class AsyncConfig {
 
-    @Bean("taskExecutor")
-    public Executor taskExecutor() {
+    @Bean("textVisionExecutor")
+    public Executor textVisionExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
         // 核心线程数

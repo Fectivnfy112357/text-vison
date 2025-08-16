@@ -26,7 +26,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +52,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
     private final ArtStyleService artStyleService;
 
     @Resource
-    private Executor taskExecutor;
+    private Executor textVisionExecutor;
 
     private String convertSizeToAspectRatio(GenerateContentRequest request) {
         //1024x1024 （1:1）
@@ -65,37 +65,17 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
         //1512x648 （21:9）
         String size = request.getSize();
         if (size != null) {
-            String ratio;
-            switch (size) {
-                case "1024x1024":
-                    ratio = "1:1";
-                    break;
-                case "864x1152":
-                    ratio = "3:4";
-                    break;
-                case "1152x864":
-                    ratio = "4:3";
-                    break;
-                case "1280x720":
-                    ratio = "16:9";
-                    break;
-                case "720x1280":
-                    ratio = "9:16";
-                    break;
-                case "832x1248":
-                    ratio = "2:3";
-                    break;
-                case "1248x832":
-                    ratio = "3:2";
-                    break;
-                case "1512x648":
-                    ratio = "21:9";
-                    break;
-                default:
-                    ratio = "1:1";
-                    break;
-            }
-            return ratio;
+            return switch (size) {
+                case "1024x1024" -> "1:1";
+                case "864x1152" -> "3:4";
+                case "1152x864" -> "4:3";
+                case "1280x720" -> "16:9";
+                case "720x1280" -> "9:16";
+                case "832x1248" -> "2:3";
+                case "1248x832" -> "3:2";
+                case "1512x648" -> "21:9";
+                default -> "1:1";
+            };
         }
         return Optional.ofNullable(request.getRatio()).orElse("1:1");
     }
@@ -309,7 +289,7 @@ public class GeneratedContentServiceImpl extends ServiceImpl<GeneratedContentMap
      * 异步生成内容
      */
     public void asyncGenerateContent(Long contentId, GenerateContentRequest request) {
-        taskExecutor.execute(() -> {
+        textVisionExecutor.execute(() -> {
             try {
                 log.info("开始异步生成内容: contentId={}, type={}", contentId, request.getType());
 

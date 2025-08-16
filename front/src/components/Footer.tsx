@@ -8,11 +8,12 @@ const Footer: React.FC = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/static/home4.jpg')"
+          backgroundImage: "url('/static/home4.jpg')",
+          backgroundPosition: 'top'
         }}
       />
       {/* 淡色蒙版 */}
-      <div className="absolute inset-0 bg-white/90" />
+      <div className="absolute inset-0 bg-white/40" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
